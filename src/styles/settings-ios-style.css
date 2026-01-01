@@ -1,0 +1,638 @@
+/* ==========================================================
+   设置页样式 - 现代网格布局 / Modern Grid Layout
+   设计理念：扁平、网格、分栏、悬浮
+   ========================================================== */
+
+:root {
+    /* 配色系统 - 保留青黛色调 */
+    --grid-bg: #F0F2F5;              /* 页面背景：浅灰 */
+    --grid-card: #FFFFFF;            /* 卡片背景：纯白 */
+    --grid-card-hover: #FAFBFC;      /* 卡片悬浮 */
+    --grid-accent: #5C9EBD;          /* 强调色：青黛蓝 */
+    --grid-accent-dark: #4A7E9D;     /* 深青黛 */
+    --grid-text-primary: #2C3E50;    /* 主文字：深蓝灰 */
+    --grid-text-secondary: #7F8C8D;  /* 次文字：中灰 */
+    --grid-text-muted: #BDC3C7;      /* 弱文字：浅灰 */
+    --grid-border: #E1E8ED;          /* 边框色 */
+    --grid-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --grid-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --grid-danger: #E74C3C;          /* 危险色 */
+}
+
+/* 1. 基础容器 - 网格布局 */
+.settings-content-ios {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 24px;
+    background-color: #ffffff;;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+}
+
+/* 响应式：小屏幕单列 */
+@media (max-width: 768px) {
+    .settings-content-ios {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 16px;
+    }
+}
+
+/* 2. 分组卡片 - 扁平方正 */
+.settings-group {
+    background-color: #F5F7F9;
+    border-radius: 8px; /* 小圆角，更现代 */
+    overflow: hidden;
+    /* box-shadow: var(--grid-shadow); */
+    border: 1px solid #E5E7EB; /* 极细边缘线 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-group:hover {
+    box-shadow: var(--grid-shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* 分组标题 - 顶部色块 */
+.settings-group-header {
+    color: #0052A3;
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    border-bottom: 2px solid  #E5E7EB;
+}
+
+/* 分组底部说明 */
+.settings-group-footer {
+    padding: 12px 20px;
+    font-size: 12px;
+    color: var(--grid-text-muted);
+    line-height: 1.6;
+    background-color: #F8F9FA;
+    border-top: 1px solid var(--grid-border);
+}
+
+/* 3. 设置项 - 横向布局 */
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+    padding: 10px 16px;
+    background-color: transparent;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item:hover {
+    background-color: var(--grid-card-hover);
+}
+
+.settings-item:active {
+    background-color: #F0F3F5;
+}
+
+/* 移除旧的分割线样式 */
+.settings-item::after {
+    display: none;
+}
+
+/* 设置项图标容器 - 方形设计 */
+.settings-icon-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px; /* 小圆角 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+    background: #E1F0FF !important;
+     border: 1px solid #CFE4FA; 
+    /* box-shadow: 0 2px 6px rgba(92, 158, 189, 0.3); */
+}
+
+.settings-icon-container svg, 
+.settings-icon-container img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    stroke: #FFFFFF !important;
+    fill: none;
+}
+
+/* 设置项主要内容区域 */
+.settings-item-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.settings-icon-container svg * {
+  stroke: #0052A3 !important;
+  stroke-width: inherit; /* 保留svg本身的描边粗细，不改动原有尺寸 */
+  stroke-opacity: 1;      /* 描边不透明，纯色显示 */
+}
+/* 额外兜底：防止部分svg的描边写在svg根节点上 */
+.settings-icon-container svg {
+  stroke: #0052A3 !important;
+}
+
+/* 标签文本 */
+.settings-label {
+    font-size: 13px;
+    color: var(--grid-text-primary);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    flex-shrink: 0; /* 防止被压缩 */
+    min-width: 80px; /* 最小宽度确保对齐 */
+    max-width: 120px; /* 最大宽度防止过长 */
+}
+
+/* 右侧值或控件 */
+.settings-value {
+    font-size: 14px;
+    color: var(--grid-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-weight: 400;
+    flex: 1; /* 占据剩余空间 */
+    min-width: 0; /* 允许收缩 */
+}
+
+/* 输入框样式 - 内联设计 */
+.settings-input {
+    font-size: 14px;
+    color: var(--grid-text-primary);
+    background: var(--grid-card-hover);
+    font-weight: 400;
+    border: 1px solid var(--grid-border) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 8px 12px;
+    margin: 0;
+    border-radius: 4px;
+    width: 100%; /* 填充父容器 */
+    max-width: 220px; /* 最大宽度限制 */
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.settings-input:focus {
+    outline: none !important;
+    border-color: var(--grid-accent) !important;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(92, 158, 189, 0.1) !important;
+}
+
+.settings-input::placeholder {
+    color: var(--grid-text-muted);
+}
+
+/* 按钮样式 - 现代按钮设计 */
+.settings-button-text {
+    
+    font-size: 13px;
+    font-weight: 600;
+     background-color: #E1F0FF; /* 极浅的清爽蓝 */
+    color: #0052A3; /* 对应深蓝文字，确保可读性 */
+    
+    border: 1px solid #CFE4FA; /* 细微的边缘线，体现克制 */
+    outline: none !important;
+    cursor: pointer;
+    padding: 10px 20px;
+    width: 100%;
+    text-align: center;
+    font-family: inherit;
+    -webkit-appearance: none;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+
+.settings-button-text:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(92, 158, 189, 0.2);
+}
+
+.settings-button-destructive {
+    
+    
+    border: none !important;
+
+}
+
+
+/* Chevron 箭头 */
+.settings-chevron {
+    opacity: 0.3;
+    filter: grayscale(0%);
+    stroke: var(--grid-text-secondary);
+}
+
+/* 4. 滑块容器 - 现代化设计 */
+.settings-slider-container {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    width: 100%;
+    gap: 12px;
+}
+
+.settings-slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--grid-text-primary);
+    font-weight: 500;
+}
+
+/* 滑块轨道 */
+.settings-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--grid-border);
+    border-radius: 3px;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+/* 滑块按钮 - 方形设计 */
+.settings-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 12px; /* 方形滑块 */
+    background:  #4A5568;
+   
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(92, 158, 189, 0.5);
+}
+
+.settings-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--grid-accent), var(--grid-accent-dark));
+    box-shadow: 0 2px 6px rgba(92, 158, 189, 0.4);
+    cursor: pointer;
+    border: none;
+}
+
+/* === Proactive Settings Screen 专项美化 === */
+
+#proactive-settings-screen {
+    background-color: var(--grid-bg);
+}
+
+#proactive-settings-screen .settings-header {
+    background: var(--grid-card);
+    color: var(--grid-text-primary);
+    box-shadow: var(--grid-shadow);
+    border-bottom: 1px solid var(--grid-border);
+}
+
+#proactive-settings-screen .settings-header h1 {
+    font-size: 20px;
+    color: var(--grid-text-primary);
+    font-weight: 700;
+}
+
+#proactive-settings-screen .header-icon-button {
+    color: var(--grid-text-primary);
+}
+
+/* 针对 proactive 页面的 settings-content */
+#proactive-settings-screen .settings-content {
+    background-color: var(--grid-bg);
+    padding: 24px;
+}
+
+#proactive-settings-screen .settings-group-title {
+    margin-left: 0;
+    margin-bottom: 12px;
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--grid-text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+/* 复用卡片样式给 modal-section */
+#proactive-settings-screen .modal-section {
+    background-color: var(--grid-card);
+    border-radius: 8px;
+    box-shadow: var(--grid-shadow);
+    border: 1px solid var(--grid-border);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+/* 复用 Item 样式给 modal-cell */
+#proactive-settings-screen .modal-cell {
+    border-bottom: 1px solid var(--grid-border);
+    background-color: transparent;
+    color: var(--grid-text-primary);
+    padding: 20px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#proactive-settings-screen .modal-cell:last-child {
+    border-bottom: none;
+}
+
+/* 适配 Switch 开关 - 现代化设计 */
+.switch {
+    width: 52px;
+    height: 30px;
+}
+
+.slider.round {
+    border-radius: 15px;
+    background-color: var(--grid-border);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.slider.round:before {
+    background-color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    width: 26px;
+    height: 26px;
+    left: 2px;
+    bottom: 2px;
+}
+
+input:checked + .slider {
+    background: #E1F0FF;
+    border-color: transparent;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+/* Proactive 滑块条适配 */
+#proactive-interval-slider {
+    -webkit-appearance: none;
+    height: 6px;
+    background: var(--grid-border);
+    border-radius: 3px;
+}
+
+#proactive-interval-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--grid-accent), var(--grid-accent-dark));
+    border: none;
+    box-shadow: 0 2px 6px rgba(92, 158, 189, 0.4);
+}
+
+#proactive-interval-display {
+    color: var(--grid-accent) !important;
+    font-weight: 600;
+}
+
+/* 5. 特殊布局：双栏设计（可选） */
+.settings-group.wide {
+    grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+    .settings-group.wide {
+        grid-column: span 1;
+    }
+}
+
+/* 6. 卡片内部分区 */
+.settings-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--grid-border);
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--grid-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+
+/* 7. 网格内部项目 */
+.settings-grid-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.settings-grid-item {
+    background: var(--grid-card-hover);
+    border: 1px solid var(--grid-border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-grid-item:hover {
+    background: #FFFFFF;
+    border-color: var(--grid-accent);
+    box-shadow: 0 2px 8px rgba(92, 158, 189, 0.2);
+}
+
+.settings-grid-item:active {
+    transform: scale(0.98);
+}
+
+/* 8. 标签组 - 扁平设计 */
+.settings-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.settings-tag {
+    background: var(--grid-card-hover);
+    border: 1px solid var(--grid-border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--grid-text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-tag:hover {
+    background: var(--grid-accent);
+    color: #FFFFFF;
+    border-color: var(--grid-accent);
+}
+
+.settings-tag.active {
+    background: var(--grid-accent);
+    color: #FFFFFF;
+    border-color: var(--grid-accent);
+}
+
+/* 9. 信息提示框 */
+.settings-info-box {
+    background: #E8F4F8;
+    border-left: 4px solid var(--grid-accent);
+    padding: 16px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--grid-text-primary);
+    line-height: 1.6;
+}
+
+.settings-warning-box {
+    background: #FFF3CD;
+    border-left: 4px solid #FFC107;
+    padding: 16px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #856404;
+    line-height: 1.6;
+}
+
+.settings-danger-box {
+    background: #F8D7DA;
+    border-left: 4px solid var(--grid-danger);
+    padding: 16px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #721C24;
+    line-height: 1.6;
+}
+
+/* 10. 页脚信息 - Tag 风格 */
+.settings-footer-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 20px;
+    margin-top: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--grid-text-secondary);
+    line-height: 1.8;
+}
+
+.settings-footer-info::before {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #8FB3C4;
+    border-radius: 2px;
+    margin-bottom: 8px;
+}
+
+/* Footer Tag 样式 */
+.footer-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+ 
+}
+
+.footer-tag.device-tag {
+    background: linear-gradient(135deg, #F0F2F5, #E1E8ED);
+    color: var(--grid-text-primary);
+    border: 1px solid var(--grid-border);
+}
+
+.footer-tag.version-tag {
+    background: #E1F0FF;
+    color: #0052A3;
+     border: 1px solid #CFE4FA;
+}
+
+.footer-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(92, 158, 189, 0.15);
+}
+
+/* 11. 深色模式适配 */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --grid-bg: #1A1D23;
+        --grid-card: #25282E;
+        --grid-card-hover: #2C2F35;
+        --grid-text-primary: #E4E6EB;
+        --grid-text-secondary: #B0B3B8;
+        --grid-text-muted: #65676B;
+        --grid-border: #3A3D44;
+        --grid-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        --grid-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+    
+    .settings-group-header {
+        background: linear-gradient(135deg, #4A7E9D, #3A6E8D);
+    }
+    
+    .settings-info-box {
+        background: #1E3A47;
+        border-left-color: var(--grid-accent);
+        color: #B8D4E0;
+    }
+}
