@@ -18377,4 +18377,39 @@ body.is-ios-pwa .phone-frame {
     height: 100dvh !important; /* 强制使用动态视口高度，贴合物理边缘 */
 }
 
+/* ======================================================== */
+/* Mobile Responsive Fixes (Safari & Chrome on Phone)       */
+/* ======================================================== */
+@media screen and (max-width: 600px) {
+    /* 1. 强制手机端全屏，不再显示“手机壳”外框 */
+    .phone-frame {
+        width: 100vw !important;
+        height: 100dvh !important; /* 关键：跟随动态视口变化 */
+        border-radius: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        
+        /* 确保它是 relative，这样内部的 absolute 元素以它为基准 */
+        position: relative !important; 
+        transform: none !important;
+    }
+
+    /* 2. Body 也要确保撑满 */
+    body, html {
+        overflow: hidden; /* 防止 browser 滚动条出现 */
+        background-color: transparent;
+    }
+
+    
+
+    /* 4. 内容区域避让 */
+    .screen-content {
+        /* 增加底部留白，防止被 Dock 挡住 */
+        /* 如果有地址栏，viewport 变小，dvh 变小，内容区自动收缩， */
+        /* padding 确保最后一条消息在 Dock 之上 */
+        padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+}
+
 
