@@ -78,26 +78,28 @@ body.is-ios-pwa {
     background-color: transparent !important; 
 }
 
-/* 禁用回弹 (橡皮筋) 效应 */
-html, body {
-    overscroll-behavior-y: none;
-    position: fixed;
-    width: 100%;
+/* 禁用回弹 + 修复底部背景泄漏 */
+html {
+    background: transparent !important; /* 关键：让 html 透明，不露底 */
     height: 100%;
-    overflow: hidden;
-    background: #000;
+    height: 100dvh;
 }
 
-/* ========== 调试区域 (找到白条后删除) ========== */
-html { background: red !important; }
-body { background: lime !important; }
-.phone-frame { background: blue !important; }
-.content-mask { background: orange !important; }
-.screen { background: purple !important; }
-#messages-screen { background: yellow !important; }
-/* ========== 调试结束 ========== */
+body {
+    overscroll-behavior-y: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh; /* 动态视口高度，覆盖 iOS 底部条 */
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--page-bg, #f5f5f5); /* 使用页面背景色兜底 */
+}
 
-/* 关键：在 PWA 模式下，强制框架铺满全屏，不留死角 */
+/* iOS PWA 模式：phone-frame 全屏铺满 */
 body.is-ios-pwa .phone-frame {
     width: 100vw !important;
     height: 100vh !important;
@@ -105,16 +107,18 @@ body.is-ios-pwa .phone-frame {
     max-width: none !important;
     max-height: none !important;
     border-radius: 0 !important;
+    position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     margin: 0 !important;
     transform: none !important;
+    background: inherit !important;
 }
 
 /* 修复底部白条：内容遮罩层也要撑满并处理底部安全区 */
 body.is-ios-pwa .content {
     height: 100% !important;
-    padding-bottom: env(safe-area-inset-bottom) !important; /* 确保不被底部黑线遮挡 */
+    padding-bottom: env(safe-area-inset-bottom) !important;
     box-sizing: border-box !important;
 }
 
