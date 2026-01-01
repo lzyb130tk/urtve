@@ -113,8 +113,15 @@ body.is-ios-pwa .phone-frame {
     background: inherit !important;
 }
 
-body.is-ios-pwa .content {
+/* ★★★ 核心修复：content-mask 的圆角也要去掉！★★★ */
+body.is-ios-pwa .content-mask {
+    border-radius: 0 !important;
     height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* 修复底部安全区 */
+body.is-ios-pwa .screen {
     padding-bottom: env(safe-area-inset-bottom) !important;
     box-sizing: border-box !important;
 }

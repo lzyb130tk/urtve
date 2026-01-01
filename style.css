@@ -115,9 +115,16 @@ body.is-ios-pwa .phone-frame {
     background: inherit !important;
 }
 
-/* 修复底部白条：内容遮罩层也要撑满并处理底部安全区 */
-body.is-ios-pwa .content {
+/* ★★★ 核心修复：content-mask 的圆角也要去掉！★★★ */
+/* 否则圆角会裁剪掉底部内容，导致 dock 被遮挡，html 露出来 */
+body.is-ios-pwa .content-mask {
+    border-radius: 0 !important;
     height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* 修复底部安全区：让 screen 元素处理底部间距 */
+body.is-ios-pwa .screen {
     padding-bottom: env(safe-area-inset-bottom) !important;
     box-sizing: border-box !important;
 }
@@ -10396,7 +10403,7 @@ body.fullscreen-mode .phone-frame {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 0 28px !important;
+  padding: 20px 28px !important;
   /* 避开圆角 */
   box-sizing: border-box !important;
 
