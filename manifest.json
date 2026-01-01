@@ -4,8 +4,8 @@
   "description": "一个与AI角色互动的虚拟手机应用。",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -14,7 +14,7 @@
       "type": "image/png"
     },
     {
-      "src": "hthttps://i.postimg.cc/s2n0gxBB/appicon.png",
+      "src": "https://i.postimg.cc/s2n0gxBB/appicon.png",
       "sizes": "512x512",
       "type": "image/png"
     }

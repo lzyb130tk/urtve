@@ -18361,3 +18361,20 @@ body.fullscreen-mode div[id$="-screen"] {
   color: #333;
   user-select: none;
 }
+
+
+
+/* 2. Content Padding Fix */
+/* 确保内容列表的最后几项不被浮动的 Dock 挡住 */
+/* 但要注意：不能给容器本身加背景色，否则会挡住壁纸 */
+.screen-content {
+    /* 留白 = Dock高度(70) + 悬浮距离(15) + 安全区 + 额外缓冲(15) */
+    padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+}
+
+/* 3. 修复 iOS PWA 模式下的视口高度 */
+body.is-ios-pwa .phone-frame {
+    height: 100dvh !important; /* 强制使用动态视口高度，贴合物理边缘 */
+}
+
+
