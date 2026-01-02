@@ -73,60 +73,114 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* iOS PWA 专用样式 - 沉浸式支持 */
+/* iOS PWA 专用样式 */
 body.is-ios-pwa {
-    background-color: transparent !important; 
+  background-color: transparent; /* 让全局壁纸层透出 */
+  /* 不在body上加padding，而是让.phone-frame自己处理 */
 }
 
-/* 禁用回弹 + 修复底部背景泄漏 */
-html {
-    background: transparent !important; /* 关键：让 html 透明，不露底 */
-    height: 100%;
-    height: 100dvh;
+/* ============================================================ */
+/* === 全局壁纸层：解决iOS PWA底部白块问题 ===                  */
+/* ============================================================ */
+/* 
+ * 这个层覆盖整个视口（包括iOS安全区域），
+ * 始终显示用户壁纸，避免白色背景露出。
+ * 它位于所有内容之下，作为"真正的底色"。
+ */
+#global-wallpaper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* 使用动态视口高度 */
+
+  /* 默认隐藏，只在iOS PWA全屏模式下显示 */
+  display: none;
+
+  /* 层级最低，在所有内容之下 */
+  z-index: -1;
+
+  /* 壁纸样式（会被JS动态更新为用户壁纸） */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  /* 确保覆盖到安全区域 */
+  padding: 0;
+  margin: 0;
 }
 
-body {
-    overscroll-behavior-y: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    height: 100dvh; /* 动态视口高度，覆盖 iOS 底部条 */
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    background: var(--page-bg, #f5f5f5); /* 使用页面背景色兜底 */
+/* iOS PWA 模式下启用全局壁纸层 */
+body.is-ios-pwa #global-wallpaper {
+  display: block;
 }
 
-/* iOS PWA 模式：phone-frame 全屏铺满 */
+/* iOS 全屏模式下也启用 */
+body.fullscreen-mode #global-wallpaper {
+  display: block;
+}
+
+/* ============================================================ */
+/* === iOS PWA 橡皮筋效应禁用 + 安全区适配 ===                   */
+/* ============================================================ */
+body.is-ios-pwa {
+  /* 禁止整个页面的过度滚动（橡皮筋效应） */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  overflow: hidden; /* 禁止body滚动 */
+
+  /* 确保body占满整个视口 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* iOS PWA 模式下的 .phone-frame 适配 */
 body.is-ios-pwa .phone-frame {
-    width: 100vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    max-height: none !important;
-    border-radius: 0 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    margin: 0 !important;
-    transform: none !important;
-    background: inherit !important;
+  /* 关键：让内容区域的高度减去底部安全区高度 */
+  /* 这样C区域的内容会"上移"到可视区域内 */
+  height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+  max-height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+
+  /* 顶部也要考虑 */
+  margin-top: env(safe-area-inset-top);
 }
 
-/* ★★★ 核心修复：content-mask 的圆角也要去掉！★★★ */
-/* 否则圆角会裁剪掉底部内容，导致 dock 被遮挡，html 露出来 */
-body.is-ios-pwa .content-mask {
-    border-radius: 0 !important;
-    height: 100% !important;
-    overflow: hidden !important;
+/* iOS PWA 全屏模式组合 */
+body.is-ios-pwa.fullscreen-mode .phone-frame {
+  width: 100vw !important;
+  height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+  max-height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+  margin-top: env(safe-area-inset-top);
+  border-radius: 0 !important;
+  border: none !important;
 }
 
-/* 修复底部安全区：让 screen 元素处理底部间距 */
+/* ============================================================ */
+/* === iOS PWA 内容区域滚动优化 ===                              */
+/* ============================================================ */
+/* 
+ * 在禁止body橡皮筋效应的同时，保持内容区域的正常滚动。
+ * 使用 -webkit-overflow-scrolling: touch 保持iOS原生滚动手感。
+ */
+body.is-ios-pwa .chat-messages-container,
+body.is-ios-pwa .settings-content,
+body.is-ios-pwa .settings-content-ios,
+body.is-ios-pwa .music-content,
+body.is-ios-pwa .content,
+body.is-ios-pwa [class*="-container"][style*="overflow"],
 body.is-ios-pwa .screen {
-    padding-bottom: env(safe-area-inset-bottom) !important;
-    box-sizing: border-box !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; /* 允许内部滚动，但不传递到body */
 }
 
 * {
@@ -10392,8 +10446,7 @@ body.fullscreen-mode .phone-frame {
 .status-bar {
   /* 1. 强制绝对定位，确保它浮起来 */
   position: absolute !important;
-  top: 0 !important;
-  padding-top: calc(10px + env(safe-area-inset-top)) !important; /* 核心：沉浸式适配，自动避开刘海 */
+  top: 14px !important;
   /* 距离顶部距离 */
   left: 0 !important;
   width: 100% !important;
@@ -10403,7 +10456,7 @@ body.fullscreen-mode .phone-frame {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 20px 28px !important;
+  padding: 0 28px !important;
   /* 避开圆角 */
   box-sizing: border-box !important;
 
@@ -18361,55 +18414,3 @@ body.fullscreen-mode div[id$="-screen"] {
   color: #333;
   user-select: none;
 }
-
-
-
-/* 2. Content Padding Fix */
-/* 确保内容列表的最后几项不被浮动的 Dock 挡住 */
-/* 但要注意：不能给容器本身加背景色，否则会挡住壁纸 */
-.screen-content {
-    /* 留白 = Dock高度(70) + 悬浮距离(15) + 安全区 + 额外缓冲(15) */
-    padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
-}
-
-/* 3. 修复 iOS PWA 模式下的视口高度 */
-body.is-ios-pwa .phone-frame {
-    height: 100dvh !important; /* 强制使用动态视口高度，贴合物理边缘 */
-}
-
-/* ======================================================== */
-/* Mobile Responsive Fixes (Safari & Chrome on Phone)       */
-/* ======================================================== */
-@media screen and (max-width: 600px) {
-    /* 1. 强制手机端全屏，不再显示“手机壳”外框 */
-    .phone-frame {
-        width: 100vw !important;
-        height: 100dvh !important; /* 关键：跟随动态视口变化 */
-        border-radius: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        
-        /* 确保它是 relative，这样内部的 absolute 元素以它为基准 */
-        position: relative !important; 
-        transform: none !important;
-    }
-
-    /* 2. Body 也要确保撑满 */
-    body, html {
-        overflow: hidden; /* 防止 browser 滚动条出现 */
-        background-color: transparent;
-    }
-
-    
-
-    /* 4. 内容区域避让 */
-    .screen-content {
-        /* 增加底部留白，防止被 Dock 挡住 */
-        /* 如果有地址栏，viewport 变小，dvh 变小，内容区自动收缩， */
-        /* padding 确保最后一条消息在 Dock 之上 */
-        padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)) !important;
-    }
-}
-
-

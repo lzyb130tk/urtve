@@ -1,0 +1,1364 @@
+/* ==========================================================
+   模态框主题 - 月白与青黛 / Moon White & Indigo Grey
+   高级克制风格 (Advanced & Restrained) - 去iOS化，去暖色调
+   与 chat-settings-page.css 统一设计语言
+   ========================================================== */
+
+/* ===== 1. 背景遮罩层 ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(69, 73, 77, 0.25); /* 青黛色调的遮罩 */
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: var(--z-overlay, 1000) !important; /* 使用层级规范变量 */
+}
+
+/* ===== 2. 弹窗主体 ===== */
+.modal-content {
+    /* 纯净的月白背景，不使用半透明 */
+    background: #FFFFFF !important;
+    
+    /* 去除磨砂效果，使用实色 */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    
+    /* 克制的圆角 */
+    border-radius: 20px !important;
+    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    
+    /* 极克制的阴影 */
+    box-shadow: 0 8px 32px rgba(69, 73, 77, 0.12) !important;
+
+    /* 青黛文本色 */
+    color: #45494D;
+    
+    /* 布局优化 */
+    padding: 0 !important;
+    overflow: hidden;
+    
+    /* 干脆的动画 */
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ===== 3. 头部样式 ===== */
+.modal-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(69, 73, 77, 0.08) !important;
+    padding: 18px 20px !important;
+}
+
+.modal-header h2 {
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    color: #45494D;
+}
+
+/* ===== 4. 关闭按钮 ===== */
+.modal-close-button {
+    background: rgba(69, 73, 77, 0.06);
+    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5F6B73;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-close-button:hover,
+.modal-close-button:active {
+    background: rgba(69, 73, 77, 0.1);
+    color: #45494D;
+}
+
+
+.save-button, 
+.confirm-button {
+    background: #45494D !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none !important;
+}
+
+.save-button:hover,
+.confirm-button:hover {
+    background: #5F6B73 !important;
+}
+
+.save-button:active,
+.confirm-button:active {
+    transform: scale(0.98);
+    background: #3A3D40 !important;
+}
+
+.cancel-button {
+    background: #F4F7F9 !important;
+    color: #45494D !important;
+    border-radius: 12px !important;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 12px 24px;
+    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+    background: #EAEFF2 !important;
+}
+
+.cancel-button:active {
+    transform: scale(0.98);
+}
+
+/* ===== 6. 输入框样式 ===== */
+.form-input, 
+.form-textarea, 
+.role-form input, 
+.role-form textarea {
+    background: #F4F7F9 !important;
+    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    border-radius: 12px !important;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #45494D !important;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: #9FA6AB;
+}
+
+.form-input:focus, 
+.form-textarea:focus,
+.role-form input:focus,
+.role-form textarea:focus {
+    background: #FFFFFF !important;
+    border-color: #45494D !important;
+    box-shadow: 0 0 0 3px rgba(69, 73, 77, 0.08) !important;
+    outline: none !important;
+}
+
+/* ===== 7. 表单标签 ===== */
+.form-label,
+label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9FA6AB;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* ===== 8. 开关控件 ===== */
+.switch-label {
+    font-size: 14px;
+    color: #5F6B73;
+    transition: color 0.2s ease;
+}
+
+.switch-label.active {
+    color: #45494D;
+    font-weight: 500;
+}
+
+/* 自定义开关样式 */
+.ios-switch,
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 30px;
+    background: #F4F7F9;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+    border: 1px solid rgba(69, 73, 77, 0.12);
+}
+
+.ios-switch.active,
+.toggle-switch.active {
+    background: #45494D;
+    border-color: transparent;
+}
+
+.ios-switch::after,
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ios-switch.active::after,
+.toggle-switch.active::after {
+    transform: translateX(20px);
+}
+
+/* ===== 9. 选择器/下拉框 ===== */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+   
+    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    border-radius: 4px !important;
+    padding: 8px 40px 8px 16px;
+    font-size: 15px;
+    color: #45494D !important;
+    cursor: pointer;
+    width: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235F6B73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    transition: all 0.2s ease;
+}
+
+select:focus {
+    border-color: #45494D !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(69, 73, 77, 0.08);
+}
+
+/* ===== 10. 滚动条样式 ===== */
+.modal-content ::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal-content ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-content ::-webkit-scrollbar-thumb {
+    background: rgba(69, 73, 77, 0.15);
+    border-radius: 2px;
+}
+
+.modal-content ::-webkit-scrollbar-thumb:hover {
+    background: rgba(69, 73, 77, 0.25);
+}
+
+/* ===== 11. 深色模式适配 ===== */
+@media (prefers-color-scheme: dark) {
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+        background: #1C1C1E !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+        color: #F5F5F7;
+    }
+    
+    .modal-header h2 {
+        color: #F5F5F7;
+    }
+    
+    .modal-header, 
+    .modal-footer {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    
+    .modal-close-button {
+        background: rgba(255, 255, 255, 0.08);
+        color: #A1A1A6;
+    }
+    
+    .modal-close-button:hover,
+    .modal-close-button:active {
+        background: rgba(255, 255, 255, 0.12);
+        color: #F5F5F7;
+    }
+    
+    .form-input, 
+    .form-textarea,
+    .role-form input,
+    .role-form textarea {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: #F5F5F7 !important;
+    }
+    
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: #636366;
+    }
+    
+    .form-input:focus, 
+    .form-textarea:focus,
+    .role-form input:focus,
+    .role-form textarea:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: #636366 !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) !important;
+    }
+    
+    select {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: #F5F5F7 !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A1A1A6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    }
+    
+    .switch-label {
+        color: #A1A1A6;
+    }
+    
+    .switch-label.active {
+        color: #F5F5F7;
+    }
+    
+    .ios-switch,
+    .toggle-switch {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .ios-switch.active,
+    .toggle-switch.active {
+        background: #636366;
+    }
+    
+    .cancel-button {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #F5F5F7 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .cancel-button:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+    }
+    
+    .save-button, 
+    .confirm-button {
+        background: #636366 !important;
+    }
+    
+    .save-button:hover,
+    .confirm-button:hover {
+        background: #7C7C80 !important;
+    }
+    
+    .save-button:active,
+    .confirm-button:active {
+        background: #545456 !important;
+    }
+    
+    .form-label,
+    label {
+        color: #636366;
+    }
+    
+    .modal-content ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .modal-content ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+}
+
+/* ===== 12. Glass Segment Control - 月白与青黛风格 ===== */
+.glass-segment-control {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    /* 月白色背景，去除磨砂 */
+    background-color: #F4F7F9;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 3px;
+    border-radius: 10px;
+    /* 更克制的圆角 */
+    box-shadow: none;
+    border: 1px solid rgba(69, 73, 77, 0.1);
+    width: 160px;
+    height: 34px;
+}
+
+/* 单个按钮 */
+.glass-segment-control .segment-btn {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+    border: none;
+    background: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9FA6AB;
+    /* 淡灰：未选中 */
+    cursor: pointer;
+    transition: color 0.25s ease;
+    border-radius: 8px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 选中状态的文字颜色 */
+.glass-segment-control .segment-btn.active {
+    color: #45494D;
+    /* 青黛：选中 */
+    font-weight: 600;
+}
+
+/* 滑动指示器 */
+.glass-segment-control .segment-indicator {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    height: calc(100% - 6px);
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(69, 73, 77, 0.1);
+    z-index: 1;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 右侧激活状态 */
+.glass-segment-control.group-mode .segment-indicator,
+.glass-segment-control.user-mode .segment-indicator {
+    transform: translateX(100%);
+}
+
+/* ===== 13. 角色设置模态框布局修复 ===== */
+/* 使保存按钮固定在底部 */
+#role-settings-modal .modal-content,
+.role-settings-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+}
+
+#role-settings-modal .modal-body,
+.role-settings-modal .modal-body,
+.role-form {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* 底部固定区域 */
+#role-settings-modal .modal-footer,
+.role-settings-modal .modal-footer {
+    flex-shrink: 0;
+    padding: 16px 20px !important;
+    background: #FFFFFF !important;
+    border-top: 1px solid rgba(69, 73, 77, 0.08) !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* 上下文记忆行布局 */
+.context-memory-row,
+.role-form-row.inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid rgba(69, 73, 77, 0.06);
+    margin-top: 16px;
+}
+
+.context-memory-row label,
+.role-form-row.inline label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #45494D;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0;
+}
+
+/* 数字输入框小尺寸 */
+.context-memory-row input[type="number"],
+.role-form-row.inline input[type="number"] {
+    width: 70px;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ===== 14. 深色模式下的 Segment Control ===== */
+@media (prefers-color-scheme: dark) {
+    .glass-segment-control {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass-segment-control .segment-btn {
+        color: #636366;
+    }
+    
+    .glass-segment-control .segment-btn.active {
+        color: #F5F5F7;
+    }
+    
+    .glass-segment-control .segment-indicator {
+        background-color: rgba(255, 255, 255, 0.15);
+        box-shadow: none;
+    }
+    
+    #role-settings-modal .modal-footer,
+    .role-settings-modal .modal-footer {
+        background: #1C1C1E !important;
+    }
+}
+
+/* ===== 15. Role Switcher（Char/User 切换器）美化 ===== */
+.role-switcher {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px;
+    background: #F4F7F9;
+    border-radius: 10px;
+    border: 1px solid rgba(69, 73, 77, 0.1);
+}
+
+.role-switcher .switch-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #9FA6AB;
+    padding: 6px 12px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.role-switcher .switch-label.active {
+    color: #45494D;
+    font-weight: 600;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(69, 73, 77, 0.1);
+}
+
+/* 隐藏原始开关，改用纯 CSS 样式 */
+.role-switcher .switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+
+.role-switcher .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.role-switcher .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(69, 73, 77, 0.15);
+    transition: 0.3s;
+    border-radius: 22px;
+}
+
+.role-switcher .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.role-switcher input:checked + .slider {
+    background-color: #45494D;
+}
+
+.role-switcher input:checked + .slider:before {
+    transform: translateX(18px);
+}
+
+/* ===== 16. 添加联系人模态框底部布局修复 ===== */
+#add-contact-modal .modal-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px;
+    padding: 20px !important;
+}
+
+#add-contact-modal .save-button {
+    width: 100%;
+    margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#add-contact-modal .form-group-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#add-contact-modal .form-group-inline label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #5F6B73;
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+#add-contact-modal .form-group-inline input[type="number"] {
+    width: 60px;
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 14px;
+    background: #F4F7F9 !important;
+    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    border-radius: 8px !important;
+}
+
+#add-contact-modal .save-button {
+    padding: 10px 24px;
+    font-size: 14px;
+    min-width: auto;
+}
+
+/* ===== 17. Avatar Uploader 美化 ===== */
+.avatar-uploader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    object-fit: cover;
+    background: #F4F7F9;
+    border: 2px solid rgba(69, 73, 77, 0.08);
+    box-shadow: 0 4px 12px rgba(69, 73, 77, 0.08);
+}
+
+.avatar-upload-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #45494D;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.avatar-upload-label:hover {
+    color: #5F6B73;
+}
+
+/* ===== 18. 深色模式下的补充样式 ===== */
+@media (prefers-color-scheme: dark) {
+    .role-switcher {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .role-switcher .switch-label {
+        color: #636366;
+    }
+    
+    .role-switcher .switch-label.active {
+        color: #F5F5F7;
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .role-switcher .slider {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .role-switcher input:checked + .slider {
+        background-color: #636366;
+    }
+    
+    #add-contact-modal .modal-footer {
+        background: #1C1C1E !important;
+    }
+    
+    #add-contact-modal .form-group-inline label {
+        color: #A1A1A6;
+    }
+    
+    .avatar-preview {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .avatar-upload-label {
+        color: #A1A1A6;
+    }
+    
+    .avatar-upload-label:hover {
+        color: #F5F5F7;
+    }
+}
+
+/* ===== 19. 气泡预设卡片美化 - 月白与青黛风格 ===== */
+.bubble-preset-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 18px;
+    margin: 0 16px 14px 16px;
+    width: auto;
+    box-sizing: border-box;
+    
+    /* 克制的边框和阴影 */
+    border: 1px solid rgba(69, 73, 77, 0.1);
+    box-shadow: 0 2px 8px rgba(69, 73, 77, 0.06);
+    position: relative;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.bubble-preset-item:active {
+    transform: scale(0.99);
+    box-shadow: 0 1px 4px rgba(69, 73, 77, 0.08);
+}
+
+.bubble-preset-item .preset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.bubble-preset-item .preset-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #45494D;
+    letter-spacing: -0.2px;
+}
+
+.bubble-preset-item .preset-time {
+    font-size: 12px;
+    color: #9FA6AB;
+    font-weight: 500;
+}
+
+/* 预览区：月白色背景 */
+.bubble-preset-item .preset-preview {
+    font-size: 12px;
+    color: #5F6B73;
+    background-color: #F4F7F9;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: 'SF Mono', ui-monospace, monospace;
+    border: 1px solid rgba(69, 73, 77, 0.06);
+    max-height: 72px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.bubble-preset-item .preset-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* 按钮：克制的风格 */
+.bubble-preset-item .preset-actions button {
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(69, 73, 77, 0.15);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: #FFFFFF;
+    transition: all 0.2s ease;
+    color: #45494D;
+}
+
+/* 分享按钮：使用青黛色 */
+.bubble-preset-item .share-btn {
+    background-color: #45494D !important;
+    color: #FFFFFF !important;
+    border-color: transparent !important;
+}
+
+.bubble-preset-item .share-btn:active {
+    background-color: #5F6B73 !important;
+    transform: scale(0.98);
+}
+
+/* 删除按钮：低饱和度红色 */
+.bubble-preset-item .delete-btn {
+    color: #C48888 !important;
+    border-color: #D4A5A5 !important;
+    background-color: #FFFFFF !important;
+}
+
+.bubble-preset-item .delete-btn:active {
+    background-color: rgba(212, 165, 165, 0.1) !important;
+    transform: scale(0.98);
+}
+
+/* ===== 20. Theme 预设卡片完整美化 - 月白与青黛风格 ===== */
+.theme-preset-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 18px;
+    margin: 0 16px 14px 16px;
+    width: auto;
+    box-sizing: border-box;
+    
+    /* 克制的边框和阴影 */
+    border: 1px solid rgba(69, 73, 77, 0.1);
+    box-shadow: 0 2px 8px rgba(69, 73, 77, 0.06);
+    position: relative;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.theme-preset-item:active {
+    transform: scale(0.99);
+    box-shadow: 0 1px 4px rgba(69, 73, 77, 0.08);
+}
+
+.theme-preset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.theme-preset-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #45494D;
+    letter-spacing: -0.2px;
+    text-transform: none; /* 去除全大写 */
+}
+
+.theme-preset-time {
+    font-size: 12px;
+    color: #9FA6AB;
+    font-weight: 500;
+}
+
+/* 预览区：月白色背景 */
+.theme-preset-preview {
+    font-size: 12px;
+    color: #5F6B73;
+    background-color: #F4F7F9;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: 'SF Mono', ui-monospace, monospace;
+    border: 1px solid rgba(69, 73, 77, 0.06);
+    max-height: 72px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.theme-preset-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* 按钮：克制的风格 */
+.theme-preset-actions button {
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(69, 73, 77, 0.15);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: #FFFFFF;
+    transition: all 0.2s ease;
+    color: #45494D;
+}
+
+/* 应用按钮：使用青黛色 */
+.theme-preset-actions .apply-btn {
+    background-color: #45494D !important;
+    color: #FFFFFF !important;
+    border-color: transparent !important;
+}
+
+.theme-preset-actions .apply-btn:active {
+    background-color: #5F6B73 !important;
+    transform: scale(0.98);
+}
+
+/* 导出按钮：线框风格 */
+.theme-preset-actions .export-btn {
+    background-color: #FFFFFF !important;
+    color: #45494D !important;
+    border-color: rgba(69, 73, 77, 0.2) !important;
+}
+
+.theme-preset-actions .export-btn:active {
+    background-color: #F4F7F9 !important;
+    transform: scale(0.98);
+}
+
+/* 删除按钮：低饱和度红色 */
+.theme-preset-actions .delete-btn {
+    color: #C48888 !important;
+    border-color: #D4A5A5 !important;
+    background-color: #FFFFFF !important;
+}
+
+.theme-preset-actions .delete-btn:active {
+    background-color: rgba(212, 165, 165, 0.1) !important;
+    transform: scale(0.98);
+}
+
+/* ===== 21. 保存按钮布局强化修复 ===== */
+/* 针对添加联系人模态框的底部布局 */
+#add-contact-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+#add-contact-modal .role-form {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    padding-bottom: 10px;
+}
+
+#add-contact-modal .modal-footer {
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px !important;
+    background: #FFFFFF !important;
+    border-top: 1px solid rgba(69, 73, 77, 0.08) !important;
+    gap: 16px;
+}
+
+#add-contact-modal .form-group-inline {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0;
+}
+
+#add-contact-modal .form-group-inline label {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #5F6B73 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+#add-contact-modal .form-group-inline input[type="number"] {
+    width: 60px !important;
+    padding: 8px 10px !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    background: #F4F7F9 !important;
+    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+}
+
+#add-contact-modal .save-button {
+    padding: 10px 24px !important;
+    font-size: 14px !important;
+    min-width: 80px !important;
+    flex-shrink: 0;
+}
+
+/* ===== 22. 深色模式下的气泡预设卡片 ===== */
+@media (prefers-color-scheme: dark) {
+    .bubble-preset-item {
+        background-color: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .bubble-preset-item .preset-name {
+        color: #F5F5F7;
+    }
+    
+    .bubble-preset-item .preset-time {
+        color: #636366;
+    }
+    
+    .bubble-preset-item .preset-preview {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #A1A1A6;
+    }
+    
+    .bubble-preset-item .preset-actions button {
+        background-color: #2C2C2E;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #F5F5F7;
+    }
+    
+    .bubble-preset-item .share-btn {
+        background-color: #636366 !important;
+    }
+    
+    .bubble-preset-item .delete-btn {
+        color: #C48888 !important;
+        border-color: rgba(196, 136, 136, 0.3) !important;
+        background-color: #2C2C2E !important;
+    }
+    
+    .theme-preset-item {
+        background-color: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .theme-preset-name {
+        color: #F5F5F7;
+    }
+    
+    .theme-preset-time {
+        color: #636366;
+    }
+    
+    .theme-preset-preview {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #A1A1A6;
+    }
+    
+    .theme-preset-actions button {
+        background-color: #2C2C2E;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #F5F5F7;
+    }
+    
+    .theme-preset-actions .apply-btn {
+        background-color: #636366 !important;
+    }
+    
+    .theme-preset-actions .export-btn {
+        background-color: #2C2C2E !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .theme-preset-actions .delete-btn {
+        color: #C48888 !important;
+        border-color: rgba(196, 136, 136, 0.3) !important;
+        background-color: #2C2C2E !important;
+    }
+    
+    #add-contact-modal .modal-footer {
+        background: #1C1C1E !important;
+    }
+}
+
+/* ===== 23. 图标包预设列表美化 ===== */
+#preset-list-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 预设项样式 */
+.preset-item,
+.icon-preset-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid rgba(69, 73, 77, 0.1);
+    box-shadow: 0 2px 8px rgba(69, 73, 77, 0.06);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.preset-item:active,
+.icon-preset-item:active {
+    transform: scale(0.99);
+    box-shadow: 0 1px 4px rgba(69, 73, 77, 0.08);
+}
+
+.preset-item .preset-icon,
+.icon-preset-item .preset-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #F4F7F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.preset-item .preset-info,
+.icon-preset-item .preset-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.preset-item .preset-name,
+.icon-preset-item .preset-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #45494D;
+    margin-bottom: 4px;
+}
+
+.preset-item .preset-desc,
+.icon-preset-item .preset-desc {
+    font-size: 12px;
+    color: #9FA6AB;
+}
+
+/* ===== 24. 世界书分组列表 - 瀑布流卡片设计 ===== */
+#worldbook-groups-list {
+    /* 覆盖默认的 contact-list 样式 */
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    list-style: none !important;
+}
+
+/* 世界书分组卡片 */
+#worldbook-groups-list .contact-item,
+.worldbook-group-card {
+    /* 重置 contact-item 样式 */
+    all: unset;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 16px !important;
+    background: #FFFFFF !important;
+    border-radius: 0 0 16px 16px !important;
+    border: 1px solid rgba(69, 73, 77, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(69, 73, 77, 0.06) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    min-height: 80px !important;
+    position: relative !important;
+}
+
+#worldbook-groups-list .contact-item:active,
+.worldbook-group-card:active {
+    transform: scale(0.98) !important;
+    box-shadow: 0 1px 4px rgba(69, 73, 77, 0.08) !important;
+}
+
+/* 分组名称 */
+#worldbook-groups-list .contact-item .contact-name,
+#worldbook-groups-list .contact-item .group-name,
+.worldbook-group-card .group-name {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #45494D !important;
+    margin-bottom: 8px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* 分组计数 */
+#worldbook-groups-list .contact-item .contact-preview,
+#worldbook-groups-list .contact-item .group-count,
+.worldbook-group-card .group-count {
+    font-size: 12px !important;
+    color: #9FA6AB !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+/* 隐藏原有的头像等元素 */
+#worldbook-groups-list .contact-item .contact-avatar,
+#worldbook-groups-list .contact-item .contact-avatar-wrapper,
+#worldbook-groups-list .contact-item .contact-status,
+#worldbook-groups-list .contact-item .contact-time {
+    display: none !important;
+}
+
+/* 分组卡片装饰条 */
+#worldbook-groups-list .contact-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #45494D 0%, #9FA6AB 100%);
+    border-radius: 16px 16px 0 0;
+    opacity: 0.6;
+}
+
+/* 可选：添加小书本图标 */
+#worldbook-groups-list .contact-item::after {
+    content: '📚';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 14px;
+    opacity: 0.3;
+}
+
+/* ===== 25. 深色模式下的图标包预设和世界书 ===== */
+@media (prefers-color-scheme: dark) {
+    .preset-item,
+    .icon-preset-item {
+        background: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .preset-item .preset-icon,
+    .icon-preset-item .preset-icon {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .preset-item .preset-name,
+    .icon-preset-item .preset-name {
+        color: #F5F5F7;
+    }
+    
+    .preset-item .preset-desc,
+    .icon-preset-item .preset-desc {
+        color: #636366;
+    }
+    
+    #worldbook-groups-list .contact-item,
+    .worldbook-group-card {
+        background: #1C1C1E !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    #worldbook-groups-list .contact-item .contact-name,
+    #worldbook-groups-list .contact-item .group-name,
+    .worldbook-group-card .group-name {
+        color: #F5F5F7 !important;
+    }
+    
+    #worldbook-groups-list .contact-item .contact-preview,
+    #worldbook-groups-list .contact-item .group-count,
+    .worldbook-group-card .group-count {
+        color: #636366 !important;
+    }
+    
+    #worldbook-groups-list .contact-item::before {
+        background: linear-gradient(90deg, #636366 0%, #45494D 100%);
+    }
+}
+
+/* ===== 26. 分组内世界书列表 (books-in-group-list) ===== */
+#books-in-group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+}
+
+#books-in-group-list .contact-item,
+.worldbook-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #FFFFFF;
+    border-radius: 14px;
+    border: 1px solid rgba(69, 73, 77, 0.1);
+    box-shadow: 0 2px 6px rgba(69, 73, 77, 0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#books-in-group-list .contact-item:active,
+.worldbook-item:active {
+    transform: scale(0.99);
+    background: #F4F7F9;
+}
+
+/* 世界书图标 */
+#books-in-group-list .contact-item::before {
+    content: '📖';
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+#books-in-group-list .contact-item .contact-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #45494D;
+    flex: 1;
+}
+
+#books-in-group-list .contact-item .contact-preview,
+#books-in-group-list .contact-item .contact-time,
+#books-in-group-list .contact-item .contact-avatar {
+    display: none;
+}
+
