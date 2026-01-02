@@ -44,20 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // === 🖼️ 全局壁纸层同步系统 (解决iOS PWA底部白块问题) ===
     // ========================================================================
     /**
-     * 全局壁纸层 (#global-wallpaper) 用于覆盖整个视口（包括iOS安全区域），
-     * 始终显示用户壁纸，避免白色背景露出。
-     * 
-     * 工作原理：
-     * 1. 监听 #home-screen 的背景图变化
-     * 2. 自动同步到 #global-wallpaper
-     * 3. 确保安全区域显示的是用户壁纸而不是白色
+     * 关键发现：iOS PWA安全区域的背景色来自 html 元素！
+     * 所以我们需要把壁纸同步到：
+     * 1. #global-wallpaper 层
+     * 2. html 元素本身（这是解决安全区白块的关键！）
      */
     const globalWallpaperLayer = document.getElementById('global-wallpaper');
     const homeScreenElement = document.getElementById('home-screen');
+    const htmlElement = document.documentElement; // 获取 html 元素
     
-    // 同步壁纸到全局壁纸层
+    // 同步壁纸到全局壁纸层和html元素
     window.syncGlobalWallpaper = function() {
-        if (!globalWallpaperLayer || !homeScreenElement) return;
+        if (!homeScreenElement) return;
         
         // 获取 home-screen 的背景图
         const computedStyle = window.getComputedStyle(homeScreenElement);
@@ -65,18 +63,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const bgColor = computedStyle.backgroundColor;
         
         // 同步到全局壁纸层
-        if (bgImage && bgImage !== 'none') {
-            globalWallpaperLayer.style.backgroundImage = bgImage;
-        }
-        if (bgColor) {
-            globalWallpaperLayer.style.backgroundColor = bgColor;
+        if (globalWallpaperLayer) {
+            if (bgImage && bgImage !== 'none') {
+                globalWallpaperLayer.style.backgroundImage = bgImage;
+            }
+            if (bgColor) {
+                globalWallpaperLayer.style.backgroundColor = bgColor;
+            }
         }
         
-        debugLog('🖼️ 全局壁纸层已同步:', bgImage ? bgImage.substring(0, 50) + '...' : '无');
+        // 【关键】同步到 html 元素 - 这是解决iOS安全区白块的核心！
+        if (htmlElement) {
+            if (bgImage && bgImage !== 'none') {
+                htmlElement.style.backgroundImage = bgImage;
+            }
+            if (bgColor) {
+                htmlElement.style.backgroundColor = bgColor;
+            }
+        }
+        
+        debugLog('🖼️ 壁纸已同步到html和全局壁纸层:', bgImage ? bgImage.substring(0, 50) + '...' : '无');
     };
     
+    // iOS PWA模式下，给html添加标记class
+    if (isIOS && isStandalone) {
+        htmlElement.classList.add('is-ios-pwa-html');
+    }
+    
     // 初始同步（页面加载时）
-    if (globalWallpaperLayer && homeScreenElement) {
+    if (homeScreenElement) {
         // 延迟执行，确保CSS和其他资源已加载
         setTimeout(() => {
             window.syncGlobalWallpaper();
@@ -96,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             attributeFilter: ['style']
         });
         
-        debugLog('🖼️ 全局壁纸层监听器已启动');
+        debugLog('🖼️ 壁纸同步监听器已启动 (同步到html+全局壁纸层)');
     }
 
 

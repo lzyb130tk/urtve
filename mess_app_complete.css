@@ -60,21 +60,43 @@
     font-family: inherit;
 }
 
+/* ============================================================ */
+/* === 根元素(html)样式：解决iOS PWA安全区白块问题 ===           */
+/* ============================================================ */
+html {
+    height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available; /* iOS专用 */
+    margin: 0;
+    padding: 0;
+    background-color: #dfdfdf;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+html.is-ios-pwa-html {
+    background-color: transparent;
+}
+
 body {
     background-color: #dfdfdf; /* 安卓默认灰色 */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     margin: 0;
     box-sizing: border-box;
 }
 
 /* iOS PWA 专用样式 */
 body.is-ios-pwa {
-    background-color: transparent; /* 让全局壁纸层透出 */
-    /* 不在body上加padding，而是让.phone-frame自己处理 */
+    background-color: transparent; /* 让html的背景透出 */
 }
 
 /* ============================================================ */

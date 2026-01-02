@@ -61,13 +61,43 @@
   font-family: inherit;
 }
 
+/* ============================================================ */
+/* === 根元素(html)样式：解决iOS PWA安全区白块问题 ===           */
+/* ============================================================ */
+/* 
+ * 关键发现：iOS PWA安全区域的背景色来自 html 元素，不是 body！
+ * 必须让 html 元素填满整个视口并设置正确的背景。
+ */
+html {
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* iOS专用：-webkit-fill-available 会填满包括安全区在内的所有可用空间 */
+  min-height: -webkit-fill-available;
+  margin: 0;
+  padding: 0;
+  /* 默认背景色（会被JS动态更新为用户壁纸） */
+  background-color: #dfdfdf;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* iOS PWA 模式下：html背景透明，让壁纸层透出，或者直接显示壁纸 */
+html.is-ios-pwa-html {
+  background-color: transparent;
+}
+
 body {
   background-color: #dfdfdf; /* 安卓默认灰色 */
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available; /* iOS专用 */
   margin: 0;
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
@@ -75,8 +105,7 @@ body {
 
 /* iOS PWA 专用样式 */
 body.is-ios-pwa {
-  background-color: transparent; /* 让全局壁纸层透出 */
-  /* 不在body上加padding，而是让.phone-frame自己处理 */
+  background-color: transparent; /* 让html的背景透出 */
 }
 
 /* ============================================================ */
