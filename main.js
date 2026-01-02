@@ -50,29 +50,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const iosMarginValue = savedMargin ? parseInt(savedMargin) : 50;
     
     // 应用iOS安全区margin的函数
+    // 防抖计时器，避免频繁调用导致崩溃
+    let iosMarginUpdateTimer = null;
+    
     window.applyIOSSafeAreaMargin = function(value) {
-        const marginPx = value + 'px';
-        // 创建或更新CSS变量
-        document.documentElement.style.setProperty('--ios-safe-margin', marginPx);
+        // 1. 限制值范围，防止崩溃（0-150px）
+        const clampedValue = Math.max(0, Math.min(150, parseInt(value) || 0));
+        const marginPx = clampedValue + 'px';
         
-        // 直接更新style标签（确保实时生效）
-        let styleEl = document.getElementById('ios-safe-area-style');
-        if (!styleEl) {
-            styleEl = document.createElement('style');
-            styleEl.id = 'ios-safe-area-style';
-            document.head.appendChild(styleEl);
+        // 2. 防抖：延迟执行，避免频繁调用
+        if (iosMarginUpdateTimer) {
+            clearTimeout(iosMarginUpdateTimer);
         }
-        styleEl.textContent = `
-            html.is-ios-pwa-html {
-                margin-bottom: -${marginPx} !important;
-                padding-bottom: ${marginPx} !important;
+        
+        iosMarginUpdateTimer = setTimeout(() => {
+            try {
+                // 创建或更新CSS变量
+                document.documentElement.style.setProperty('--ios-safe-margin', marginPx);
+                
+                // 直接更新style标签（确保实时生效）
+                let styleEl = document.getElementById('ios-safe-area-style');
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = 'ios-safe-area-style';
+                    document.head.appendChild(styleEl);
+                }
+                
+                // 检查是否在全屏模式
+                const isFullscreen = document.body.classList.contains('fullscreen-mode');
+                
+                // 构建CSS，包含全屏模式的特殊处理
+                let cssContent = `
+                    html.is-ios-pwa-html {
+                        margin-bottom: -${marginPx} !important;
+                        padding-bottom: ${marginPx} !important;
+                    }
+                    body.is-ios-pwa {
+                        margin-bottom: -${marginPx} !important;
+                        padding-bottom: ${marginPx} !important;
+                `;
+                
+                // 全屏模式下的额外处理
+                if (isFullscreen) {
+                    cssContent += `
+                    body.is-ios-pwa.fullscreen-mode .phone-frame {
+                        margin-bottom: -${marginPx} !important;
+                        padding-bottom: ${marginPx} !important;
+                    }
+                    `;
+                }
+                
+                cssContent += `}`;
+                
+                styleEl.textContent = cssContent;
+                debugLog('🍎 iOS安全区margin已更新:', marginPx, isFullscreen ? '(全屏模式)' : '');
+            } catch (error) {
+                console.error('应用iOS安全区margin失败:', error);
             }
-            body.is-ios-pwa {
-                margin-bottom: -${marginPx} !important;
-                padding-bottom: ${marginPx} !important;
-            }
-        `;
-        debugLog('🍎 iOS安全区margin已更新:', marginPx);
+        }, 100); // 100ms 防抖延迟
     };
     
     // iOS PWA模式下，给html添加class并应用margin
@@ -99,7 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 初始化滑块值
     if (iosMarginSlider && iosMarginDisplay) {
-        const currentValue = localStorage.getItem(IOS_MARGIN_KEY) || '50';
+        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '50');
+        // 确保值在有效范围内（0-150）
+        currentValue = Math.max(0, Math.min(150, currentValue));
         iosMarginSlider.value = currentValue;
         iosMarginDisplay.textContent = currentValue + 'px';
         
@@ -4306,6 +4343,16 @@ window.TimerManager = {
             bodyElement.classList.add('fullscreen-mode');
         } else {
             bodyElement.classList.remove('fullscreen-mode');
+        }
+        // 全屏模式切换后，重新应用iOS安全区margin（如果适用）
+        if (isIOS && isStandalone) {
+            const currentMargin = localStorage.getItem(IOS_MARGIN_KEY);
+            if (currentMargin) {
+                // 延迟一下，确保class已经应用
+                setTimeout(() => {
+                    window.applyIOSSafeAreaMargin(parseInt(currentMargin));
+                }, 50);
+            }
         }
     }
     fullscreenToggle.addEventListener('change', async () => {
