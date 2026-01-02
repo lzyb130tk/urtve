@@ -45,9 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================================
     const IOS_MARGIN_KEY = 'ios_safe_area_margin';
     
-    // 从localStorage读取用户设置的margin值，默认0px
+    // 从localStorage读取用户设置的margin值，默认50px（覆盖大多数iPhone底部白块）
     const savedMargin = localStorage.getItem(IOS_MARGIN_KEY);
-    const iosMarginValue = savedMargin ? parseInt(savedMargin) : 0;
+    const iosMarginValue = savedMargin !== null ? parseInt(savedMargin) : 50; // 默认50px
     
     // 应用iOS安全区margin的函数
     // 防抖计时器，避免频繁调用导致崩溃
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 初始化滑块值
     if (iosMarginSlider && iosMarginDisplay) {
-        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '0');
+        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '50'); // 默认50px
         // 确保值在有效范围内（-300到300）
         currentValue = Math.max(-300, Math.min(300, currentValue));
         iosMarginSlider.value = currentValue;
@@ -2998,7 +2998,9 @@ window.TimerManager = {
 
         // 6. 加载全屏设置
         const fullscreenData = await dbHelper.loadData('settingsStore', 'isFullscreenEnabled');
-        const isFullscreenEnabled = fullscreenData ? fullscreenData.value : false;
+        // iOS PWA 模式下，默认启用全屏（解决白块问题）
+        const defaultFullscreen = (isIOS && isStandalone) ? true : false;
+        const isFullscreenEnabled = fullscreenData ? fullscreenData.value : defaultFullscreen;
         fullscreenToggle.checked = isFullscreenEnabled;
         applyFullscreenMode(isFullscreenEnabled);
 
@@ -4181,6 +4183,9 @@ window.TimerManager = {
     }
     // 统一的播放入口函数
     // --- 替换旧的 startPlayback 函数 ---
+    // iOS内存优化：跟踪当前的ObjectURL以便释放
+    let currentSongObjectUrl = null;
+    
     async function startPlayback(playlist, index) {
         if (!playlist || index < 0 || index >= playlist.length) return;
 
@@ -4193,8 +4198,14 @@ window.TimerManager = {
         islandSongArtist.textContent = playbackState.currentSong.artist;
         updateScrollingTitle(playbackState.currentSong.title);
 
-        const songObjectUrl = URL.createObjectURL(playbackState.currentSong.file);
-        audioPlayer.src = songObjectUrl;
+        // iOS内存优化：释放上一首歌的ObjectURL，防止内存泄漏
+        if (currentSongObjectUrl) {
+            URL.revokeObjectURL(currentSongObjectUrl);
+            currentSongObjectUrl = null;
+        }
+        
+        currentSongObjectUrl = URL.createObjectURL(playbackState.currentSong.file);
+        audioPlayer.src = currentSongObjectUrl;
         audioPlayer.play().catch(error => console.error("播放失败:", error));
 
         // 核心修改：当处于“一起听”模式时，调用新的函数来显示并保存“正在播放”提示
@@ -21199,6 +21210,8 @@ I'm fine, thank you.[Split]我很好，谢谢你。\\\\
                 .then(blob => {
                     const blobUrl = URL.createObjectURL(blob);
                     window.open(blobUrl, '_blank');
+                    // iOS内存优化：10秒后释放blobUrl，防止内存泄漏
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
                 })
                 .catch(() => {
                     // 如果 Blob 转换失败，回退到直接下载
@@ -28343,6 +28356,8 @@ ${chatText}
 
     // 当前播放的Audio对象
     let currentTTSAudio = null;
+    // iOS内存优化：跟踪当前TTS的ObjectURL以便在暂停时释放
+    let currentTTSAudioUrl = null;
 
     // 保存MiniMax配置
     async function saveMinimaxConfig() {
@@ -28645,6 +28660,11 @@ ${chatText}
                 currentTTSAudio.pause();
                 currentTTSAudio = null;
             }
+            // iOS内存优化：释放之前的ObjectURL
+            if (currentTTSAudioUrl) {
+                URL.revokeObjectURL(currentTTSAudioUrl);
+                currentTTSAudioUrl = null;
+            }
             
             // 3. 检查缓存
             const cacheKey = TTSCache.genKey(text, voiceId, language);
@@ -28668,17 +28688,20 @@ ${chatText}
             let audioUrl;
             if (typeof audioData === 'string' && audioData.startsWith('http')) {
                 audioUrl = audioData;
+                currentTTSAudioUrl = null; // URL类型不需要revoke
             } else {
                 const audioBlob = base64ToBlob(audioData, 'audio/mpeg');
                 audioUrl = URL.createObjectURL(audioBlob);
+                currentTTSAudioUrl = audioUrl; // iOS内存优化：记录URL以便后续释放
             }
 
             currentTTSAudio = new Audio(audioUrl);
             currentTTSAudio.play().catch(e => console.error('Audio play error:', e));
 
             currentTTSAudio.onended = () => {
-                if (!audioData.startsWith('http')) {
-                    URL.revokeObjectURL(audioUrl);
+                if (currentTTSAudioUrl) {
+                    URL.revokeObjectURL(currentTTSAudioUrl);
+                    currentTTSAudioUrl = null;
                 }
                 currentTTSAudio = null;
             };
@@ -28887,22 +28910,26 @@ ${chatText}
             }
         }
         
+        
         // --- 新增：监听弹窗打开，自动回显数据 ---
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
-                    const isVisible = window.getComputedStyle(chatSettingsModalTTS).display !== 'none';
-                    if (isVisible && currentOpenContact) {
-                        const vInput = document.getElementById('contact-tts-voice-input');
-                        if (vInput) {
-                            console.log('[MiniMax] 设置弹窗已打开，回显音色ID:', currentOpenContact.ttsVoiceId);
-                            vInput.value = currentOpenContact.ttsVoiceId || '';
+        // iOS内存优化：使用单例Observer，避免重复创建
+        if (!window._ttsSettingsObserver) {
+            window._ttsSettingsObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
+                        const isVisible = window.getComputedStyle(chatSettingsModalTTS).display !== 'none';
+                        if (isVisible && currentOpenContact) {
+                            const vInput = document.getElementById('contact-tts-voice-input');
+                            if (vInput) {
+                                debugLog('[MiniMax] 设置弹窗已打开，回显音色ID:', currentOpenContact.ttsVoiceId);
+                                vInput.value = currentOpenContact.ttsVoiceId || '';
+                            }
                         }
                     }
-                }
+                });
             });
-        });
-        observer.observe(chatSettingsModalTTS, { attributes: true });
+            window._ttsSettingsObserver.observe(chatSettingsModalTTS, { attributes: true });
+        }
     }
 
     // 保存联系人时保存音色ID设置
@@ -32335,16 +32362,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 监听设置页面显示，重新初始化图标
+    // iOS内存优化：使用单例Observer + 防抖，避免重复创建和频繁调用
     const settingsScreen = document.getElementById('settings-screen');
-    if (settingsScreen) {
-        const observer = new MutationObserver(function(mutations) {
+    if (settingsScreen && !window._lucideSettingsObserver) {
+        let lucideDebounceTimer = null;
+        window._lucideSettingsObserver = new MutationObserver(function(mutations) {
             if (settingsScreen.classList.contains('active') || window.getComputedStyle(settingsScreen).display !== 'none') {
                 if (typeof lucide !== 'undefined') {
-                    setTimeout(() => lucide.createIcons(), 100);
+                    // 防抖：避免短时间内多次调用
+                    if (lucideDebounceTimer) clearTimeout(lucideDebounceTimer);
+                    lucideDebounceTimer = setTimeout(() => lucide.createIcons(), 200);
                 }
             }
         });
-        observer.observe(settingsScreen, { attributes: true, attributeFilter: ['class'] });
+        window._lucideSettingsObserver.observe(settingsScreen, { attributes: true, attributeFilter: ['class'] });
     }
 });
 
