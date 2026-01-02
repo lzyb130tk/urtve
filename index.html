@@ -1415,6 +1415,68 @@
                   />
                 </div>
               </div>
+              
+              <!-- iOS 特性调整 -->
+              <div class="settings-item" id="nav-to-ios-settings">
+                <div
+                  class="settings-icon-container"
+                  style="background-color: #007aff"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 12C17.5 15.04 15.04 17.5 12 17.5C8.96 17.5 6.5 15.04 6.5 12C6.5 8.96 8.96 6.5 12 6.5C15.04 6.5 17.5 8.96 17.5 12Z"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12 2V4"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12 20V22"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M4 12H2"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M22 12H20"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+                <div class="settings-item-content">
+                  <span class="settings-label">iOS 特性调整</span>
+                  <div class="settings-value">
+                    <span id="ios-settings-status-text">PWA适配</span>
+                  </div>
+                  <img
+                    class="settings-chevron"
+                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
+                  />
+                </div>
+              </div>
             </div>
 
             <!-- Section: Personalization -->
@@ -7230,6 +7292,107 @@
               <p style="margin: 8px 0 0 0; font-size: 13px">
                 在聊天设置中输入CSS后点击"保存为预设"
               </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- iOS 特性调整页面 -->
+        <div id="ios-settings-screen" class="screen">
+          <div class="settings-header">
+            <button id="ios-settings-back-button" class="header-icon-button">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M15 18l-6-6 6-6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <h1>iOS 特性</h1>
+          </div>
+
+          <div class="settings-content" id="ios-settings-scroll-container">
+            <div class="settings-group-title">安全区适配</div>
+            <div class="modal-section">
+              <div
+                class="modal-cell"
+                style="
+                  flex-direction: column;
+                  align-items: stretch;
+                  padding: 15px;
+                  height: auto;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                  "
+                >
+                  <label style="font-size: 16px; font-weight: 500">底部延伸距离</label>
+                  <span
+                    id="ios-margin-display"
+                    style="color: #007aff; font-weight: 600; font-size: 16px"
+                    >50px</span
+                  >
+                </div>
+                <p style="font-size: 13px; color: #8e8e93; margin: 0 0 12px 0;">
+                  调整此值以消除PWA底部白块，不同iPhone机型可能需要不同数值
+                </p>
+                <input
+                  type="range"
+                  id="ios-margin-slider"
+                  class="settings-slider"
+                  min="0"
+                  max="100"
+                  value="50"
+                  step="5"
+                />
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 8px;
+                    font-size: 12px;
+                    color: #8e8e93;
+                  "
+                >
+                  <span>0px</span>
+                  <span>100px</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-group-title">快捷预设</div>
+            <div class="modal-section">
+              <div class="modal-cell" id="ios-preset-30" style="cursor: pointer;">
+                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone SE / 8</label>
+                <span style="color: #8e8e93; font-size: 14px;">30px</span>
+              </div>
+              <div class="modal-cell" id="ios-preset-50" style="cursor: pointer;">
+                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone X / 11 / 12</label>
+                <span style="color: #8e8e93; font-size: 14px;">50px</span>
+              </div>
+              <div class="modal-cell" id="ios-preset-60" style="cursor: pointer;">
+                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone 13 / 14 / 15</label>
+                <span style="color: #8e8e93; font-size: 14px;">60px</span>
+              </div>
+              <div class="modal-cell" id="ios-preset-70" style="cursor: pointer;">
+                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone 14 Pro Max / 15 Pro Max</label>
+                <span style="color: #8e8e93; font-size: 14px;">70px</span>
+              </div>
+            </div>
+
+            <div class="settings-group-title">说明</div>
+            <div class="modal-section">
+              <div class="modal-cell" style="height: auto; padding: 15px;">
+                <p style="font-size: 14px; color: #8e8e93; margin: 0; line-height: 1.5;">
+                  此设置仅在 iOS PWA 模式下生效。<br><br>
+                  如果你在添加到主屏幕后的 App 底部看到白色区域，请调大此数值直到白块消失。<br><br>
+                  💡 提示：设置会自动保存，刷新后生效。
+                </p>
+              </div>
             </div>
           </div>
         </div>

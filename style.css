@@ -112,18 +112,18 @@ body.is-ios-pwa {
 /* === iOS PWA 安全区修复：负margin方法 ===                      */
 /* ============================================================ */
 /* 
- * 核心原理：让html/body向下延伸，用负margin把内容区域
- * "拉"到安全区下方，这样页面自己的背景就会覆盖白块
+ * 核心原理：让html/body向下延伸，用负margin覆盖安全区白块
+ * 注意：实际margin值由JS动态设置，用户可在设置中调整
+ * 下面的50px是默认fallback值
  */
 
-/* 方法：html元素向下延伸 */
+/* html元素向下延伸（默认值，JS会覆盖） */
 html.is-ios-pwa-html {
-  /* 向下延伸，数值要足够大才能覆盖整个安全区 */
-  margin-bottom: -50px; /* 固定值，确保覆盖 */
-  padding-bottom: 50px; /* 补偿margin */
+  margin-bottom: -50px;
+  padding-bottom: 50px;
 }
 
-/* 同时对body也应用 */
+/* body也应用（默认值，JS会覆盖） */
 body.is-ios-pwa {
   margin-bottom: -50px;
   padding-bottom: 50px;

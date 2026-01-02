@@ -41,13 +41,111 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================================
-    // === 🍎 iOS PWA 安全区修复：添加标记class ===
+    // === 🍎 iOS PWA 安全区修复：用户可调节的负margin方法 ===
     // ========================================================================
-    // 只需要给html添加class，CSS会用负margin方法处理安全区白块
+    const IOS_MARGIN_KEY = 'ios_safe_area_margin';
+    
+    // 从localStorage读取用户设置的margin值，默认50px
+    const savedMargin = localStorage.getItem(IOS_MARGIN_KEY);
+    const iosMarginValue = savedMargin ? parseInt(savedMargin) : 50;
+    
+    // 应用iOS安全区margin的函数
+    window.applyIOSSafeAreaMargin = function(value) {
+        const marginPx = value + 'px';
+        // 创建或更新CSS变量
+        document.documentElement.style.setProperty('--ios-safe-margin', marginPx);
+        
+        // 直接更新style标签（确保实时生效）
+        let styleEl = document.getElementById('ios-safe-area-style');
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'ios-safe-area-style';
+            document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = `
+            html.is-ios-pwa-html {
+                margin-bottom: -${marginPx} !important;
+                padding-bottom: ${marginPx} !important;
+            }
+            body.is-ios-pwa {
+                margin-bottom: -${marginPx} !important;
+                padding-bottom: ${marginPx} !important;
+            }
+        `;
+        debugLog('🍎 iOS安全区margin已更新:', marginPx);
+    };
+    
+    // iOS PWA模式下，给html添加class并应用margin
     if (isIOS && isStandalone) {
         document.documentElement.classList.add('is-ios-pwa-html');
-        debugLog('🍎 iOS PWA模式：已添加 is-ios-pwa-html class (负margin方法)');
+        window.applyIOSSafeAreaMargin(iosMarginValue);
+        debugLog('🍎 iOS PWA模式：已添加 is-ios-pwa-html class，margin=' + iosMarginValue + 'px');
     }
+    
+    // iOS设置页面逻辑
+    document.addEventListener('DOMContentLoaded', function() {
+        const navToIosSettings = document.getElementById('nav-to-ios-settings');
+        const iosSettingsScreen = document.getElementById('ios-settings-screen');
+        const iosSettingsBackBtn = document.getElementById('ios-settings-back-button');
+        const iosMarginSlider = document.getElementById('ios-margin-slider');
+        const iosMarginDisplay = document.getElementById('ios-margin-display');
+        const settingsScreen = document.getElementById('settings-screen');
+        
+        // 预设按钮
+        const presets = {
+            'ios-preset-30': 30,
+            'ios-preset-50': 50,
+            'ios-preset-60': 60,
+            'ios-preset-70': 70
+        };
+        
+        // 初始化滑块值
+        if (iosMarginSlider && iosMarginDisplay) {
+            const currentValue = localStorage.getItem(IOS_MARGIN_KEY) || '50';
+            iosMarginSlider.value = currentValue;
+            iosMarginDisplay.textContent = currentValue + 'px';
+            
+            // 滑块变化事件
+            iosMarginSlider.addEventListener('input', function() {
+                const value = this.value;
+                iosMarginDisplay.textContent = value + 'px';
+                // 实时更新CSS
+                window.applyIOSSafeAreaMargin(parseInt(value));
+                // 保存到localStorage
+                localStorage.setItem(IOS_MARGIN_KEY, value);
+            });
+        }
+        
+        // 预设按钮点击事件
+        Object.keys(presets).forEach(function(id) {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    const value = presets[id];
+                    if (iosMarginSlider) iosMarginSlider.value = value;
+                    if (iosMarginDisplay) iosMarginDisplay.textContent = value + 'px';
+                    window.applyIOSSafeAreaMargin(value);
+                    localStorage.setItem(IOS_MARGIN_KEY, value.toString());
+                });
+            }
+        });
+        
+        // 导航到iOS设置页面
+        if (navToIosSettings && iosSettingsScreen && settingsScreen) {
+            navToIosSettings.addEventListener('click', function() {
+                settingsScreen.classList.remove('active');
+                iosSettingsScreen.classList.add('active');
+            });
+        }
+        
+        // 返回设置页面
+        if (iosSettingsBackBtn && iosSettingsScreen && settingsScreen) {
+            iosSettingsBackBtn.addEventListener('click', function() {
+                iosSettingsScreen.classList.remove('active');
+                settingsScreen.classList.add('active');
+            });
+        }
+    });
 
 
     // ========================================================================

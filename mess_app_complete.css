@@ -102,14 +102,18 @@ body.is-ios-pwa {
 /* ============================================================ */
 /* === iOS PWA 安全区修复：负margin方法 ===                      */
 /* ============================================================ */
+/* 
+ * 注意：实际margin值由JS动态设置，用户可在设置中调整
+ * 下面的50px是默认fallback值
+ */
 
-/* html元素向下延伸 */
+/* html元素向下延伸（默认值，JS会覆盖） */
 html.is-ios-pwa-html {
     margin-bottom: -50px;
     padding-bottom: 50px;
 }
 
-/* body也应用 */
+/* body也应用（默认值，JS会覆盖） */
 body.is-ios-pwa {
     margin-bottom: -50px;
     padding-bottom: 50px;
