@@ -96,7 +96,37 @@ body {
 
 /* iOS PWA 专用样式 */
 body.is-ios-pwa {
-    background-color: transparent; /* 让html的背景透出 */
+    background-color: transparent;
+}
+
+/* iOS安全区覆盖：多种方法组合 */
+html.is-ios-pwa-html {
+    margin-bottom: calc(-1 * env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+html.is-ios-pwa-html::after {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: env(safe-area-inset-bottom);
+    background: inherit;
+    z-index: 999998;
+    pointer-events: none;
+}
+
+body.is-ios-pwa::after {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: env(safe-area-inset-bottom);
+    background: inherit;
+    z-index: 999997;
+    pointer-events: none;
 }
 
 /* ============================================================ */

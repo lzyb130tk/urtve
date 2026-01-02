@@ -114,6 +114,89 @@ document.addEventListener('DOMContentLoaded', () => {
         debugLog('🖼️ 壁纸同步监听器已启动 (同步到html+全局壁纸层)');
     }
 
+    // ========================================================================
+    // === 🔍 iOS PWA 安全区调试工具 ===
+    // ========================================================================
+    if (isIOS && isStandalone) {
+        window.debugIOSSafeArea = function() {
+            const html = document.documentElement;
+            const body = document.body;
+            
+            // 获取安全区值
+            const styles = getComputedStyle(document.documentElement);
+            const safeAreaTop = styles.getPropertyValue('--sat') || 
+                               getComputedStyle(document.body).getPropertyValue('padding-top') ||
+                               'unknown';
+            const safeAreaBottom = styles.getPropertyValue('--sab') || 'unknown';
+            
+            // 计算真实的安全区值（使用CSS env()）
+            const testDiv = document.createElement('div');
+            testDiv.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-bottom);visibility:hidden;';
+            document.body.appendChild(testDiv);
+            const realSafeAreaBottom = testDiv.offsetHeight;
+            document.body.removeChild(testDiv);
+            
+            console.log('========== iOS PWA 安全区调试 ==========');
+            console.log('📱 window.innerHeight:', window.innerHeight);
+            console.log('📱 window.outerHeight:', window.outerHeight);
+            console.log('📱 screen.height:', screen.height);
+            console.log('📱 document.documentElement.clientHeight:', html.clientHeight);
+            console.log('📱 document.body.clientHeight:', body.clientHeight);
+            console.log('📏 html.offsetHeight:', html.offsetHeight);
+            console.log('📏 html.scrollHeight:', html.scrollHeight);
+            console.log('📏 body.offsetHeight:', body.offsetHeight);
+            console.log('📏 body.scrollHeight:', body.scrollHeight);
+            console.log('📐 安全区底部高度 (env):', realSafeAreaBottom + 'px');
+            console.log('🎨 html.style.background:', html.style.backgroundImage || html.style.backgroundColor || '未设置');
+            console.log('🎨 html computed bgColor:', getComputedStyle(html).backgroundColor);
+            console.log('🎨 body.style.background:', body.style.backgroundImage || body.style.backgroundColor || '未设置');
+            console.log('🎨 body computed bgColor:', getComputedStyle(body).backgroundColor);
+            console.log('📦 html classes:', html.className);
+            console.log('📦 body classes:', body.className);
+            console.log('==========================================');
+            
+            return {
+                windowInnerHeight: window.innerHeight,
+                screenHeight: screen.height,
+                htmlHeight: html.offsetHeight,
+                bodyHeight: body.offsetHeight,
+                safeAreaBottom: realSafeAreaBottom,
+                gap: screen.height - window.innerHeight
+            };
+        };
+        
+        // 页面加载完成后自动运行调试
+        setTimeout(() => {
+            console.log('🍎 iOS PWA模式检测到，运行安全区调试...');
+            const result = window.debugIOSSafeArea();
+            console.log('📊 差距分析:', {
+                '屏幕高度 - 窗口高度': result.gap + 'px',
+                '安全区底部': result.safeAreaBottom + 'px',
+                '这个差距就是白色区域': result.gap > 0 ? '是' : '否'
+            });
+            
+            // 【调试用】给html添加一个带颜色的伪元素，看看能否覆盖安全区
+            const debugStyle = document.createElement('style');
+            debugStyle.id = 'ios-debug-style';
+            debugStyle.textContent = `
+                /* 调试：给html添加一个伪元素试图覆盖安全区 */
+                html::after {
+                    content: '';
+                    position: fixed;
+                    left: 0;
+                    right: 0;
+                    bottom: calc(-1 * env(safe-area-inset-bottom));
+                    height: env(safe-area-inset-bottom);
+                    background: red; /* 调试用红色，之后改成壁纸 */
+                    z-index: 999999;
+                    pointer-events: none;
+                }
+            `;
+            document.head.appendChild(debugStyle);
+            console.log('🔴 已添加红色调试层（html::after），如果能看到红色说明这个方法可行！');
+        }, 500);
+    }
+
 
     // ========================================================================
     // === 🧹 全局 DOM 清理系统 (Step 2: 防止内存泄漏的核心优化) ===

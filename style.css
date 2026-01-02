@@ -109,6 +109,48 @@ body.is-ios-pwa {
 }
 
 /* ============================================================ */
+/* === iOS安全区覆盖：多种方法组合尝试 ===                       */
+/* ============================================================ */
+
+/* 方法1: html使用负margin延伸到安全区下方 */
+html.is-ios-pwa-html {
+  /* 向下延伸等于安全区底部高度的距离 */
+  margin-bottom: calc(-1 * env(safe-area-inset-bottom));
+  /* 背景也要延伸 */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 方法2: html::after伪元素覆盖安全区 */
+html.is-ios-pwa-html::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* 定位到屏幕最底部（安全区位置） */
+  bottom: 0;
+  /* 高度等于安全区 */
+  height: env(safe-area-inset-bottom);
+  /* 继承html的背景 */
+  background: inherit;
+  /* 最高层级确保可见 */
+  z-index: 999998;
+  pointer-events: none;
+}
+
+/* 方法3: body也使用相同策略 */
+body.is-ios-pwa::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: env(safe-area-inset-bottom);
+  background: inherit;
+  z-index: 999997;
+  pointer-events: none;
+}
+
+/* ============================================================ */
 /* === 全局壁纸层：解决iOS PWA底部白块问题 ===                  */
 /* ============================================================ */
 /* 
