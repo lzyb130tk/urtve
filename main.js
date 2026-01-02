@@ -165,22 +165,95 @@ document.addEventListener('DOMContentLoaded', () => {
         'ios-preset-70': 70
     };
     
+    // === 新增：获取新版 UI 元素 ===
+    const iosTunerSliderFill = document.getElementById('ios-tuner-slider-fill');
+    const iosTunerSafeArea = document.getElementById('ios-tuner-safe-area');
+    const iosTunerPhoneMockup = document.getElementById('ios-tuner-phone-mockup');
+    const iosTunerResetBtn = document.getElementById('ios-tuner-reset-btn');
+    
+    // iOS Tuner UI 更新函数
+    function updateIOSTunerUI(value) {
+        const val = parseInt(value);
+        
+        // 1. 更新数值徽章
+        if (iosMarginDisplay) {
+            iosMarginDisplay.textContent = `${val > 0 ? '+' : ''}${val}px`;
+            
+            // 动态颜色
+            if (val === 0) {
+                iosMarginDisplay.style.color = '#1C1C1E';
+                iosMarginDisplay.style.background = '#F2F2F7';
+            } else if (val > 0) {
+                iosMarginDisplay.style.color = '#007AFF';
+                iosMarginDisplay.style.background = 'rgba(0, 122, 255, 0.1)';
+            } else {
+                iosMarginDisplay.style.color = '#FF3B30';
+                iosMarginDisplay.style.background = 'rgba(255, 59, 48, 0.1)';
+            }
+        }
+        
+        // 2. 更新滑块填充条
+        if (iosTunerSliderFill) {
+            const percentage = ((val + 100) / 200) * 100;
+            iosTunerSliderFill.style.width = `${percentage}%`;
+            
+            // 动态渐变色
+            if (val === 0) {
+                iosTunerSliderFill.style.background = '#8E8E93';
+            } else if (val > 0) {
+                iosTunerSliderFill.style.background = 'linear-gradient(135deg, #007AFF, #5856D6)';
+            } else {
+                iosTunerSliderFill.style.background = '#FF3B30';
+            }
+        }
+        
+        // 3. 更新手机模拟器的安全区可视化
+        if (iosTunerSafeArea) {
+            const baseHeight = 20;
+            const visualHeight = baseHeight + (val * 0.4);
+            const clampedHeight = Math.max(0, Math.min(visualHeight, 100));
+            iosTunerSafeArea.style.height = `${clampedHeight}px`;
+        }
+        
+        // 4. 手机模拟器微缩放效果
+        if (iosTunerPhoneMockup) {
+            if (Math.abs(val) > 80) {
+                iosTunerPhoneMockup.style.transform = 'scale(1.02)';
+            } else {
+                iosTunerPhoneMockup.style.transform = 'scale(1)';
+            }
+        }
+    }
+    
     // 初始化滑块值
     if (iosMarginSlider && iosMarginDisplay) {
         let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '0');
         // 确保值在有效范围内（-300到300）
         currentValue = Math.max(-300, Math.min(300, currentValue));
         iosMarginSlider.value = currentValue;
-        iosMarginDisplay.textContent = currentValue + 'px';
+        
+        // 初始化 UI
+        updateIOSTunerUI(currentValue);
         
         // 滑块变化事件
         iosMarginSlider.addEventListener('input', function() {
             const value = this.value;
-            iosMarginDisplay.textContent = value + 'px';
+            updateIOSTunerUI(value);
             // 实时更新CSS
             window.applyIOSSafeAreaMargin(parseInt(value));
             // 保存到localStorage
             localStorage.setItem(IOS_MARGIN_KEY, value);
+        });
+    }
+    
+    // 重置按钮事件
+    if (iosTunerResetBtn) {
+        iosTunerResetBtn.addEventListener('click', function() {
+            const defaultValue = 0;
+            if (iosMarginSlider) iosMarginSlider.value = defaultValue;
+            updateIOSTunerUI(defaultValue);
+            window.applyIOSSafeAreaMargin(defaultValue);
+            localStorage.setItem(IOS_MARGIN_KEY, defaultValue.toString());
         });
     }
     
@@ -191,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', function() {
                 const value = presets[id];
                 if (iosMarginSlider) iosMarginSlider.value = value;
-                if (iosMarginDisplay) iosMarginDisplay.textContent = value + 'px';
+                updateIOSTunerUI(value);
                 window.applyIOSSafeAreaMargin(value);
                 localStorage.setItem(IOS_MARGIN_KEY, value.toString());
             });
@@ -2951,7 +3024,8 @@ window.TimerManager = {
         const wallpaperData = await dbHelper.loadData('settingsStore', 'homeWallpaper');
         const savedWallpaper = wallpaperData ? wallpaperData.value : defaultBodyBg;
         homeScreen.style.backgroundImage = savedWallpaper;
-        wallpaperPreview.style.backgroundImage = savedWallpaper;
+        const wpPreview = document.getElementById('settings-wallpaper-preview-bg') || document.getElementById('wallpaper-preview');
+        if (wpPreview) wpPreview.style.backgroundImage = savedWallpaper;
 
         // 6. 加载全屏设置
         const fullscreenData = await dbHelper.loadData('settingsStore', 'isFullscreenEnabled');
@@ -3259,10 +3333,13 @@ window.TimerManager = {
         phoneFrame.classList.remove('show-beautify');
     });
 
-    // 点击“返回”按钮：从父容器移除类名来触发返回动画
-    backButton.addEventListener('click', () => {
-        phoneFrame.classList.remove('show-settings');
-    });
+    // 点击"返回"按钮：从父容器移除类名来触发返回动画
+    const settingsBackBtn = document.getElementById('settings-back-btn');
+    if (settingsBackBtn) {
+        settingsBackBtn.addEventListener('click', () => {
+            phoneFrame.classList.remove('show-settings');
+        });
+    }
 
     // 2. 为输入框添加 'keydown' (键盘按下) 事件监听器
     // (确保 chatInputForEnterKey 指向的是您的输入框元素，例如 document.getElementById('chat-message-input'))
@@ -3304,7 +3381,7 @@ window.TimerManager = {
             return;
         }
 
-        connectButton.textContent = "连接中...";
+        connectButton.textContent = "connecting...";
         connectButton.disabled = true;
         apiStatusSpan.textContent = "";
 
@@ -3371,7 +3448,7 @@ window.TimerManager = {
             modelSelect.innerHTML = '<option value="" disabled selected>连接失败</option>';
 
         } finally {
-            connectButton.textContent = "连接测试";
+            connectButton.textContent = "Test connection";
             connectButton.disabled = false;
         }
     });
@@ -3629,9 +3706,14 @@ window.TimerManager = {
     // === 新增：壁纸更换的事件监听 ===
 
     // 点击“选择图片”按钮，实际是触发隐藏的 input
-    uploadWallpaperBtn.addEventListener('click', () => {
-        wallpaperUploadInput.click();
-    });
+    // 点击“选择图片”按钮，实际是触发隐藏的 input
+    /* 
+    if (uploadWallpaperBtn) {
+        uploadWallpaperBtn.addEventListener('click', () => {
+            wallpaperUploadInput.click();
+        });
+    }
+    */
 
     // 当用户选择了图片文件后
     wallpaperUploadInput.addEventListener('change', (event) => {
@@ -3641,7 +3723,10 @@ window.TimerManager = {
             reader.onload = async (e) => { // 改为 async
                 const imageDataUrl = `url(${e.target.result})`;
                 homeScreen.style.backgroundImage = imageDataUrl;
-                wallpaperPreview.style.backgroundImage = imageDataUrl;
+                
+                // Safe access to preview
+                const wpPreview = document.getElementById('settings-wallpaper-preview-bg') || wallpaperPreview;
+                if (wpPreview) wpPreview.style.backgroundImage = imageDataUrl;
 
                 // 原代码: localStorage.setItem('homeWallpaper', imageDataUrl);
                 await dbHelper.saveData('settingsStore', 'homeWallpaper', imageDataUrl);
@@ -3651,20 +3736,13 @@ window.TimerManager = {
     });
 
     // 点击“恢复默认”按钮
-    resetWallpaperBtn.addEventListener('click', async () => {
-        // 1. 恢复主屏幕和预览区的壁纸为默认图片
-        homeScreen.style.backgroundImage = defaultBodyBg; // 使用默认图片变量
-        wallpaperPreview.style.backgroundImage = defaultBodyBg;
-
-        // (可选) 清除背景色，避免干扰
-        homeScreen.style.backgroundColor = 'transparent';
-        wallpaperPreview.style.backgroundColor = 'transparent';
-
-        // 2. 从本地存储中移除自定义壁纸记录
-        await dbHelper.deleteData('settingsStore', 'homeWallpaper');
-
-        alert("已恢复默认壁纸！");
-    });
+    /*
+    if (resetWallpaperBtn) {
+        resetWallpaperBtn.addEventListener('click', async () => {
+            // ... (Legacy code removed) ...
+        });
+    }
+    */
 
 
     // === 新增：世界书 App 的导航事件 ===
@@ -10172,9 +10250,14 @@ function cleanMessageForPreview(text) {
 
 
     // 1. 点击“更换字体”按钮
-    changeFontBtn.addEventListener('click', () => {
-        fontImportInput.click(); // 触发隐藏的文件选择框
-    });
+    // 1. 点击“更换字体”按钮
+    /*
+    if (changeFontBtn) {
+        changeFontBtn.addEventListener('click', () => {
+            fontImportInput.click(); // 触发隐藏的文件选择框
+        });
+    }
+    */
 
     // 2. 当用户选择了字体文件后
     fontImportInput.addEventListener('change', async (event) => {
@@ -10201,20 +10284,23 @@ function cleanMessageForPreview(text) {
     });
 
     // 3. 点击“恢复默认”按钮
-    restoreFontBtn.addEventListener('click', async () => {
-        if (confirm("确定要恢复为默认字体吗？")) {
-            try {
-                // a. 从数据库删除自定义字体记录
-                await dbHelper.deleteData('settingsStore', 'customFont');
-                // b. 立即恢复默认字体
-                applyCustomFont(null);
-                alert('已恢复默认字体！');
-            } catch (error) {
-                console.error("恢复默认字体失败:", error);
-                alert("恢复失败");
+    /*
+    if (restoreFontBtn) {
+        restoreFontBtn.addEventListener('click', async () => {
+            if (confirm("确定要恢复为默认字体吗？")) {
+                try {
+                    // ... legacy code ...
+                    await dbHelper.deleteData('settingsStore', 'customFont');
+                    applyCustomFont(null);
+                    alert('已恢复默认字体！');
+                } catch (error) {
+                    console.error("恢复默认字体失败:", error);
+                    alert("恢复失败");
+                }
             }
-        }
-    });
+        });
+    }
+    */
 
     // === 新增：聊天记录搜索功能的全部逻辑 ===
 
@@ -22525,66 +22611,6 @@ I'm fine, thank you.[Split]我很好，谢谢你。\\\\
 
 
 
-    // 渲染联系人选择列表
-    async function renderProactiveContactList() {
-        const contactsData = await dbHelper.loadData('messageContacts', 'allContacts');
-        const contacts = (contactsData && contactsData.value) ? contactsData.value : [];
-
-        proactiveContactList.innerHTML = '';
-
-        if (contacts.length === 0) {
-            proactiveContactList.innerHTML = '<div style="padding:15px; color:#888;">暂无联系人</div>';
-            return;
-        }
-
-        contacts.forEach(contact => {
-            // 过滤掉隐藏角色（如群成员）
-            if (contact.isHidden) return;
-
-            const isChecked = proactiveConfig.targets.includes(contact.id);
-            const div = document.createElement('div');
-            div.className = 'proactive-item';
-            div.innerHTML = `
-    <img src="${contact.ai.avatar}">
-    <label>${contact.ai.name}</label>
-    <label class="switch circle-mode">
-        <input type="checkbox" value="${contact.id}" ${isChecked ? 'checked' : ''}>
-<span class="slider round"></span>
-    </label>
-`;
-
-            // 绑定勾选事件
-            const checkbox = div.querySelector('input');
-            checkbox.addEventListener('change', async () => {
-                const id = parseInt(checkbox.value);
-                if (checkbox.checked) {
-                    if (!proactiveConfig.targets.includes(id)) proactiveConfig.targets.push(id);
-                } else {
-                    proactiveConfig.targets = proactiveConfig.targets.filter(tid => tid !== id);
-                    // 如果取消勾选，立即停止该角色的计时
-                    stopProactiveTimer(id);
-                }
-                await saveProactiveSettings();
-            });
-
-            proactiveContactList.appendChild(div);
-        });
-    }
-
-    // 保存设置到数据库
-    async function saveProactiveSettings() {
-        proactiveConfig.enabled = proactiveMasterSwitch.checked;
-        proactiveConfig.interval = parseInt(proactiveIntervalSlider.value);
-
-        await dbHelper.saveData('settingsStore', 'proactiveConfig', proactiveConfig);
-        updateProactiveStatusText();
-
-        // 如果总开关关闭，清除所有计时器
-        if (!proactiveConfig.enabled) {
-            Object.keys(proactiveTimers).forEach(id => stopProactiveTimer(id));
-        }
-    }
-
     /**
      * 启动主动消息计时器
      * @param {number} contactId - 离开的联系人ID
@@ -22703,9 +22729,13 @@ I'm fine, thank you.[Split]我很好，谢谢你。\\\\
         }
 
         // --- D. 构造 Prompt (强力指令版) ---
+        // 获取用户自定义的风格指令
+        const userStylePrompt = proactiveConfig.systemPrompt ? `\n[用户自定义风格指令]\n${proactiveConfig.systemPrompt}\n` : '';
+        
         const triggerPrompt = `
 [核心指令]
 用户已经有 ${proactiveConfig.interval} 分钟没说话了。你现在必须**完全沉浸**在你的角色中，根据【前情提要】和【人设】，主动发起一个新的话题，或者继续之前的话题来引起用户的注意。
+${userStylePrompt}
 
 [强制格式要求]
 1. **必须发送 2 到 3 句短消息**。不要只发一句！
@@ -22842,20 +22872,81 @@ ${chatHistoryText}
             proactiveConfig = data.value;
         }
 
-        // UI 同步
+        // UI 同步 - 同步两个页面的开关状态
         if (proactiveMasterSwitch) proactiveMasterSwitch.checked = proactiveConfig.enabled;
-        if (proactiveIntervalSlider) proactiveIntervalSlider.value = proactiveConfig.interval;
+        const newSwitch = document.getElementById('proactive-master-switch-new');
+        if (newSwitch) newSwitch.checked = proactiveConfig.enabled;
+        
+        if (proactiveIntervalSlider) {
+            proactiveIntervalSlider.value = proactiveConfig.interval;
+            updateProactiveSliderVisual(); // 更新自定义滑块视觉
+        }
         if (proactiveIntervalDisplay) proactiveIntervalDisplay.textContent = `${proactiveConfig.interval} 分钟`;
+
+        // 加载系统指令
+        const promptTextarea = document.getElementById('proactive-system-prompt');
+        if (promptTextarea && proactiveConfig.systemPrompt) {
+            promptTextarea.value = proactiveConfig.systemPrompt;
+            updateProactiveCharCount();
+        }
 
         updateProactiveStatusText();
         await renderProactiveContactList();
     }
 
+    // 更新自定义滑块视觉效果（填充条和拇指位置）
+    function updateProactiveSliderVisual() {
+        const slider = document.getElementById('proactive-interval-slider');
+        const fill = document.getElementById('proactive-slider-fill');
+        const thumb = document.getElementById('proactive-slider-thumb');
+        const display = document.getElementById('proactive-interval-display');
+        
+        if (!slider || !fill || !thumb) return;
+        
+        const val = slider.value;
+        const min = slider.min || 5;
+        const max = slider.max || 60;
+        const percent = ((val - min) / (max - min)) * 100;
+        
+        fill.style.width = percent + '%';
+        thumb.style.left = `calc(${percent}% - 14px)`;
+        if (display) display.textContent = `${val} 分钟`;
+    }
+
+    // 更新字符计数
+    function updateProactiveCharCount() {
+        const textarea = document.getElementById('proactive-system-prompt');
+        const display = document.getElementById('proactive-char-display');
+        if (!textarea || !display) return;
+        
+        const len = textarea.value.length;
+        const max = textarea.maxLength || 500;
+        display.textContent = `${len} / ${max} 字符`;
+    }
+
     async function saveProactiveSettings() {
-        proactiveConfig.enabled = proactiveMasterSwitch.checked;
-        proactiveConfig.interval = parseInt(proactiveIntervalSlider.value);
+        // 优先从新页面的开关读取状态
+        const newSwitch = document.getElementById('proactive-master-switch-new');
+        if (newSwitch) {
+            proactiveConfig.enabled = newSwitch.checked;
+        } else if (proactiveMasterSwitch) {
+            proactiveConfig.enabled = proactiveMasterSwitch.checked;
+        }
+        
+        proactiveConfig.interval = proactiveIntervalSlider ? parseInt(proactiveIntervalSlider.value) : proactiveConfig.interval;
+        
+        // 保存系统指令
+        const promptTextarea = document.getElementById('proactive-system-prompt');
+        if (promptTextarea) {
+            proactiveConfig.systemPrompt = promptTextarea.value;
+        }
 
         await dbHelper.saveData('settingsStore', 'proactiveConfig', proactiveConfig);
+        
+        // 同步两个页面的开关状态
+        if (proactiveMasterSwitch) proactiveMasterSwitch.checked = proactiveConfig.enabled;
+        if (newSwitch) newSwitch.checked = proactiveConfig.enabled;
+        
         updateProactiveStatusText();
 
         // 如果关闭了，清除所有计时器
@@ -22882,26 +22973,52 @@ ${chatHistoryText}
         if (!proactiveContactList) return;
         proactiveContactList.innerHTML = '';
 
-        contacts.forEach(contact => {
-            if (contact.isHidden) return;
-            const isChecked = proactiveConfig.targets.includes(contact.id);
+        // 过滤可见联系人
+        const visibleContacts = contacts.filter(c => !c.isHidden);
+        
+        if (visibleContacts.length === 0) {
+            proactiveContactList.innerHTML = '<div class="proactive-agent-grid-empty">暂无可用角色</div>';
+            return;
+        }
+
+        visibleContacts.forEach(contact => {
+            const isSelected = proactiveConfig.targets.includes(contact.id);
             const div = document.createElement('div');
-            div.className = 'proactive-item';
+            div.className = 'proactive-agent-item' + (isSelected ? ' selected' : '');
+            div.dataset.contactId = contact.id;
             div.innerHTML = `
-            <img src="${contact.ai.avatar}">
-            <label>${contact.ai.name}</label>
-            <input type="checkbox" value="${contact.id}" ${isChecked ? 'checked' : ''} style="width:20px; height:20px;">
-        `;
-            div.querySelector('input').addEventListener('change', async (e) => {
-                const id = parseInt(e.target.value);
-                if (e.target.checked) {
-                    if (!proactiveConfig.targets.includes(id)) proactiveConfig.targets.push(id);
+                <div class="proactive-avatar-box">
+                    <img src="${contact.ai.avatar}" alt="${contact.ai.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size:18px;font-weight:700;\\'>${contact.ai.name.charAt(0)}</span>';">
+                    <div class="proactive-check-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                <span class="proactive-agent-name">${contact.ai.name}</span>
+            `;
+
+            // 点击切换选中状态
+            div.addEventListener('click', async () => {
+                const id = parseInt(div.dataset.contactId);
+                div.classList.toggle('selected');
+                
+                // 触觉反馈
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(5);
+                }
+                
+                if (div.classList.contains('selected')) {
+                    if (!proactiveConfig.targets.includes(id)) {
+                        proactiveConfig.targets.push(id);
+                    }
                 } else {
                     proactiveConfig.targets = proactiveConfig.targets.filter(tid => tid !== id);
-                    stopProactiveTimer(id); // 取消勾选立即停止计时
+                    stopProactiveTimer(id);
                 }
-                await saveProactiveSettings();
+                // 不立即保存，等用户点击保存按钮
             });
+
             proactiveContactList.appendChild(div);
         });
     }
@@ -22922,13 +23039,71 @@ ${chatHistoryText}
         });
     }
 
-    if (proactiveMasterSwitch) proactiveMasterSwitch.addEventListener('change', saveProactiveSettings);
-    if (proactiveIntervalSlider) {
-        proactiveIntervalSlider.addEventListener('input', (e) => {
-            proactiveIntervalDisplay.textContent = `${e.target.value} 分钟`;
+    // 新版保存按钮
+    const proactiveSaveBtn = document.getElementById('proactive-save-button');
+    if (proactiveSaveBtn) {
+        proactiveSaveBtn.addEventListener('click', async () => {
+            await saveProactiveSettings();
+            // 显示保存成功提示
+            proactiveSaveBtn.textContent = '已保存';
+            proactiveSaveBtn.style.color = '#16a34a';
+            setTimeout(() => {
+                proactiveSaveBtn.textContent = '保存';
+                proactiveSaveBtn.style.color = '#2563eb';
+            }, 1500);
         });
-        proactiveIntervalSlider.addEventListener('change', saveProactiveSettings);
     }
+
+    // AI Behavior 页面的开关 - 改变时立即保存
+    if (proactiveMasterSwitch) {
+        proactiveMasterSwitch.addEventListener('change', async () => {
+            proactiveConfig.enabled = proactiveMasterSwitch.checked;
+            // 同步新页面开关
+            const newSwitch = document.getElementById('proactive-master-switch-new');
+            if (newSwitch) newSwitch.checked = proactiveConfig.enabled;
+            await dbHelper.saveData('settingsStore', 'proactiveConfig', proactiveConfig);
+            updateProactiveStatusText();
+            if (!proactiveConfig.enabled) {
+                Object.keys(proactiveTimers).forEach(id => stopProactiveTimer(id));
+            }
+        });
+    }
+
+    // 新设置页面的开关 - 改变时同步 AI Behavior 页面开关（但不立即保存，等用户点保存按钮）
+    const newMasterSwitch = document.getElementById('proactive-master-switch-new');
+    if (newMasterSwitch) {
+        newMasterSwitch.addEventListener('change', () => {
+            // 同步到 AI Behavior 页面开关（这样退出时状态一致）
+            if (proactiveMasterSwitch) proactiveMasterSwitch.checked = newMasterSwitch.checked;
+        });
+    }
+    
+    if (proactiveIntervalSlider) {
+        proactiveIntervalSlider.addEventListener('input', () => {
+            updateProactiveSliderVisual();
+        });
+        // 不在 change 时自动保存，等用户点击保存按钮
+    }
+
+    // 系统指令输入框 - 字符计数
+    const proactiveSystemPrompt = document.getElementById('proactive-system-prompt');
+    if (proactiveSystemPrompt) {
+        proactiveSystemPrompt.addEventListener('input', updateProactiveCharCount);
+    }
+
+    // 优化按钮（可选功能，目前只是占位）
+    const proactiveOptimizeBtn = document.getElementById('proactive-optimize-btn');
+    if (proactiveOptimizeBtn) {
+        proactiveOptimizeBtn.addEventListener('click', () => {
+            // 可以在这里添加 AI 优化指令的功能
+            const textarea = document.getElementById('proactive-system-prompt');
+            if (textarea && !textarea.value) {
+                textarea.value = '当用户长时间不说话时，你可以主动发起话题。';
+                updateProactiveCharCount();
+            }
+        });
+    }
+
     function setBatteryStatus(level, isCharging) {
         // 1. 计算宽度
         const svgWidth = (level / 100) * MAX_SVG_WIDTH;
@@ -32148,6 +32323,153 @@ window.renderWorldBookMultiselect = async function(container, targetObj, autoSav
     } catch (err) {
         console.error('Render WB Multiselect Failed', err);
         container.innerHTML = '<div style="color:red;padding:20px;">加载失败</div>';
+    }
+};
+
+// ============================================
+// Settings Page Bento Grid 页面转场动画
+// ============================================
+function openSettingsPage(pageId) {
+    const page = document.getElementById(pageId);
+    const mainView = document.getElementById('settings-main-view');
+    
+    if(page && mainView) {
+        page.classList.add('active');
+        // 3D 缩放退后效果，增加纵深感
+        mainView.style.transform = "scale(0.92) translateY(10px)";
+        mainView.style.opacity = "0.6";
+        mainView.style.filter = "grayscale(100%)"; // 背景变灰，聚焦当前页
+        
+        // 初始化 Lucide 图标
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+}
+
+function closeSettingsPage(pageId) {
+    const page = document.getElementById(pageId);
+    const mainView = document.getElementById('settings-main-view');
+    
+    if(page && mainView) {
+        page.classList.remove('active');
+        mainView.style.transform = "scale(1) translateY(0)";
+        mainView.style.opacity = "1";
+        mainView.style.filter = "grayscale(0%)";
+    }
+}
+
+// 页面加载时初始化 Lucide 图标
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // 监听设置页面显示，重新初始化图标
+    const settingsScreen = document.getElementById('settings-screen');
+    if (settingsScreen) {
+        const observer = new MutationObserver(function(mutations) {
+            if (settingsScreen.classList.contains('active') || window.getComputedStyle(settingsScreen).display !== 'none') {
+                if (typeof lucide !== 'undefined') {
+                    setTimeout(() => lucide.createIcons(), 100);
+                }
+            }
+        });
+        observer.observe(settingsScreen, { attributes: true, attributeFilter: ['class'] });
+    }
+});
+
+// ===========================================
+// === NEW: Personalization Reset Functions ===
+// ===========================================
+
+window.resetWallpaper = async function() {
+    if (!confirm('确定要恢复默认壁纸吗？')) return;
+    try {
+        await dbHelper.saveData('settingsStore', 'homeWallpaper', null);
+        if (typeof homeScreen !== 'undefined') {
+            homeScreen.style.backgroundImage = '';
+        }
+        const wpPreview = document.getElementById('settings-wallpaper-preview-bg');
+        if (wpPreview) wpPreview.style.backgroundImage = ''; 
+        alert('壁纸已恢复默认');
+    } catch(e) {
+        console.error("Reset wallpaper failed", e);
+    }
+};
+
+window.resetSkin = function() {
+    if (!confirm('确定要恢复默认手机外壳吗？')) return;
+    try {
+        localStorage.removeItem('userDeviceSkin');
+        localStorage.removeItem('deviceSkinConfig'); 
+        
+        const skinLayer = document.getElementById('device-skin-layer');
+        if (skinLayer) skinLayer.remove();
+        alert('手机已恢复默认外观');
+    } catch(e) {
+        console.error("Reset skin failed", e);
+    }
+};
+
+window.restoreDefaultFont = async function() {
+    if (!confirm('确定要恢复默认字体吗？')) return;
+    try {
+        await dbHelper.saveData('settingsStore', 'customFont', null);
+        const fontStyle = document.getElementById('custom-font-style');
+        if (fontStyle) fontStyle.remove();
+        alert('字体已恢复默认');
+    } catch(e) {
+        console.error("Reset font failed", e);
+    }
+};
+
+// ===========================================
+// === NEW: Skin Handling Functions ===
+// ===========================================
+
+window.handleSkinUpload = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const result = e.target.result;
+        // Save to storage
+        localStorage.setItem('userDeviceSkin', result);
+        // Apply immediately
+        applySkin(result);
+        alert('皮肤更换成功！');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.applySkin = function(skinUrl) {
+    // Check if layer exists
+    let skinLayer = document.getElementById('device-skin-layer');
+    if (!skinLayer) {
+        skinLayer = document.createElement('div');
+        skinLayer.id = 'device-skin-layer';
+        // Basic styles to overlay on the phone frame
+        // Note: It should be inside .phone-frame OR fixed over it. 
+        // Best to append it to .phone-frame if possible.
+        const phoneFrame = document.querySelector('.phone-frame');
+        if (phoneFrame) {
+             phoneFrame.appendChild(skinLayer);
+             skinLayer.style.position = 'absolute';
+             skinLayer.style.inset = '0';
+             skinLayer.style.pointerEvents = 'none';
+             skinLayer.style.zIndex = '999'; // Higher than content, lower than modals?
+             skinLayer.style.backgroundSize = '100% 100%';
+             skinLayer.style.backgroundRepeat = 'no-repeat';
+        }
+    }
+    
+    if (skinLayer) {
+        skinLayer.style.backgroundImage = `url('${skinUrl}')`;
+        // Use default config or load saved config for size/offset
+        // For now, fast implementation:
+        skinLayer.style.display = 'block';
     }
 };
 

@@ -276,6 +276,198 @@
     <link rel="stylesheet" href="meetu-ios-style.css" />
     <link rel="stylesheet" href="shopping-ios-style.css" />
     <link rel="stylesheet" href="anecdotes.css" />
+    
+    <!-- Tailwind CSS for Settings Page -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Settings Page Styles -->
+    <style>
+        /* Settings Page Bento Grid Styles */
+        .settings-bento-container {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            background-color: #F4F4F5;
+            color: #09090b;
+            -webkit-tap-highlight-color: transparent;
+            letter-spacing: -0.015em;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .settings-page {
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s ease;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow-y: auto;
+            background-color: #F5F5F7;
+            transform: translateX(100%);
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .settings-page.active {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .settings-card-interaction {
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s ease;
+        }
+        .settings-card-interaction:active {
+            transform: scale(0.96);
+        }
+        
+        .settings-premium-card {
+            background-color: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.02);
+        }
+        
+        .settings-icon-container {
+            background-color: #F4F4F5;
+            border: 1px solid rgba(0,0,0,0.03);
+            color: #18181b;
+        }
+        
+        .settings-toggle-checkbox:checked { right: 0; border-color: #34C759; }
+        .settings-toggle-checkbox:checked + .settings-toggle-label { background-color: #34C759; }
+        
+        .settings-nav-blur {
+            background-color: #f5f5f7;
+           
+        }
+    </style>
+    
+    <!-- ★★★ 自定义组件样式区 (用户可在此手动修改) ★★★ -->
+    <style id="custom-ios-components">
+        /* 1. 美化滑块 (Slider) */
+        .ios-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #E5E5EA; /* 轨道颜色 */
+            border-radius: 3px;
+            outline: none;
+        }
+        .ios-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #FFFFFF;
+            border: 0.5px solid rgba(0,0,0,0.04);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* 阴影使得更立体 */
+            border-radius: 50%;
+            cursor: pointer;
+            margin-top: -9px; /* 垂直居中 */
+        }
+        
+        /* 2. 美化开关 (Switch) */
+        .ios-switch-label {
+            position: relative;
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+        }
+        .ios-switch-input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .ios-switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #E9E9EA; /* 关闭时的灰色 */
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .ios-switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* 按钮阴影 */
+        }
+        .ios-switch-input:checked + .ios-switch-slider {
+            background-color: #34C759; /* 开启时的绿色 */
+        }
+        .ios-switch-input:checked + .ios-switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 3. 美化大按钮 (Button) */
+        .ios-button-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: #1C1C1E; /* 深黑色 */
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+        }
+        .ios-button-primary:active {
+            background-color: #3A3A3C; /* 点击变浅 */
+            transform: scale(0.98);
+        }
+
+        .ios-button-secondary {
+            width: 100%;
+            padding: 14px;
+            background-color: #F2F2F7; /* 浅灰色 */
+            color: #000000;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+        }
+        .ios-button-secondary:active {
+            background-color: #E5E5EA;
+        }
+
+        /* 4. 美化复选框 (Checkbox) */
+        .ios-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 1.5px solid #C7C7CC;
+            border-radius: 50%; /* 圆形 */
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .ios-checkbox:checked {
+            background-color: #007AFF;
+            border-color: #007AFF;
+        }
+        .ios-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    </style>
     <link rel="stylesheet" href="location-card.css" />
     <link rel="stylesheet" href="chat-settings-page.css" />
     <style id="custom-font-style"></style>
@@ -756,1139 +948,697 @@
             </div>
           </div>
         </div>
-        <div id="settings-screen" class="screen">
-          <!-- Header 保持原样，或者微调 -->
-          <div class="settings-header">
-            <button id="back-button" class="header-icon-button">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-            <h1>设置</h1>
-            <div class="header-actions">
-              <button id="save-all-settings-btn" class="header-icon-button">
-                <svg viewBox="0 0 24 24">
-                  <path
-                    d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-                  />
-                  <polyline points="17 21 17 13 7 13 7 21" />
-                  <polyline points="7 3 7 8 15 8" />
-                </svg>
+        <div id="settings-screen" class="screen settings-bento-container">
+          <!-- 主界面：Bento Grid 布局 -->
+          <div id="settings-main-view" class="h-full w-full max-w-md mx-auto relative flex flex-col transition-all duration-500 ease-[cubic-bezier(0.32,0.725,0,1)]">
+            
+            <!-- Header with back button -->
+            <header class="pb-4 px-5 flex items-center gap-3" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button id="settings-back-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100/80 hover:bg-gray-200 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5 stroke-[2] text-gray-700"></i>
               </button>
-              <button id="select-api-library-btn" class="header-icon-button">
-                <svg viewBox="0 0 24 24">
-                  <line x1="8" y1="6" x2="21" y2="6" />
-                  <line x1="8" y1="12" x2="21" y2="12" />
-                  <line x1="8" y1="18" x2="21" y2="18" />
-                  <line x1="3" y1="6" x2="3.01" y2="6" />
-                  <line x1="3" y1="12" x2="3.01" y2="12" />
-                  <line x1="3" y1="18" x2="3.01" y2="18" />
-                </svg>
-              </button>
+              <h1 class="text-[28px] leading-tight font-bold text-black tracking-tight flex-1">Settings</h1>
+            </header>
+
+            <!-- 核心网格 -->
+            <!-- 小贴士：如果不熟悉 tailwind (如 px-6)，可以直接在 style="" 里写标准的 css 属性，比如 padding -->
+            <div class="flex-1 overflow-y-auto hide-scrollbar" style="padding-left: 24px; padding-right: 24px; padding-bottom: 48px;padding-top:20px;">
+              
+              <!-- 装饰性搜索框 -->
+               <div class="mb-6 relative">
+                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                   <i data-lucide="search" class="w-5 h-5 text-gray-400/80"></i>
+                 </div>
+                 <input type="text" class="block w-full pl-11 pr-4 py-3 border-none rounded-[16px] leading-5 bg-white/80 text-gray-900 placeholder-gray-400/80 focus:outline-none focus:ring-0 text-[15px] shadow-sm tracking-wide" placeholder="Search..." readonly style="box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+               </div>
+
+              <div class="grid grid-cols-2 gap-[12px]">
+                
+                <!-- Card 1: Model -->
+                <div onclick="openSettingsPage('page-model')" class="settings-premium-card p-5 rounded-[24px] settings-card-interaction cursor-pointer flex flex-col justify-between h-[168px]">
+                  <div class="flex justify-between items-start">
+                    <div class="w-11 h-11 rounded-[14px] settings-icon-container flex items-center justify-center">
+                      <i data-lucide="cpu" class="w-[22px] h-[22px] stroke-[1.5]"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-[17px] mb-1 text-gray-900">Model</h3>
+                    <p class="text-[13px] text-gray-500 font-medium tracking-wide">API & model parameters</p>
+                  </div>
+                </div>
+
+                <!-- Card 2: Behavior -->
+                <div onclick="openSettingsPage('page-behavior')" class="settings-premium-card p-5 rounded-[24px] settings-card-interaction cursor-pointer flex flex-col justify-between h-[168px] relative overflow-hidden">
+                  <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-100 to-transparent rounded-bl-[60px] opacity-50 pointer-events-none"></div>
+                  <div class="w-11 h-11 rounded-[14px] settings-icon-container flex items-center justify-center relative z-10">
+                    <i data-lucide="sparkles" class="w-[22px] h-[22px] stroke-[1.5]"></i>
+                  </div>
+                  <div class="relative z-10">
+                    <h3 class="font-semibold text-[17px] mb-1 text-gray-900">Behavior</h3>
+                    <p class="text-[13px] text-gray-500 font-medium tracking-wide">Active messages & memory</p>
+                  </div>
+                </div>
+
+                <!-- Card 3: Appearance -->
+                <div onclick="openSettingsPage('page-appearance')" class="settings-premium-card p-5 rounded-[24px] settings-card-interaction cursor-pointer flex flex-col justify-between h-[168px]">
+                  <div class="w-11 h-11 rounded-[14px] settings-icon-container flex items-center justify-center">
+                    <i data-lucide="palette" class="w-[22px] h-[22px] stroke-[1.5]"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-[17px] mb-1 text-gray-900">Appearance</h3>
+                    <p class="text-[13px] text-gray-500 font-medium tracking-wide">Theme & appearance</p>
+                  </div>
+                </div>
+
+                <!-- Card 4: Voice -->
+                <div onclick="openSettingsPage('page-voice')" class="settings-premium-card p-5 rounded-[24px] settings-card-interaction cursor-pointer flex flex-col justify-between h-[168px]">
+                  <div class="w-11 h-11 rounded-[14px] settings-icon-container flex items-center justify-center">
+                    <i data-lucide="mic" class="w-[22px] h-[22px] stroke-[1.5]"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-[17px] mb-1 text-gray-900">Voice</h3>
+                    <p class="text-[13px] text-gray-500 font-medium tracking-wide">TTS & voice input</p>
+                  </div>
+                </div>
+
+                <!-- Card 5: Labs/System -->
+                <div onclick="openSettingsPage('page-system')" class="settings-premium-card p-5 rounded-[24px] settings-card-interaction cursor-pointer flex flex-col justify-between h-[168px]">
+                  <div class="w-11 h-11 rounded-[14px] settings-icon-container flex items-center justify-center">
+                    <i data-lucide="flask-conical" class="w-[22px] h-[22px] stroke-[1.5]"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-[17px] mb-1 text-gray-900">Labs</h3>
+                    <p class="text-[13px] text-gray-500 font-medium tracking-wide">iOS features</p>
+                  </div>
+                </div>
+
+                <!-- Card 6: Data -->
+                <div onclick="openSettingsPage('page-data')" class="settings-premium-card p-5 rounded-[24px] settings-card-interaction cursor-pointer flex flex-col justify-between h-[168px]">
+                  <div class="w-11 h-11 rounded-[14px] settings-icon-container flex items-center justify-center">
+                    <i data-lucide="database" class="w-[22px] h-[22px] stroke-[1.5]"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-[17px] mb-1 text-gray-900">Data</h3>
+                    <p class="text-[13px] text-gray-500 font-medium tracking-wide">Backup & restore</p>
+                  </div>
+                </div>
+
+              </div>
+              
+              <div class="mt-10 mb-2 text-center">
+                <div class="inline-flex items-center px-3 py-1 rounded-full bg-gray-200/50 border border-gray-200/50">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></span>
+                  <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">7OS Online</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- iOS Style Content -->
-          <div class="settings-content-ios">
-            <!-- Section: Connectivity -->
-            <div class="settings-group-header">API 连接</div>
-            <div class="settings-group">
-              <!-- API URL -->
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #007aff"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M13.0601 10.94C15.3101 13.19 15.3101 16.83 13.0601 19.07C10.8101 21.31 7.17009 21.32 4.93009 19.07C2.69009 16.82 2.68009 13.18 4.93009 10.94"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M10.59 13.41C8.24996 11.07 8.24996 7.27001 10.59 4.92001C12.93 2.57001 16.73 2.58001 19.08 4.92001C21.43 7.26001 21.42 11.06 19.08 13.41"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">API URL</span>
-                  <div class="settings-value">
-                    <input
-                      type="text"
-                      id="api-url"
-                      class="settings-input"
-                      placeholder="https://..."
-                      onchange="handleInputChange('api-url')"
-                    />
-                  </div>
-                </div>
-              </div>
-              <!-- API Key -->
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #007aff"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M19.79 14.9299C17.73 16.9799 14.78 17.6099 12.19 16.7999L7.48002 21.4999C7.14002 21.8499 6.47002 22.0599 5.99002 21.9899L3.81002 21.6899C3.09002 21.5899 2.42002 20.9099 2.31002 20.1899L2.01002 18.0099C1.94002 17.5299 2.17002 16.8599 2.50002 16.5199L7.20002 11.8199C6.40002 9.21995 7.02002 6.26995 9.08002 4.21995C12.03 1.26995 16.82 1.26995 19.78 4.21995C22.74 7.16995 22.74 11.9799 19.79 14.9299Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M6.89001 17.49L9.19001 19.79"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M14.5 11C15.3284 11 16 10.3284 16 9.5C16 8.67157 15.3284 8 14.5 8C13.6716 8 13 8.67157 13 9.5C13 10.3284 13.6716 11 14.5 11Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">API Key</span>
-                  <div class="settings-value">
-                    <input
-                      type="password"
-                      id="api-key"
-                      class="settings-input"
-                      placeholder="sk-..."
-                      onchange="handleInputChange('api-key')"
-                    />
-                  </div>
-                </div>
-              </div>
-              <!-- Connect Test -->
-              <div class="settings-item" id="connect-api-button">
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center; padding-left: 0"
-                >
-                  <button class="settings-button-text">连接测试</button>
-                  <span
-                    id="api-connection-status"
-                    style="
-                      position: absolute;
-                      right: 16px;
-                      font-size: 13px;
-                      color: #8e8e93;
-                    "
-                  ></span>
-                </div>
+          <!-- Legacy Settings View Removed (was overlapping) -->
+          <!-- Preserved Hidden Inputs for Functionality -->
+          <input type="file" id="skin-upload" accept="image/*" style="display: none" onchange="handleSkinUpload(this)" />
+          <input type="file" id="import-file-input" style="display: none" onchange="handleFileImport(event)" accept=".json,.zip,application/json,application/zip,application/x-zip-compressed,multipart/x-zip" />
+          <input type="file" id="wallpaper-upload-input" accept="image/*" style="display: none" />
+          <input type="file" id="font-import-input" accept=".ttf,.otf" style="display: none" />
+
+          <!-- ============================================ -->
+          <!-- 子页面 1: Model (API & 模型参数) -->
+          <!-- ============================================ -->
+          <div id="page-model" class="settings-page max-w-md mx-auto min-h-screen bg-[#F5F5F7]">
+            <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md sticky top-0" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button onclick="closeSettingsPage('page-model')" class="w-10 h-10 -ml-2 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors text-black">
+                <i data-lucide="arrow-left" class="w-6 h-6 stroke-[2.5px]"></i>
+              </button>
+              <span class="text-sm font-bold tracking-widest uppercase text-black/40">Model</span>
+              <div class="flex gap-2">
+                <button id="select-api-library-btn" class="w-10 h-10 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors" title="API 库">
+                  <i data-lucide="library" class="w-5 h-5 stroke-[2px]"></i>
+                </button>
+                <button id="save-all-settings-btn" class="w-10 h-10 flex items-center justify-center bg-black text-white rounded-full transition-transform active:scale-95 shadow-lg shadow-black/10" title="保存设置">
+                  <i data-lucide="save" class="w-4 h-4 stroke-[2.5px]"></i>
+                </button>
               </div>
             </div>
 
-            <!-- Section: Model -->
-            <div class="settings-group-header">模型设置</div>
-            <div class="settings-group">
-              <!-- Model Select -->
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #af52de"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2 9V6.5C2 4.01 4.01 2 6.5 2H9"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M15 2H17.5C19.99 2 22 4.01 22 6.5V9"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M22 16V17.5C22 19.99 19.99 22 17.5 22H16"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M9 22H6.5C4.01 22 2 19.99 2 17.5V15"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M10.5 7V9C10.5 10 10 10.5 9 10.5H7C6 10.5 5.5 10 5.5 9V7C5.5 6 6 5.5 7 5.5H9C10 5.5 10.5 6 10.5 7Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M18.5 7V9C18.5 10 18 10.5 17 10.5H15C14 10.5 13.5 10 13.5 9V7C13.5 6 14 5.5 15 5.5H17C18 5.5 18.5 6 18.5 7Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M10.5 15V17C10.5 18 10 18.5 9 18.5H7C6 18.5 5.5 18 5.5 17V15C5.5 14 6 13.5 7 13.5H9C10 13.5 10.5 14 10.5 15Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M18.5 15V17C18.5 18 18 18.5 17 18.5H15C14 18.5 13.5 18 13.5 17V15C13.5 14 14 13.5 15 13.5H17C18 13.5 18.5 14 18.5 15Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">API 模型</span>
-                  <div class="settings-value">
-                    <select id="api-model" class="settings-select" disabled>
-                      <option value="" disabled selected>请先连接</option>
-                    </select>
+            <div class="flex-1 overflow-y-auto pt-4 pb-24 px-6 space-y-6">
+              
+              <!-- Section 1: Neural Link (API) -->
+              <div class="bg-white rounded-[32px] p-1 shadow-sm border border-black/5">
+                <div class="p-6 pb-2">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div id="api-status-icon-container" class="w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-black/5 text-black/40">
+                      <i data-lucide="link-2" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-bold tracking-widest uppercase text-black/40">API Link</span>
                   </div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-              </div>
-              <!-- Temperature -->
-              <div
-                class="settings-item"
-                style="
-                  height: auto;
-                  align-items: flex-start;
-                  padding-top: 10px;
-                  padding-bottom: 10px;
-                "
-              >
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #ff2d55"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M16.42 7.95C18.86 10.39 18.86 14.35 16.42 16.79C13.98 19.23 10.02 19.23 7.58 16.79C5.14 14.35 5.14 10.39 7.58 7.95C10.02 5.51 13.98 5.51 16.42 7.95Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M8.24999 21.64C6.24999 20.84 4.49999 19.39 3.33999 17.38C2.19999 15.41 1.81999 13.22 2.08999 11.13"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M5.84998 4.47998C7.54998 3.14998 9.67997 2.35999 12 2.35999C14.27 2.35999 16.36 3.12997 18.04 4.40997"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M15.75 21.64C17.75 20.84 19.5 19.39 20.66 17.38C21.8 15.41 22.18 13.22 21.91 11.13"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="settings-item-content"
-                  style="flex-direction: column; align-items: normal; gap: 0"
-                >
-                  <div class="settings-slider-header">
-                    <span>随机性 (温度)</span>
-                    <span id="temperature-value">1.0</span>
-                  </div>
-                  <div class="settings-slider-container">
-                    <input
-                      type="range"
-                      id="temperature-slider"
-                      class="settings-slider"
-                      min="0"
-                      max="2"
-                      value="1"
-                      step="0.1"
-                      oninput="document.getElementById('temperature-value').textContent=this.value"
-                    />
+                  
+                  <div class="space-y-6">
+                    <div class="group">
+                      <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">Endpoint URL</label>
+                      <input type="text" id="api-url" placeholder="https://api.openai.com/v1" onchange="handleInputChange('api-url')" class="w-full text-lg font-medium bg-transparent border-b border-black/10 py-1 focus:border-black transition-colors focus:outline-none placeholder-black/10 font-mono" />
+                    </div>
+                    <div class="group">
+                      <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">Secret Key</label>
+                      <input type="password" id="api-key" placeholder="sk-..." onchange="handleInputChange('api-key')" class="w-full text-lg font-medium bg-transparent border-b border-black/10 py-1 focus:border-black transition-colors focus:outline-none placeholder-black/10 font-mono tracking-widest" />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <!-- Save Config -->
-              <div class="settings-item" id="save-api-to-library-btn">
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center"
-                >
-                  <button class="settings-button-text">
-                    保存配置到 API 库
+
+                <div class="p-2 mt-2">
+                  <button id="connect-api-button" class="w-full h-12 rounded-[24px] font-semibold text-sm transition-all flex items-center justify-center gap-2 bg-[#F5F5F7] text-black hover:bg-[#E5E5EA]">
+                    Test Connection
                   </button>
+                  <span id="api-connection-status" class="hidden ml-3 text-[13px] text-gray-400"></span>
                 </div>
               </div>
-            </div>
 
-            <!-- Section: MiniMax TTS -->
-            <div class="settings-group-header">语音合成 (MiniMax)</div>
-            <div class="settings-group">
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #34c759"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M14.99 17.5H16.5C19.52 17.5 22 15.03 22 12C22 8.98 19.53 6.5 16.5 6.5H14.99"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M9 6.5H7.5C4.47 6.5 2 8.97 2 12C2 15.02 4.47 17.5 7.5 17.5H9"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M8 12H16"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">GroupID</span>
-                  <div class="settings-value">
-                    <input
-                      type="text"
-                      id="minimax-group-id"
-                      class="settings-input"
-                      placeholder="123456..."
-                    />
+              <!-- Section 2: Brain Config (Model & Temp) -->
+              <div class="bg-white rounded-[32px] p-6 shadow-sm border border-black/5">
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="w-8 h-8 rounded-full bg-[#FF3B30]/10 text-[#FF3B30] flex items-center justify-center">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
                   </div>
+                  <span class="text-xs font-bold tracking-widest uppercase text-black/40">Brain Config</span>
                 </div>
-              </div>
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #34c759"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M19.79 14.9299C17.73 16.9799 14.78 17.6099 12.19 16.7999L7.48002 21.4999C7.14002 21.8499 6.47002 22.0599 5.99002 21.9899L3.81002 21.6899C3.09002 21.5899 2.42002 20.9099 2.31002 20.1899L2.01002 18.0099C1.94002 17.5299 2.17002 16.8599 2.50002 16.5199L7.20002 11.8199C6.40002 9.21995 7.02002 6.26995 9.08002 4.21995C12.03 1.26995 16.82 1.26995 19.78 4.21995C22.74 7.16995 22.74 11.9799 19.79 14.9299Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M6.89001 17.49L9.19001 19.79"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M14.5 11C15.3284 11 16 10.3284 16 9.5C16 8.67157 15.3284 8 14.5 8C13.6716 8 13 8.67157 13 9.5C13 10.3284 13.6716 11 14.5 11Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">API Key</span>
-                  <div class="settings-value">
-                    <input
-                      type="password"
-                      id="minimax-api-key"
-                      class="settings-input"
-                      placeholder="eyJ..."
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #34c759"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M21.0799 8.58003V15.42C21.0799 16.54 20.4799 17.58 19.5099 18.15L13.5699 21.58C12.5999 22.14 11.3999 22.14 10.4199 21.58L4.47992 18.15C3.50992 17.59 2.90991 16.55 2.90991 15.42V8.58003C2.90991 7.46003 3.50992 6.41999 4.47992 5.84999L10.4199 2.42C11.3899 1.86 12.5899 1.86 13.5699 2.42L19.5099 5.84999C20.4799 6.41999 21.0799 7.45003 21.0799 8.58003Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M9.75 12V10.8C9.75 9.26001 10.84 8.63005 12.17 9.40005L13.21 10L14.25 10.6C15.58 11.37 15.58 12.63 14.25 13.4L13.21 14L12.17 14.6C10.84 15.37 9.75 14.74 9.75 13.2V12Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">TTS模型</span>
-                  <div class="settings-value">
-                    <select id="minimax-model-select" class="settings-select">
-                      <option value="">请填写配置</option>
-                    </select>
-                  </div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-              </div>
-              <div class="settings-item" id="fetch-minimax-models-btn">
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center"
-                >
-                  <button class="settings-button-text">拉取模型</button>
-                  <span
-                    id="fetch-models-status"
-                    style="
-                      position: absolute;
-                      right: 16px;
-                      font-size: 13px;
-                      color: #8e8e93;
-                    "
-                  ></span>
-                </div>
-              </div>
-              <div class="settings-item" id="test-tts-button">
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center"
-                >
-                  <button class="settings-button-text">测试语音合成</button>
-                  <span
-                    id="tts-test-status"
-                    style="
-                      position: absolute;
-                      right: 16px;
-                      font-size: 13px;
-                      color: #8e8e93;
-                    "
-                  ></span>
-                </div>
-              </div>
-            </div>
 
-            <!-- Section: System -->
-            <div class="settings-group-header">系统功能</div>
-            <div class="settings-group">
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #8e8e93"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
-                    ></path>
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">全屏模式</span>
-                  <label class="switch settings-switch-container">
-                    <input type="checkbox" id="toggle-frame-visibility" />
-                    <span class="slider round"></span>
-                  </label>
-                </div>
-              </div>
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #000000"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-                    ></path>
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">深色模式</span>
-                  <label class="switch settings-switch-container">
-                    <input type="checkbox" id="toggle-dark-mode" />
-                    <span class="slider round"></span>
-                  </label>
-                </div>
-              </div>
-              <div class="settings-item">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #34c759"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M20.5 9.5C22 9.5 22 10 22 11V13C22 14 22 14.5 20.5 14.5"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M10 8L8.11001 10.5C7.72001 11.17 8.20001 12 8.97001 12H11.27C12.04 12 12.52 12.83 12.14 13.5L10 16"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M7 19C3 19 2 18 2 14V10C2 6 3 5 7 5"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M13 5C17 5 18 6 18 10V14C18 18 17 19 13 19"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">显示状态栏</span>
-                  <label class="switch settings-switch-container">
-                    <input type="checkbox" id="toggle-status-bar" checked />
-                    <span class="slider round"></span>
-                  </label>
-                </div>
-              </div>
-              <div class="settings-item" id="nav-to-proactive-settings">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #5856d6"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17 9C17 12.87 13.64 16 9.5 16L8.57001 17.12L8.02 17.78C7.55 18.34 6.65 18.22 6.34 17.55L5 14.6C3.18 13.32 2 11.29 2 9C2 5.13 5.36 2 9.5 2C12.52 2 15.13 3.67001 16.3 6.07001C16.75 6.96001 17 7.95 17 9Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M22.0001 12.86C22.0001 15.15 20.8201 17.18 19.0001 18.46L17.6601 21.41C17.3501 22.08 16.4501 22.21 15.9801 21.64L14.5001 19.86C12.0801 19.86 9.92007 18.79 8.57007 17.12L9.50006 16C13.6401 16 17.0001 12.87 17.0001 9C17.0001 7.95 16.7501 6.96001 16.3001 6.07001C19.5701 6.82001 22.0001 9.57999 22.0001 12.86Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M7 9H12"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">AI 主动消息</span>
-                  <div class="settings-value">
-                    <span id="proactive-status-text">已关闭</span>
+                <!-- Model Selector Card (Custom Visual Layer + Hidden Select) -->
+                <div class="relative mb-8 group cursor-pointer">
+                  <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-2">Model</label>
+                  
+                  <!-- Visual Layer -->
+                  <div class="flex items-center justify-between bg-[#F5F5F7] p-4 rounded-[20px] group-hover:bg-[#E5E5EA] transition-colors h-[84px]">
+                    <div class="flex flex-col overflow-hidden">
+                      <span id="model-display-name" class="text-[22px] font-bold text-[#1D1D1F] truncate leading-tight">Select Model</span>
+                      <span id="model-display-desc" class="text-xs text-black/40 font-medium mt-1">select your LLM</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-black/40 flex-shrink-0 ml-2"></i>
                   </div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
+
+                  <!-- Hidden Select for Interaction -->
+                  <select id="api-model" 
+                          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 appearance-none"
+                          onchange="const text = this.options[this.selectedIndex].text; document.getElementById('model-display-name').textContent = text; document.getElementById('model-display-desc').textContent = 'Active Model';">
+                    <option value="" disabled selected>Select Model</option>
+                  </select>
+                </div>
+
+                <!-- Temperature Slider (Custom Visual + Hidden Input) -->
+                <div>
+                  <div class="flex justify-between items-end mb-4">
+                    <label class="text-[10px] font-bold text-black/30 uppercase tracking-wider">Creativity (Temp)</label>
+                    <span id="temperature-value" class="text-xl font-bold font-mono text-[#1D1D1F]">1.0</span>
+                  </div>
+                  
+                  <!-- Custom Track Container -->
+                  <div class="relative h-12 flex items-center select-none">
+                    <!-- Visual Track Background -->
+                    <div class="absolute w-full h-2 bg-[#F5F5F7] rounded-full overflow-hidden">
+                        <!-- Red Progress Fill -->
+                        <div id="temp-progress-bar" class="h-full bg-[#FF3B30] w-[50%] transition-all duration-75 ease-out"></div>
+                    </div>
+                    
+                    <!-- Ticks -->
+                    <div class="absolute w-full flex justify-between px-1 opacity-20 pointer-events-none">
+                        <div class="w-px h-4 bg-black"></div>
+                        <div class="w-px h-4 bg-black"></div>
+                        <div class="w-px h-4 bg-black"></div>
+                        <div class="w-px h-4 bg-black"></div>
+                        <div class="w-px h-4 bg-black"></div>
+                    </div>
+
+                    <!-- Custom Thumb Visual (Moved via JS) -->
+                    <div id="temp-thumb" class="absolute w-8 h-8 bg-white border border-black/5 shadow-md rounded-full flex items-center justify-center pointer-events-none transition-all duration-75 ease-out" style="left: calc(50% - 16px);">
+                         <div class="w-2 h-2 bg-[#FF3B30] rounded-full"></div>
+                    </div>
+
+                    <!-- Invisible Interactive Input -->
+                    <input type="range" id="temperature-slider" 
+                           class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" 
+                           min="0" max="2" value="1" step="0.1" 
+                           oninput="
+                             const val = parseFloat(this.value); 
+                             document.getElementById('temperature-value').textContent = val.toFixed(1);
+                             const percentage = (val / 2) * 100;
+                             document.getElementById('temp-progress-bar').style.width = percentage + '%';
+                             document.getElementById('temp-thumb').style.left = `calc(${percentage}% - 16px)`;
+                           " />
+                  </div>
+
+                  <div class="flex justify-between text-[10px] font-bold text-black/20 uppercase mt-2">
+                    <span>Precise</span>
+                    <span>Balanced</span>
+                    <span>Creative</span>
+                  </div>
                 </div>
               </div>
               
-              <!-- iOS 特性调整 -->
-              <div class="settings-item" id="nav-to-ios-settings">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #007aff"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.5 12C17.5 15.04 15.04 17.5 12 17.5C8.96 17.5 6.5 15.04 6.5 12C6.5 8.96 8.96 6.5 12 6.5C15.04 6.5 17.5 8.96 17.5 12Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M12 2V4"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M12 20V22"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M4 12H2"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M22 12H20"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">iOS 特性调整</span>
-                  <div class="settings-value">
-                    <span id="ios-settings-status-text">PWA适配</span>
-                  </div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-              </div>
-            </div>
+              <!-- Quick Action -->
+              <button id="save-api-to-library-btn" class="w-full py-4 text-sm font-semibold text-black/40 hover:text-black transition-colors mb-6">
+                Save Configuration to Library
+              </button>
 
-            <!-- Section: Personalization -->
-            <div class="settings-group-header">个性化</div>
-            <div class="settings-group">
-              <!-- Skin -->
-              <div
-                class="settings-item"
-                onclick="document.getElementById('skin-upload').click()"
-              >
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #ff9500"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <rect
-                      x="5"
-                      y="2"
-                      width="14"
-                      height="20"
-                      rx="2"
-                      ry="2"
-                    ></rect>
-                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">更换手机外壳</span>
-                  <div class="settings-value">
-                    <span style="font-size: 13px">选择PNG</span>
-                  </div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-                <!-- Hidden Inputs within item logic -->
-                <input
-                  type="file"
-                  id="skin-upload"
-                  accept="image/*"
-                  style="display: none"
-                  onchange="handleSkinUpload(this)"
-                />
-              </div>
-              <div
-                class="settings-item"
-                id="reset-skin-btn"
-                style="display: none"
-                onclick="resetSkin()"
-              >
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center"
-                >
-                  <button
-                    class="settings-button-text settings-button-destructive"
-                  >
-                    恢复默认手机壳
-                  </button>
-                </div>
-              </div>
-              <!-- Skin Size Controls Container -->
-              <div
-                id="skin-size-controls"
-                style="display: none; padding: 10px 16px"
-              >
-                <div
-                  style="font-size: 13px; font-weight: 600; margin-bottom: 8px"
-                >
-                  外壳尺寸微调
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px">
-                  <input
-                    type="number"
-                    id="skin-width-input"
-                    class="form-input"
-                    placeholder="宽"
-                  />
-                  <input
-                    type="number"
-                    id="skin-height-input"
-                    class="form-input"
-                    placeholder="高"
-                  />
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px">
-                  <input
-                    type="number"
-                    id="skin-offset-x-input"
-                    class="form-input"
-                    placeholder="X偏移"
-                  />
-                  <input
-                    type="number"
-                    id="skin-offset-y-input"
-                    class="form-input"
-                    placeholder="Y偏移"
-                  />
-                </div>
-                <button id="apply-skin-size-btn" class="settings-button-text">
-                  应用调整
-                </button>
-              </div>
-
-              <!-- Wallpaper -->
-              <div class="settings-item" id="upload-wallpaper-btn">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #32ade6"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9 10C10.1046 10 11 9.10457 11 8C11 6.89543 10.1046 6 9 6C7.89543 6 7 6.89543 7 8C7 9.10457 7.89543 10 9 10Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M12 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V11"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M16.1199 5.11002C15.7899 4.07002 16.1799 2.78002 17.2599 2.43002C17.8299 2.25002 18.5399 2.40002 18.9399 2.95002C19.3199 2.38002 20.0499 2.24002 20.6199 2.43002C21.7099 2.78002 22.0999 4.07002 21.7699 5.11002C21.2499 6.75002 19.4499 7.61002 18.9499 7.61002C18.4399 7.61002 16.6499 6.77002 16.1199 5.11002Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M2.66992 18.9501L7.59992 15.6401C8.38992 15.1101 9.52992 15.1701 10.2399 15.7801L10.5699 16.0701C11.3499 16.7401 12.6099 16.7401 13.3899 16.0701L17.5499 12.5001C18.3299 11.8301 19.5899 11.8301 20.3699 12.5001L21.9999 13.9001"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">主页壁纸</span>
-                  <div class="settings-value">
-                    <div
-                      id="wallpaper-preview"
-                      style="
-                        width: 24px;
-                        height: 36px;
-                        border-radius: 4px;
-                        background-color: #eee;
-                        margin-right: 5px;
-                        background-size: cover;
-                      "
-                    ></div>
-                  </div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-              </div>
-              <div class="settings-item" id="reset-wallpaper-btn">
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center"
-                >
-                  <button
-                    class="settings-button-text settings-button-destructive"
-                  >
-                    恢复默认壁纸
-                  </button>
-                </div>
-              </div>
-
-              <!-- Font -->
-              <div class="settings-item" id="change-font-btn">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #007aff"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M7 8.89C10.15 7.32 13.85 7.32 17 8.89"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M12 16.3V7.93"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">全局字体</span>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-              </div>
-              <div class="settings-item" id="restore-font-btn">
-                <div
-                  class="settings-item-content"
-                  style="justify-content: center"
-                >
-                  <button
-                    class="settings-button-text settings-button-destructive"
-                  >
-                    恢复默认字体
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Section: Data -->
-            <div class="settings-group-header">数据安全</div>
-            <div class="settings-group">
-              <div class="settings-item" id="backup-data-btn">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #34c759"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9.32007 6.5L11.8801 3.94L14.4401 6.5"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M11.8799 14.18V4.01"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M4 12C4 16.42 7 20 12 20C17 20 20 16.42 20 12"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <button class="settings-button-text" style="text-align: left">
-                    备份所有数据
-                  </button>
-                </div>
-              </div>
-              <div class="settings-item" id="import-data-btn">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #ff9500"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9.32007 11.68L11.8801 14.24L14.4401 11.68"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M11.8799 4V14.17"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M20 12.18C20 16.6 17 20.18 12 20.18C7 20.18 4 16.6 4 12.18"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-miterlimit="10"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <button class="settings-button-text" style="text-align: left">
-                    恢复备份
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Section: About -->
-            <div class="settings-group-header">关于</div>
-            <div class="settings-group">
-              <div class="settings-item" id="about-device-btn">
-                <div
-                  class="settings-icon-container"
-                  style="background-color: #8e8e93"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 7.75V13"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M21.08 8.58003V15.42C21.08 16.54 20.48 17.58 19.51 18.15L13.57 21.58C12.6 22.14 11.4 22.14 10.42 21.58L4.47998 18.15C3.50998 17.59 2.90997 16.55 2.90997 15.42V8.58003C2.90997 7.46003 3.50998 6.41999 4.47998 5.84999L10.42 2.42C11.39 1.86 12.59 1.86 13.57 2.42L19.51 5.84999C20.48 6.41999 21.08 7.45003 21.08 8.58003Z"
-                      stroke="white"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M12 16.2V16.3"
-                      stroke="white"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="settings-item-content">
-                  <span class="settings-label">关于本机</span>
-                  <div class="settings-value">v2.15</div>
-                  <img
-                    class="settings-chevron"
-                    src="data:image/svg+xml;charset=utf-8,%3Csvg width='8' height='13' viewBox='0 0 8 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.40952 12.3813L7.67842 7.22875C7.90423 7.00978 8.00003 6.77713 8.00003 6.49658C8.00003 6.21603 7.89739 5.98337 7.67842 5.76441L2.40952 0.61183C2.23161 0.433919 2.01949 0.351807 1.7663 0.351807C1.2531 0.351807 0.835693 0.755528 0.835693 1.26873C0.835693 1.52191 0.945177 1.75457 1.12993 1.93932L5.81036 6.48974L1.12993 11.0538C0.945177 11.2386 0.835693 11.4644 0.835693 11.7244C0.835693 12.2376 1.2531 12.6482 1.7663 12.6482C2.01949 12.6482 2.23161 12.5592 2.40952 12.3813Z' fill='%23C7C7CC'/%3E%3C/svg%3E"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-footer-info">
-              <div
-                style="
-                  display: flex;
-                  gap: 10px;
-                  flex-wrap: wrap;
-                  justify-content: center;
-                "
-              >
-                <span class="footer-tag device-tag">七七手机 xhs@7%</span>
-                <span class="footer-tag version-tag"
-                  >版本号：<span style="color: #5c9ebd; font-weight: 600"
-                    >2</span
-                  >.<span style="color: #5c9ebd; font-weight: 600"
-                    >15364</span
-                  ></span
-                >
-              </div>
             </div>
           </div>
 
+          <!-- ============================================ -->
+          <!-- 子页面 2: Behavior (AI 主动消息 & 记忆) -->
+          <!-- ============================================ -->
+          <div id="page-behavior" class="settings-page max-w-md mx-auto">
+            <div class="sticky top-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button onclick="closeSettingsPage('page-behavior')" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-black">
+                <i data-lucide="arrow-left" class="w-5 h-5 stroke-[2]"></i>
+              </button>
+              <span class="text-[15px] font-semibold text-gray-900">Char Behavior</span>
+              <div class="w-9"></div>
+            </div>
+            <div class="p-5 space-y-8">
+              <section>
+                <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Interaction</h4>
+                <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50/80">
+                    <div class="flex flex-col">
+                      <span class="text-[16px] font-medium text-gray-900">Proactive Message</span>
+                      <span class="text-[13px] text-gray-400 mt-0.5">Allow AI to initiate chat</span>
+                    </div>
+                    <label class="ios-switch-label">
+                      <input type="checkbox" id="proactive-master-switch" class="ios-switch-input">
+                      <span class="ios-switch-slider"></span>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between p-4 active:bg-gray-50 transition-colors cursor-pointer" id="nav-to-proactive-settings">
+                    <span class="text-[16px] font-medium text-gray-900">Frequency</span>
+                    <div class="flex items-center">
+                      <span id="proactive-status-text" class="text-[15px] text-gray-400 mr-2">已关闭</span>
+                      <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Context</h4>
+                <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+                  <div class="flex items-center justify-between p-4">
+                    <div class="flex flex-col">
+                      <span class="text-[16px] font-medium text-gray-900">Long-term Memory</span>
+                      <span class="text-[13px] text-gray-400 mt-0.5">Use vector database</span>
+                    </div>
+                    <label class="ios-switch-label">
+                      <input type="checkbox" id="toggle-mem" checked class="ios-switch-input">
+                      <span class="ios-switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- 子页面 3: Appearance (外观设置) -->
+          <!-- ============================================ -->
+          <div id="page-appearance" class="settings-page max-w-md mx-auto">
+            <div class="sticky top-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button onclick="closeSettingsPage('page-appearance')" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-black">
+                <i data-lucide="arrow-left" class="w-5 h-5 stroke-[2]"></i>
+              </button>
+              <span class="text-[15px] font-semibold text-gray-900">Appearance</span>
+              <div class="w-9"></div>
+            </div>
+            <div class="p-5 space-y-8">
+              <section>
+                <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Theme</h4>
+                <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50/80">
+                    <span class="text-[16px] font-medium text-gray-900">Dark mode</span>
+                    <label class="switch settings-switch-container">
+                      <input type="checkbox" id="toggle-dark-mode" />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50/80">
+                    <span class="text-[16px] font-medium text-gray-900">Full screen</span>
+                    <label class="switch settings-switch-container">
+                      <input type="checkbox" id="toggle-frame-visibility" />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between p-4">
+                    <span class="text-[16px] font-medium text-gray-900">Status Bar</span>
+                    <label class="switch settings-switch-container">
+                      <input type="checkbox" id="toggle-status-bar" checked />
+                      <span class="slider round"></span>
+                </label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="mt-2">
+                <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Personalization</h4>
+                
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                  
+                  <!-- Card 1: Wallpaper (Direct Preview) -->
+                  <div class="relative group cursor-pointer overflow-hidden rounded-[24px] bg-gray-100 aspect-[4/5] border border-gray-200 transition-all active:scale-95" onclick="document.getElementById('wallpaper-upload-input').click()">
+                    <!-- Live Preview Background -->
+                    <div id="settings-wallpaper-preview-bg" class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105 duration-500" style="background-image: url('https://i.postimg.cc/KcDp1KS6/Group-21.png');"></div>
+                    <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
+                    
+                    <!-- Text Label -->
+                    <div class="absolute top-4 left-4 z-10">
+                       <span class="text-white font-semibold text-[15px] drop-shadow-md">Wallpaper</span>
+                    </div>
+
+                    <!-- Reset Button (Bottom Right) -->
+                    <button 
+                      onclick="event.stopPropagation(); resetWallpaper()" 
+                      class="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white transition-colors"
+                      title="恢复默认壁纸"
+                    >
+                      <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <!-- Upload Icon Hint (Center) -->
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      <i data-lucide="image-plus" class="w-8 h-8 text-white drop-shadow-lg"></i>
+                    </div>
+                  </div>
+
+                  <!-- Card 2: Skin (Phone Frame) -->
+                  <div class="relative group cursor-pointer overflow-hidden rounded-[24px] bg-white aspect-[4/5] border border-gray-200 transition-all active:scale-95" onclick="document.getElementById('skin-upload').click()">
+                    
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-gray-300 group-hover:text-gray-400 transition-colors pt-2">
+                       <i data-lucide="smartphone" class="w-16 h-16 stroke-[1]"></i>
+                    </div>
+
+                    <div class="absolute top-4 left-4 z-10">
+                       <span class="text-gray-900 font-semibold text-[15px]">Skin</span>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button 
+                      onclick="event.stopPropagation(); resetSkin()"
+                      class="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+                      title="恢复默认外壳"
+                    >
+                      <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+
+                  <!-- Card 3: Typography (Wide) -->
+                  <div class="col-span-2 relative group cursor-pointer overflow-hidden rounded-[24px] bg-white p-5 border border-gray-200 flex items-center justify-between transition-all active:scale-95 h-24" onclick="document.getElementById('font-import-input').click()">
+                    <div class="flex items-center gap-4">
+                       <div class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-3xl font-serif text-gray-800 border border-gray-100">
+                         Ag
+                       </div>
+                       <div>
+                         <span class="block text-gray-900 font-semibold text-[16px]">Typography</span>
+                         <span class="text-xs text-gray-500">Customize Font</span>
+                       </div>
+                    </div>
+                    
+                    <!-- Reset Button -->
+                    <button 
+                      onclick="event.stopPropagation(); restoreDefaultFont()"
+                      class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-red-400 transition-colors"
+                      title="恢复默认字体"
+                    >
+                       <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- Fine Tune Section (Collapsible Style) -->
+                <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden mb-8">
+                   <div 
+                     class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                     onclick="const el = document.getElementById('skin-size-controls'); el.style.display = el.style.display === 'none' ? 'block' : 'none';"
+                   >
+                     <span class="text-[15px] font-medium text-gray-700">Skin Fine-Tuning</span>
+                     <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gray-400"></i>
+                   </div>
+                   
+                   <div id="skin-size-controls" style="display: none; padding: 0 16px 16px 16px;" class="bg-gray-50/30">
+                      <div class="pt-4 grid grid-cols-2 gap-3">
+                         <div class="space-y-1">
+                           <label class="text-[10px] uppercase font-bold text-gray-400 pl-1">Size</label>
+                           <div class="flex gap-2">
+                              <input type="number" id="skin-width-input" class="w-full h-9 px-3 text-sm bg-white border border-gray-200 rounded-xl focus:border-black/20 focus:outline-none text-center font-mono placeholder:text-gray-300" placeholder="W" />
+                              <input type="number" id="skin-height-input" class="w-full h-9 px-3 text-sm bg-white border border-gray-200 rounded-xl focus:border-black/20 focus:outline-none text-center font-mono placeholder:text-gray-300" placeholder="H" />
+                           </div>
+                         </div>
+                         <div class="space-y-1">
+                           <label class="text-[10px] uppercase font-bold text-gray-400 pl-1">Offset</label>
+                           <div class="flex gap-2">
+                              <input type="number" id="skin-offset-x-input" class="w-full h-9 px-3 text-sm bg-white border border-gray-200 rounded-xl focus:border-black/20 focus:outline-none text-center font-mono placeholder:text-gray-300" placeholder="X" />
+                              <input type="number" id="skin-offset-y-input" class="w-full h-9 px-3 text-sm bg-white border border-gray-200 rounded-xl focus:border-black/20 focus:outline-none text-center font-mono placeholder:text-gray-300" placeholder="Y" />
+                           </div>
+                         </div>
+                      </div>
+                      <button id="apply-skin-size-btn" class="w-full mt-4 h-10 text-[14px] font-semibold text-white bg-black rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-black/10">
+                        Apply Adjustments
+                      </button>
+                   </div>
+
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- 子页面 4: Voice (语音设置) -->
+          <!-- ============================================ -->
+          <div id="page-voice" class="settings-page max-w-md mx-auto min-h-screen bg-[#F5F5F7]">
+            <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md sticky top-0" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button onclick="closeSettingsPage('page-voice')" class="w-10 h-10 -ml-2 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors text-black">
+                <i data-lucide="arrow-left" class="w-6 h-6 stroke-[2.5px]"></i>
+              </button>
+              <span class="text-sm font-bold tracking-widest uppercase text-black/40">Voice</span>
+              <div class="w-10"></div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pt-4 pb-24 px-6 space-y-6">
+              
+              <!-- Section 1: Engine Credentials -->
+              <div class="bg-white rounded-[32px] p-6 shadow-sm border border-black/5">
+                 <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center">
+                        <i data-lucide="audio-waveform" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-bold tracking-widest uppercase text-black/40">MiniMax Engine</span>
+                 </div>
+
+                 <div class="space-y-6">
+                     <!-- Group ID Input -->
+                     <div class="flex items-center gap-4 group">
+                        <div class="w-10 h-10 rounded-[16px] bg-[#F5F5F7] flex items-center justify-center text-black/30">
+                            <i data-lucide="user" class="w-5 h-5 stroke-[2px]"></i>
+                        </div>
+                        <div class="flex-1 border-b border-black/5 pb-2 group-focus-within:border-black transition-colors">
+                            <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">Group ID</label>
+                            <input type="text" id="minimax-group-id" placeholder="123456..." class="w-full text-base font-medium bg-transparent focus:outline-none placeholder-black/10 font-mono" />
+                        </div>
+                     </div>
+
+                     <!-- API Key Input -->
+                     <div class="flex items-center gap-4 group">
+                        <div class="w-10 h-10 rounded-[16px] bg-[#F5F5F7] flex items-center justify-center text-black/30">
+                            <i data-lucide="key" class="w-5 h-5 stroke-[2px]"></i>
+                        </div>
+                        <div class="flex-1 border-b border-black/5 pb-2 group-focus-within:border-black transition-colors">
+                            <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">API Key</label>
+                            <input type="password" id="minimax-api-key" placeholder="eyJ..." class="w-full text-base font-medium bg-transparent focus:outline-none placeholder-black/10 font-mono tracking-widest" />
+                        </div>
+                     </div>
+                 </div>
+              </div>
+
+              <!-- Section 2: Model Selection (Fetch Action) -->
+              <div class="bg-white rounded-[32px] p-1 shadow-sm border border-black/5">
+                 <div class="p-5 flex items-center justify-between">
+                    <div class="flex-1 min-w-0 pr-4 relative">
+                        <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">Voice Model</label>
+                        
+                        <!-- Visual Text -->
+                        <div id="minimax-model-display" class="text-xl font-bold text-[#1D1D1F] truncate leading-tight mt-0.5">
+                            请拉取配置
+                        </div>
+                        
+                        <!-- Hidden Select -->
+                        <select id="minimax-model-select" 
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none z-10"
+                                onchange="document.getElementById('minimax-model-display').textContent = this.options[this.selectedIndex].text;">
+                           <option value="">请填写配置后拉取</option>
+                        </select>
+                    </div>
+                    
+                    <button id="fetch-minimax-models-btn" class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-black/10 flex-shrink-0 relative z-20">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    </button>
+                 </div>
+                 <div id="fetch-models-status" class="px-5 pb-2 text-xs text-center text-gray-400"></div>
+              </div>
+
+              <!-- Section 3: Sound Test (Visualizer) -->
+              <div id="sound-test-card" class="bg-white rounded-[32px] p-6 shadow-sm border border-black/5 transition-all duration-300 relative overflow-hidden">
+                 
+                 <div class="relative z-10 flex items-center justify-between">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold uppercase tracking-widest mb-1 text-black/40">Sound Test</span>
+                        <span id="tts-test-status" class="text-xl font-bold text-[#1D1D1F] truncate">tap to play.</span>
+                    </div>
+
+                    <button id="test-tts-button" class="w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-xl bg-[#007AFF] text-white hover:bg-[#0062CC]">
+                        <i data-lucide="play" class="w-6 h-6 fill-current ml-1"></i>
+                    </button>
+                 </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- 子页面 5: Labs/System (系统功能) -->
+          <!-- ============================================ -->
+          <div id="page-system" class="settings-page max-w-md mx-auto">
+            <div class="sticky top-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button onclick="closeSettingsPage('page-system')" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-black">
+                <i data-lucide="arrow-left" class="w-5 h-5 stroke-[2]"></i>
+              </button>
+              <span class="text-[15px] font-semibold text-gray-900">Labs</span>
+              <div class="w-9"></div>
+            </div>
+            <div class="p-5 space-y-8">
+              <section>
+                <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">iOS Native</h4>
+                <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50/80 cursor-pointer" id="nav-to-ios-settings">
+                    <span class="text-[16px] font-medium text-gray-900">iOS 特性调整</span>
+                    <div class="flex items-center">
+                      <span id="ios-settings-status-text" class="text-[15px] text-gray-400 mr-2">PWA适配</span>
+                      <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden flex flex-col items-center justify-center p-6 space-y-4">
+                  <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-2">
+                    <i data-lucide="box" class="w-8 h-8 text-gray-300"></i>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-[15px] font-medium text-gray-900">Version 2.15</p>
+                    <p class="text-[13px] text-gray-400 mt-1">Build 2.15364</p>
+                  </div>
+                  <button id="about-device-btn" class="w-full py-3 mt-2 text-[15px] font-medium text-gray-900 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">关于本机</button>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- 子页面 6: Data (数据备份与恢复) -->
+          <!-- ============================================ -->
+          <div id="page-data" class="settings-page max-w-md mx-auto bg-[#F5F5F7] min-h-screen">
+            <!-- Header -->
+            <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md sticky top-0" style="padding-top: max(50px, env(safe-area-inset-top));">
+              <button onclick="closeSettingsPage('page-data')" class="w-10 h-10 -ml-2 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors text-black">
+                <i data-lucide="arrow-left" class="w-6 h-6 stroke-[2.5px]"></i>
+              </button>
+              <span class="text-sm font-bold tracking-widest uppercase text-black/40">Data</span>
+              <div class="w-10"></div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto pt-4 pb-24 no-scrollbar px-6 space-y-6">
+              
+              <!-- Section 1: Data Health Hero (The Shield) -->
+              <div class="bg-white rounded-[32px] p-8 shadow-sm border border-black/5 relative overflow-hidden group">
+                 <!-- Decorative Background -->
+                 <div class="absolute top-0 right-0 p-8 opacity-[0.03] transform group-hover:scale-110 transition-transform duration-500">
+                    <i data-lucide="database" class="w-32 h-32"></i>
+                 </div>
+
+                 <div class="relative z-10 flex flex-col items-center text-center">
+                    <div class="w-20 h-20 rounded-[24px] flex items-center justify-center shadow-inner mb-4 border border-white transition-colors duration-500 bg-gray-50 text-black/60">
+                        <i data-lucide="shield-check" class="w-10 h-10 stroke-[1.5px]"></i>
+                    </div>
+                    
+                    <h1 class="text-xl font-bold tracking-tight text-[#1D1D1F] mb-1">
+                        Data Secure
+                    </h1>
+                    
+                    <div class="flex items-center gap-1.5 mt-1 bg-black/5 px-3 py-1 rounded-full">
+                        <i data-lucide="clock" class="w-3 h-3 text-black/40"></i>
+                        <span class="text-[10px] font-bold text-black/40 uppercase tracking-wider">
+                            Ready to Backup
+                        </span>
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Section 2: Action Grid (Tiles) -->
+              <div class="grid grid-cols-2 gap-4">
+                
+                <!-- Export Card -->
+                <button id="backup-data-btn"
+                    class="bg-white rounded-[28px] p-5 border border-black/5 shadow-sm flex flex-col justify-between h-40 hover:bg-gray-50 transition-all active:scale-95 text-left group"
+                >
+                    <div class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
+                        <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Export</span>
+                        <span class="text-lg font-bold text-[#1D1D1F] leading-tight">Create<br/>Backup</span>
+                    </div>
+                </button>
+
+                <!-- Import Card -->
+                <button id="import-data-btn" class="bg-white rounded-[28px] p-5 border border-black/5 shadow-sm flex flex-col justify-between h-40 hover:bg-gray-50 transition-all active:scale-95 text-left group">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 text-black flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Import</span>
+                        <span class="text-lg font-bold text-[#1D1D1F] leading-tight">Restore<br/>Data</span>
+                    </div>
+                </button>
+
+              </div>
+
+              <!-- Section 3: File Info (Visualizer) -->
+              <div class="bg-[#1D1D1F] rounded-[32px] p-6 text-white shadow-lg shadow-black/10 relative overflow-hidden">
+                 <div class="flex items-start justify-between mb-8 relative z-10">
+                     <div>
+                         <span class="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1">Format</span>
+                         <span class="text-2xl font-bold font-mono">ZIP</span>
+                     </div>
+                     <i data-lucide="file-archive" class="w-6 h-6 text-white/30"></i>
+                 </div>
+
+                 <!-- Code Decoration -->
+                 <div class="font-mono text-[10px] text-white/20 leading-relaxed overflow-hidden h-16 relative z-10">
+                    archive.zip<br/>
+                    &nbsp;&nbsp;├── data.json<br/>
+                    &nbsp;&nbsp;├── media/<br/>
+                    &nbsp;&nbsp;└── config.xml
+                 </div>
+
+                 <!-- Background Decoration -->
+                 <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+              </div>
+              
+              <div class="text-center">
+                 <p class="text-[10px] text-black/30 font-medium max-w-[200px] mx-auto leading-relaxed">
+                    Backups include all chat history, prompt templates, and API configurations.
+                 </p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 隐藏的文件输入元素 -->
           <input
             type="file"
             id="import-file-input"
@@ -1901,6 +1651,13 @@
             id="wallpaper-upload-input"
             accept="image/*"
             style="display: none"
+          />
+          <input
+            type="file"
+            id="skin-upload"
+            accept="image/*"
+            style="display: none"
+            onchange="handleSkinUpload(event)"
           />
           <input
             type="file"
@@ -6682,61 +6439,117 @@
           </div>
         </div>
 
-        <div id="about-device-screen" class="screen">
-          <div class="settings-header">
-            <button id="about-device-back-button" class="header-icon-button">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+        <div id="about-device-screen" class="screen" style="background-color: #F5F5F7;">
+          <!-- Header (Consistent with page-model) -->
+          <div class="sticky top-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between" style="padding-top: max(50px, env(safe-area-inset-top)); background-color: rgba(245, 245, 247, 0.8);">
+            <button id="about-device-back-button" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-200/50 hover:bg-gray-300/50 transition-colors text-black">
+              <i data-lucide="arrow-left" class="w-5 h-5 stroke-[2]"></i>
             </button>
-            <h1>关于本机</h1>
+            <span class="text-[15px] font-semibold text-gray-900 tracking-wide">About</span>
+            <div class="w-9"></div> <!-- Spacer -->
           </div>
 
-          <div
-            class="settings-content"
-            style="padding-top: 110px; padding-bottom: 40px"
-          >
-            <div
-              class="device-hero-card"
-              style="
-                background-image: url('https://i.postimg.cc/KcDp1KS6/Group-21.png');
-              "
-            ></div>
-
-            <div class="device-info-grid">
-              <div class="info-card">
-                <div class="info-label">手机名称</div>
-                <div class="info-value">7PHONE</div>
-              </div>
-              <div class="info-card">
-                <div class="info-progress-bar">
-                  <div class="progress" style="width: 40%"></div>
-                </div>
-                <div class="info-label">存储空间</div>
-                <div class="info-value">209 GB / 512 GB</div>
-              </div>
-
-              <div class="info-list-card">
-                <div class="info-row">
-                  <span class="label">作者</span>
-                  <span class="value">7%</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">联系方式</span>
-                  <span class="value">小红书@7%</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">教程</span>
-                  <span class="value"
-                    >请查看 <span class="tag">群公告和群精华</span></span
-                  >
-                </div>
-              </div>
+          <!-- Content (Based on prototype/aboutphone.html) -->
+          <div class="p-5 space-y-5 overflow-y-auto no-scrollbar" style="padding-bottom: 120px;">
+            
+            <!-- 1. The Identity Card -->
+            <div class="bg-white rounded-[32px] p-8 shadow-sm border border-black/5 relative overflow-hidden">
+               <!-- Decorative element -->
+               <i data-lucide="smartphone" class="absolute -right-6 -bottom-6 w-48 h-48 text-black/[0.03] stroke-[1px]"></i>
+               
+               <div class="relative z-10 flex flex-col items-center text-center">
+                  <div class="w-20 h-20 rounded-[24px] flex items-center justify-center shadow-sm mb-4 border border-black/5 overflow-hidden">
+                      <img src="https://i.postimg.cc/s2n0gxBB/appicon.png" class="w-full h-full object-cover" alt="Device Icon">
+                  </div>
+                  <h1 class="text-2xl font-bold tracking-tight text-[#1D1D1F] mb-1">7PHONE Pro</h1>
+                  <p class="text-[11px] font-bold text-black/40 uppercase tracking-widest bg-black/5 px-3 py-1 rounded-full">
+                      This Device
+                  </p>
+               </div>
             </div>
+
+            <!-- 2. Specs Grid (Bento Box) -->
+            <div class="grid grid-cols-2 gap-3">
+              
+              <!-- Processor -->
+              <div class="bg-white rounded-[28px] p-5 border border-black/5 shadow-sm flex flex-col justify-between h-36">
+                  <div class="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center">
+                      <i data-lucide="cpu" class="w-5 h-5 text-black/60"></i>
+                  </div>
+                  <div>
+                      <span class="block text-[11px] font-bold text-black/40 uppercase tracking-wider mb-1">Processor</span>
+                      <span class="text-xl font-bold font-mono">A17 Pro</span>
+                  </div>
+              </div>
+
+              <!-- Memory -->
+              <div class="bg-white rounded-[28px] p-5 border border-black/5 shadow-sm flex flex-col justify-between h-36">
+                  <div class="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center">
+                      <div class="w-5 h-5 flex items-center justify-center font-bold text-xs">8G</div>
+                  </div>
+                  <div>
+                      <span class="block text-[11px] font-bold text-black/40 uppercase tracking-wider mb-1">Memory</span>
+                      <span class="text-xl font-bold font-mono">8G Only</span>
+                  </div>
+              </div>
+              
+               <!-- Storage Visualization -->
+              <div class="col-span-2 bg-[#1D1D1F] rounded-[28px] p-6 text-white shadow-lg shadow-black/10 relative overflow-hidden">
+                  <div class="flex justify-between items-end mb-6 relative z-10">
+                      <div class="flex flex-col">
+                          <span class="text-[11px] font-bold text-white/50 uppercase tracking-widest mb-1">Storage</span>
+                          <span class="text-3xl font-bold tracking-tight">256 GB</span>
+                      </div>
+                      <i data-lucide="hard-drive" class="w-6 h-6 text-white/50"></i>
+                  </div>
+                  
+                  <!-- The "Swiss Bar" -->
+                  <div class="w-full h-4 bg-white/10 rounded-full overflow-hidden flex">
+                      <div class="h-full bg-[#FF3B30] w-[45%]"></div> <!-- Apps -->
+                      <div class="h-full bg-[#32D74B] w-[15%]"></div> <!-- Photos -->
+                      <div class="h-full bg-[#0A84FF] w-[10%]"></div> <!-- System -->
+                  </div>
+                  <div class="flex gap-4 mt-3 text-[10px] font-bold tracking-wider uppercase text-white/50">
+                      <span class="flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-[#FF3B30]"></div>Used</span>
+                      <span class="flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>Free</span>
+                  </div>
+              </div>
+
+            </div>
+
+            <!-- 3. Detailed List -->
+            <div class="bg-white rounded-[32px] border border-black/5 shadow-sm overflow-hidden">
+              
+              <div class="p-5 border-b border-black/5 hover:bg-gray-50 transition-colors flex justify-between items-center group cursor-pointer">
+                  <span class="text-sm font-medium text-black/60">7OS Version</span>
+                  <div class="flex items-center gap-2">
+                      <span class="text-sm font-bold text-[#1D1D1F]">17.4.1</span>
+                      <span class="w-2 h-2 rounded-full bg-[#FF3B30]"></span> <!-- Update Badge -->
+                  </div>
+              </div>
+
+              <div class="p-5 border-b border-black/5 hover:bg-gray-50 transition-colors flex justify-between items-center group cursor-pointer">
+                  <span class="text-sm font-medium text-black/60">Model Number</span>
+                  <span class="text-sm font-mono text-[#1D1D1F] bg-gray-100 px-2 py-1 rounded-md text-xs">MU793ZA/A</span>
+              </div>
+
+              <!-- Serial Number -->
+              <div class="p-5 hover:bg-gray-50 transition-colors flex justify-between items-center group cursor-pointer">
+                  <span class="text-sm font-medium text-black/60">Serial Number</span>
+                  <div class="flex items-center gap-3">
+                      <span class="text-sm font-mono text-[#1D1D1F] tracking-wide">F17L9X2K0P</span>
+                      <i data-lucide="copy" class="w-4 h-4 text-black/20 group-hover:text-black/60 transition-colors"></i>
+                  </div>
+              </div>
+
+            </div>
+            
+            <!-- Footer Info -->
+            <div class="text-center pb-2">
+              <p class="text-[10px] text-black/30 font-medium uppercase tracking-widest">Designed by 7% in Digital World</p>
+              <p class="text-[10px] text-black/20 font-mono mt-1">Assembled in China</p>
+            </div>
+
           </div>
         </div>
 
@@ -7296,193 +7109,205 @@
           </div>
         </div>
 
-        <!-- iOS 特性调整页面 -->
-        <div id="ios-settings-screen" class="screen">
-          <div class="settings-header">
-            <button id="ios-settings-back-button" class="header-icon-button">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+        <!-- iOS 特性调整页面 - 全新设计 -->
+                  <div id="ios-settings-screen" class="screen ios-tuner-redesign">
+                    <!-- 背景点阵图案 -->
+                    <div class="ios-tuner-bg-pattern"></div>
+                    
+                    <!-- 顶部导航栏 -->
+                    <nav class="ios-tuner-nav">
+                      <button id="ios-settings-back-button" class="ios-tuner-back-btn" aria-label="返回">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <span class="ios-tuner-nav-title">显示设置</span>
+                      <div style="width: 44px;"></div>
+                    </nav>
+
+                    <!-- 主内容区域 -->
+                    <div class="ios-tuner-container">
+                      
+                      <!-- 卡片 1: 可视化预览 -->
+                      <div class="ios-tuner-preview-card">
+                        <div class="ios-tuner-mockup-phone" id="ios-tuner-phone-mockup">
+                          <div class="ios-tuner-mockup-content">
+                            <div class="ios-tuner-skeleton-line w-40"></div>
+                            <div class="ios-tuner-skeleton-line w-80"></div>
+                            <div class="ios-tuner-skeleton-line w-60"></div>
+                            <div style="flex: 1;"></div>
+                            <div class="ios-tuner-skeleton-line w-80"></div>
+                          </div>
+                          <!-- 动态安全区指示器 -->
+                          <div class="ios-tuner-safe-area" id="ios-tuner-safe-area"></div>
+                        </div>
+                      </div>
+
+                      <!-- 卡片 2: 滑块控制区 -->
+                      <div class="ios-tuner-control-card">
+                        <div class="ios-tuner-control-header">
+                          <div class="ios-tuner-label-group">
+                            <h2>底部边距</h2>
+                            <p>Bottom Inset</p>
+                          </div>
+                          <div class="ios-tuner-value-badge" id="ios-margin-display">0px</div>
+                        </div>
+
+                        <div class="ios-tuner-slider-wrapper">
+                          <div class="ios-tuner-slider-fill" id="ios-tuner-slider-fill"></div>
+                          <input type="range" id="ios-margin-slider" min="-100" max="100" value="0" step="1">
+                        </div>
+
+                        <div class="ios-tuner-slider-labels">
+                          <span>-100</span>
+                          <span>0</span>
+                          <span>+100</span>
+                        </div>
+                      </div>
+
+                      <!-- 卡片 3: 提示信息区 -->
+                      <div class="ios-tuner-info-card">
+                        <div class="ios-tuner-info-icon">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                          </svg>
+                        </div>
+                        <div class="ios-tuner-info-content">
+                          <p>调整此值以修正 <strong>PWA 模式</strong> 下的底部白块或黑边。</p>
+                          <ul>
+                            <li>界面负值向上延伸，正值向下收缩，一般情况下只需要调为负值，请根据设备调整</li>
+                            <li>通常在 <span class="ios-tuner-highlight">-50 ~ 50</span> 之间即可</li>
+                            <li>设置自动保存，刷新后生效</li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <!-- 重置按钮 -->
+                      <button class="ios-tuner-reset-btn" id="ios-tuner-reset-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                          <path d="M3 3v5h5"/>
+                        </svg>
+                        恢复默认
+                      </button>
+                    </div>
+                  </div>
+
+        <!-- ======================== -->
+        <!-- 主动消息设置 - 全新设计 (基于原型图) -->
+        <!-- ======================== -->
+        <div id="proactive-settings-screen" class="screen proactive-redesign">
+          <!-- Header -->
+          <header class="proactive-header">
+            <button id="proactive-back-button" class="proactive-btn-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <h1>iOS 特性</h1>
-          </div>
+            <span class="proactive-header-title">Proactive</span>
+            <button id="proactive-save-button" class="proactive-btn-text">Save</button>
+          </header>
 
-          <div class="settings-content" id="ios-settings-scroll-container">
-            <div class="settings-group-title">安全区适配</div>
-            <div class="modal-section">
-              <div
-                class="modal-cell"
-                style="
-                  flex-direction: column;
-                  align-items: stretch;
-                  padding: 15px;
-                  height: auto;
-                "
-              >
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                  "
-                >
-                  <label style="font-size: 16px; font-weight: 500">底部延伸距离</label>
-                  <span
-                    id="ios-margin-display"
-                    style="color: #007aff; font-weight: 600; font-size: 16px"
-                    >50px</span
-                  >
+          <main class="proactive-main-content hide-scrollbar">
+            
+            <!-- 1. 主开关卡片 -->
+            <section class="proactive-ceramic-card proactive-switch-card">
+              <div class="proactive-switch-info">
+                <div class="proactive-icon-circle">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/>
+                    <path d="M5 19l1 3 3-1-1-3-3 1z"/>
+                    <path d="M19 19l-1 3-3-1 1-3 3 1z"/>
+                  </svg>
                 </div>
-                <p style="font-size: 13px; color: #8e8e93; margin: 0 0 12px 0;">
-                  调整此值以消除PWA底部白块，不同iPhone机型可能需要不同数值
-                </p>
-                <input
-                  type="range"
-                  id="ios-margin-slider"
-                  class="settings-slider"
-                  min="-300"
-                  max="300"
-                  value="0"
-                  step="5"
-                />
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-top: 8px;
-                    font-size: 12px;
-                    color: #8e8e93;
-                  "
-                >
-                  <span>-300px</span>
-                  <span>300px</span>
+                <div class="proactive-info-text">
+                  <h3>Enable Function</h3>
+                  <p>Allow Char to proactively initiate a conversation</p>
                 </div>
               </div>
-            </div>
-
-            <div class="settings-group-title">快捷预设</div>
-            <div class="modal-section">
-              <div class="modal-cell" id="ios-preset-30" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone SE / 8</label>
-                <span style="color: #8e8e93; font-size: 14px;">30px</span>
-              </div>
-              <div class="modal-cell" id="ios-preset-50" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone X / 11 / 12</label>
-                <span style="color: #8e8e93; font-size: 14px;">50px</span>
-              </div>
-              <div class="modal-cell" id="ios-preset-60" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone 13 / 14 / 15</label>
-                <span style="color: #8e8e93; font-size: 14px;">60px</span>
-              </div>
-              <div class="modal-cell" id="ios-preset-70" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone 14 Pro Max / 15 Pro Max</label>
-                <span style="color: #8e8e93; font-size: 14px;">70px</span>
-              </div>
-            </div>
-
-            <div class="settings-group-title">说明</div>
-            <div class="modal-section">
-              <div class="modal-cell" style="height: auto; padding: 15px;">
-                <p style="font-size: 14px; color: #8e8e93; margin: 0; line-height: 1.5;">
-                  此设置仅在 iOS PWA 模式下生效。<br><br>
-                  如果你在添加到主屏幕后的 App 底部看到白色区域，请调大此数值直到白块消失。<br><br>
-                  💡 提示：设置会自动保存，刷新后生效。
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="proactive-settings-screen" class="screen">
-          <div class="settings-header">
-            <button id="proactive-back-button" class="header-icon-button">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-            <h1>主动消息</h1>
-          </div>
-
-          <div class="settings-content" id="proactive-scroll-container">
-            <div class="settings-group-title">功能开关</div>
-            <div class="modal-section">
-              <div class="modal-cell">
-                <label style="flex-grow: 1; font-weight: 500; font-size: 16px"
-                  >启用主动消息</label
-                >
-                <label class="switch">
-                  <input type="checkbox" id="proactive-master-switch" />
-                  <span class="slider round"></span>
+              <div class="proactive-toggle-wrapper">
+                <input type="checkbox" id="proactive-master-switch-new" class="proactive-toggle-checkbox"/>
+                <label for="proactive-master-switch-new" class="proactive-toggle-label">
+                  <div class="proactive-toggle-knob"></div>
                 </label>
               </div>
-            </div>
+            </section>
 
-            <div class="settings-group-title">触发频率</div>
-            <div class="modal-section">
-              <div
-                class="modal-cell"
-                style="
-                  flex-direction: column;
-                  align-items: stretch;
-                  padding: 15px;
-                  height: auto;
-                "
-              >
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 12px;
-                  "
-                >
-                  <label style="font-size: 16px; font-weight: 500"
-                    >无操作等待时间</label
-                  >
-                  <span
-                    id="proactive-interval-display"
-                    style="color: #007aff; font-weight: 600; font-size: 16px"
-                    >10 分钟</span
-                  >
+            <!-- 2. 触发概率滑块 -->
+            <section>
+              <div class="proactive-section-header">
+                <h4 class="proactive-section-title">Trigger Interval</h4>
+                <span id="proactive-interval-display" class="proactive-section-value">10 minutes</span>
+              </div>
+              
+              <div class="proactive-ceramic-card proactive-slider-container">
+                <!-- 刻度线装饰 -->
+                <div class="proactive-scale-marks">
+                  <div class="proactive-scale-line"></div>
+                  <div class="proactive-scale-line"></div>
+                  <div class="proactive-scale-line"></div>
+                  <div class="proactive-scale-line"></div>
+                  <div class="proactive-scale-line"></div>
                 </div>
-                <input
-                  type="range"
-                  id="proactive-interval-slider"
-                  class="form-slider"
-                  min="5"
-                  max="60"
-                  step="1"
-                  value="10"
-                  style="width: 100%"
-                />
-                <div
-                  style="
-                    font-size: 13px;
-                    color: #8e8e93;
-                    margin-top: 12px;
-                    line-height: 1.5;
-                  "
-                >
-                  当您离开某个角色的聊天窗口后，如果超过此时长未回去，AI
-                  将尝试主动联系您。
+
+                <div class="proactive-slider-wrapper">
+                  <div class="proactive-track-bg">
+                    <div id="proactive-slider-fill" class="proactive-track-fill"></div>
+                  </div>
+                  <input type="range" min="5" max="60" value="10" id="proactive-interval-slider" class="proactive-slider-input">
+                  <div id="proactive-slider-thumb" class="proactive-slider-thumb">
+                    <div class="proactive-thumb-dot"></div>
+                  </div>
+                </div>
+                
+                <div class="proactive-slider-labels">
+                  <span>5 minutes</span>
+                  <span>30 minutes</span>
+                  <span>60 minutes</span>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div class="settings-group-title">应用对象 (勾选生效)</div>
-            <div class="modal-section">
-              <div id="proactive-contact-list" style="padding-left: 0"></div>
-            </div>
+            <!-- 3. 系统指令输入 -->
+            <section>
+              <div class="proactive-section-header">
+                <h4 class="proactive-section-title">Message Style Instructions</h4>
+                <button id="proactive-optimize-btn" class="proactive-optimize-btn">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 4V2M15 16v-2M8 9h2m8 0h2M4 15l2-2M19.07 4.93l-1.41 1.41M4.93 19.07l1.41-1.41M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  Default
+                </button>
+              </div>
 
-            <div style="height: 50px"></div>
-          </div>
+              <div class="proactive-ceramic-card proactive-textarea-wrapper">
+                <textarea 
+                  id="proactive-system-prompt"
+                  class="proactive-prompt-textarea" 
+                  placeholder="例如：When the user is silent for a long time, you can proactively initiate a topic..."
+                  maxlength="500"
+                ></textarea>
+                
+                <div class="proactive-char-count">
+                  <span id="proactive-char-display">0 / 500 characters</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 角色选择网格 -->
+            <section>
+              <div class="proactive-section-header">
+                <h4 class="proactive-section-title">Apply Role</h4>
+                <span class="proactive-multi-select-badge">Multi-select</span>
+              </div>
+
+              <div id="proactive-contact-list" class="proactive-agent-grid">
+                <!-- 动态渲染角色卡片 -->
+              </div>
+            </section>
+
+          </main>
         </div>
 
         <div id="wow-screen" class="screen">
@@ -9979,5 +9804,46 @@
         </div>
       </div>
     </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const connectBtn = document.getElementById("connect-api-button");
+        if (connectBtn) {
+          connectBtn.addEventListener("click", function () {
+            // 1. Connecting State
+            const spinner =
+              '<div class="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>';
+            this.innerHTML = spinner;
+
+            setTimeout(() => {
+              // 2. Connected State
+              // Remove default styles
+              this.classList.remove(
+                "bg-[#F5F5F7]",
+                "text-black",
+                "hover:bg-[#E5E5EA]"
+              );
+              
+              // Apply connected styles directly via style to ensure they take effect
+              this.style.backgroundColor = "#32D74B";
+              this.style.color = "white";
+              this.style.boxShadow = "0 10px 25px -3px rgba(50, 215, 75, 0.4)"; // shadow-[#32D74B]/20 simulation
+
+              // Add some Tailwind classes for shape/text if they persist
+              this.classList.add("text-white");
+
+              // Update Content
+              this.innerHTML =
+                'Connected <i data-lucide="check-circle-2" class="w-4 h-4 inline-block ml-2"></i>';
+
+              // Re-render icons if lucide is available
+              if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+              }
+            }, 1500);
+          });
+        }
+      });
+    </script>
+    <script src="voice-settings-logic.js"></script>
   </body>
 </html>
