@@ -82,27 +82,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 构建CSS：同时处理背景延伸和内容区域高度
                 // 1. 让 html/body 和 #global-wallpaper 背景延伸到安全区下方，覆盖白色背景
                 // 2. 调整 phone-frame 的高度，让内容被往下推，而不是顶栏被往上挤
-                // 原理：正值减小高度（内容往下推），负值增加高度（内容往上推）
+                // 原理：负值 (如 -100) -> operator '+' -> height + 100px -> 延伸到底部
                 const operator = clampedValue >= 0 ? '-' : '+';
                 const absValue = Math.abs(clampedValue);
                 const calcValue = `${operator} ${absValue}px`;
                 
                 // 背景延伸逻辑：始终向下延伸足够距离，覆盖安全区白色背景
-                // 使用一个较大的固定值（比如 100px）确保覆盖安全区，不受用户设置影响
                 const bgExtensionPx = 100; // 固定延伸 100px，确保覆盖安全区
                 const bgMarginValue = `-${bgExtensionPx}px`;
                 const bgPaddingValue = `${bgExtensionPx}px`;
                 
                 let cssContent = `
-                    /* 让 html/body 背景延伸到安全区下方，覆盖白色背景（固定延伸，不受用户设置影响） */
+                    /* 关键修复：强制 body 顶部对齐，防止 flex 垂直居中导致的高度计算偏差 */
+                    body.is-ios-pwa {
+                        align-items: flex-start !important;
+                        margin-bottom: ${bgMarginValue} !important;
+                        padding-bottom: ${bgPaddingValue} !important;
+                    }
+
                     html.is-ios-pwa-html {
                         margin-bottom: ${bgMarginValue} !important;
                         padding-bottom: ${bgPaddingValue} !important;
                     }
-                    body.is-ios-pwa {
-                        margin-bottom: ${bgMarginValue} !important;
-                        padding-bottom: ${bgPaddingValue} !important;
-                    }
+
                     /* 关键：让 #global-wallpaper 也延伸到安全区下方，覆盖白色背景 */
                     #global-wallpaper {
                         position: fixed !important;
@@ -118,10 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         background-position: center !important;
                         background-repeat: no-repeat !important;
                     }
+                    
                     /* 调整 phone-frame 的高度 */
+                    /* 计算公式：视口高度(100dvh) - 顶部安全区(env) + 用户调节值 */
+                    /* 减去顶部安全区是因为我们使用 margin-top 把它推下来了，所以剩余空间变小了 */
                     body.is-ios-pwa .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        margin-top: env(safe-area-inset-top) !important;
+                        height: calc(100dvh - env(safe-area-inset-top) ${calcValue}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-top) ${calcValue}) !important;
                     }
                 `;
                 
@@ -129,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isFullscreen) {
                     cssContent += `
                     body.is-ios-pwa.fullscreen-mode .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        height: calc(100dvh - env(safe-area-inset-top) ${calcValue}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-top) ${calcValue}) !important;
                     }
                     `;
                 }
