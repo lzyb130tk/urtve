@@ -86,25 +86,28 @@ body.is-ios-pwa {
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
     display: none;
     z-index: -1;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
     padding: 0;
     margin: 0;
 }
 
+/* iOS PWA 模式下：让壁纸层延伸到安全区域 */
 body.is-ios-pwa #global-wallpaper {
     display: block;
+    padding-bottom: env(safe-area-inset-bottom);
+    background-clip: border-box;
+    box-sizing: content-box;
 }
 
 body.fullscreen-mode #global-wallpaper {
     display: block;
+    padding-bottom: env(safe-area-inset-bottom);
+    background-clip: border-box;
+    box-sizing: content-box;
 }
 
 /* ============================================================ */

@@ -89,14 +89,15 @@ body.is-ios-pwa {
  */
 #global-wallpaper {
   position: fixed;
+  /* 使用 inset: 0 确保覆盖整个视口 */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh; /* 使用动态视口高度 */
-
+  
+  /* 关键修复：不要限制height，用bottom: 0自动延伸 */
+  /* 但iOS安全区可能在bottom: 0之外，所以用负margin延伸 */
+  
   /* 默认隐藏，只在iOS PWA全屏模式下显示 */
   display: none;
 
@@ -107,21 +108,27 @@ body.is-ios-pwa {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-
-  /* 确保覆盖到安全区域 */
+  
   padding: 0;
   margin: 0;
 }
 
-/* iOS PWA 模式下启用全局壁纸层 */
+/* iOS PWA 模式下：让壁纸层延伸到安全区域 */
 body.is-ios-pwa #global-wallpaper {
   display: block;
+  /* 关键：用padding-bottom把背景延伸到安全区域 */
+  padding-bottom: env(safe-area-inset-bottom);
+  /* 背景也要覆盖padding区域 */
+  background-clip: border-box;
+  box-sizing: content-box; /* padding在原有尺寸之外 */
 }
 
 /* iOS 全屏模式下也启用 */
 body.fullscreen-mode #global-wallpaper {
   display: block;
+  padding-bottom: env(safe-area-inset-bottom);
+  background-clip: border-box;
+  box-sizing: content-box;
 }
 
 /* ============================================================ */
