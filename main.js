@@ -45,17 +45,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================================
     const IOS_MARGIN_KEY = 'ios_safe_area_margin';
     
-    // 从localStorage读取用户设置的margin值，默认50px
+    // 从localStorage读取用户设置的margin值，默认0px
     const savedMargin = localStorage.getItem(IOS_MARGIN_KEY);
-    const iosMarginValue = savedMargin ? parseInt(savedMargin) : 50;
+    const iosMarginValue = savedMargin ? parseInt(savedMargin) : 0;
     
     // 应用iOS安全区margin的函数
     // 防抖计时器，避免频繁调用导致崩溃
     let iosMarginUpdateTimer = null;
     
     window.applyIOSSafeAreaMargin = function(value) {
-        // 1. 限制值范围，防止崩溃（0-150px）
-        const clampedValue = Math.max(0, Math.min(150, parseInt(value) || 0));
+        // 1. 限制值范围，防止崩溃（-300到300px）
+        const clampedValue = Math.max(-300, Math.min(300, parseInt(value) || 0));
         const marginPx = clampedValue + 'px';
         
         // 2. 防抖：延迟执行，避免频繁调用
@@ -80,11 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isFullscreen = document.body.classList.contains('fullscreen-mode');
                 
                 // 构建CSS：调整 phone-frame 的高度，让内容被往下推，而不是顶栏被往上挤
-                // 原理：减小 phone-frame 的高度，这样内容区域会变小，内容自然被往下推
+                // 原理：正值减小高度（内容往下推），负值增加高度（内容往上推）
+                // 使用加号/减号来正确处理正负值
+                const operator = clampedValue >= 0 ? '-' : '+';
+                const absValue = Math.abs(clampedValue);
+                const calcValue = `${operator} ${absValue}px`;
+                
                 let cssContent = `
                     body.is-ios-pwa .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
+                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                     }
                 `;
                 
@@ -92,8 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isFullscreen) {
                     cssContent += `
                     body.is-ios-pwa.fullscreen-mode .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
+                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                     }
                     `;
                 }
@@ -130,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 初始化滑块值
     if (iosMarginSlider && iosMarginDisplay) {
-        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '50');
-        // 确保值在有效范围内（0-150）
-        currentValue = Math.max(0, Math.min(150, currentValue));
+        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '0');
+        // 确保值在有效范围内（-300到300）
+        currentValue = Math.max(-300, Math.min(300, currentValue));
         iosMarginSlider.value = currentValue;
         iosMarginDisplay.textContent = currentValue + 'px';
         
