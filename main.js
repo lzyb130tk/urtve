@@ -79,28 +79,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 检查是否在全屏模式
                 const isFullscreen = document.body.classList.contains('fullscreen-mode');
                 
-                // 构建CSS，包含全屏模式的特殊处理
+                // 构建CSS：调整 phone-frame 的高度，让内容被往下推，而不是顶栏被往上挤
+                // 原理：减小 phone-frame 的高度，这样内容区域会变小，内容自然被往下推
                 let cssContent = `
-                    html.is-ios-pwa-html {
-                        margin-bottom: -${marginPx} !important;
-                        padding-bottom: ${marginPx} !important;
+                    body.is-ios-pwa .phone-frame {
+                        height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
                     }
-                    body.is-ios-pwa {
-                        margin-bottom: -${marginPx} !important;
-                        padding-bottom: ${marginPx} !important;
                 `;
                 
                 // 全屏模式下的额外处理
                 if (isFullscreen) {
                     cssContent += `
                     body.is-ios-pwa.fullscreen-mode .phone-frame {
-                        margin-bottom: -${marginPx} !important;
-                        padding-bottom: ${marginPx} !important;
+                        height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) - ${marginPx}) !important;
                     }
                     `;
                 }
-                
-                cssContent += `}`;
                 
                 styleEl.textContent = cssContent;
                 debugLog('🍎 iOS安全区margin已更新:', marginPx, isFullscreen ? '(全屏模式)' : '');
