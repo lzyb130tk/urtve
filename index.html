@@ -16,7 +16,10 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- iOS PWA 配置 -->
+  <!-- 🚨 前端黑匣子 (Crash Reporter) - 必须放在最前面 -->
+  <script src="crash-reporter.js"></script>
+
+  <!-- iOS PWA 配置 (暂时注释以测试是否为 PWA 内存限制导致崩溃) -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="七七手机" />
@@ -24,30 +27,53 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="https://i.postimg.cc/tCg8Vw0P/app20.png" />
 
-  <!-- iOS 立即检测脚本 (防止首屏渲染崩溃) -->
+  <!-- Service Worker 注册 -->
   <script>
-    (function() {
-      // 立即执行，不要等待 DOMContentLoaded
-      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      if (isIOS) {
-        document.documentElement.classList.add('ios-optimize-mode');
-        // 同时也给 body 加（等 body 出来后），为了兼容旧 CSS 写法
-        document.addEventListener('DOMContentLoaded', function() {
-            document.body.classList.add('ios-optimize-mode');
-        });
-      }
-    })();
-  </script>
-
-  <!-- Service Worker 注册 (暂停调试以排除缓存问题) -->
-  <!-- 
-  <script>
+    // 注册 Service Worker
     if ("serviceWorker" in navigator) {
-      // ... Service Worker logic temporarily disabled ...
+      window.addEventListener("load", function () {
+        navigator.serviceWorker
+          .register("./sw.js")
+          .then(function (registration) {
+            // 1. 注册成功
+            console.log(
+              "Service Worker 注册成功，作用域:",
+              registration.scope
+            );
+
+            // 2. 手动检查更新 (每次页面加载都检查)
+            registration.update();
+
+            // 3. 监听发现新 Service Worker
+            registration.onupdatefound = () => {
+              const newWorker = registration.installing;
+              newWorker.onstatechange = () => {
+                if (newWorker.state === "installed") {
+                  if (navigator.serviceWorker.controller) {
+                    // 新内容已安装，但还没激活 -> 【确实有更新】
+                    console.log("检测到 Service Worker 更新");
+                    if (window.showUpdateNotification) {
+                      window.showUpdateNotification();
+                    }
+                  } else {
+                    // 首次安装内容
+                    console.log("内容已缓存供离线使用");
+                  }
+                }
+              };
+            };
+          })
+          .catch((error) => {
+            console.error("Service Worker 注册失败:", error);
+          });
+
+        // 4. 监听 controllerchange (当新SW接管页面时，通常意味着已更新并刷新)
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          console.log("Service Worker 控制权已变更 (页面已更新)");
+        });
+      });
     }
-  </script> 
-  -->
+  </script>
 
   <!-- 版本检测和更新提示系统 -->
   <script>
