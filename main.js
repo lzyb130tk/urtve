@@ -76,67 +76,82 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.head.appendChild(styleEl);
                 }
                 
-                // 检查是否在全屏模式
-                const isFullscreen = document.body.classList.contains('fullscreen-mode');
+                // ============================================================
+                // 核心逻辑重写（新版）
+                // ============================================================
+                // 目标：
+                //   - 顶部：始终固定在屏幕顶端，不受用户调节影响
+                //   - 底部：用户调节值只影响底部延伸
+                //     - 负值（如 -50）：向下延伸 50px，覆盖更多白色安全区
+                //     - 正值（如 +50）：向上收缩 50px，在底部留出空间
+                //     - 0：使用系统默认的安全区（通常会有一小条白色）
+                // 
+                // 新公式：height = 100dvh + 用户调节值
+                //   - 用户设置 -50 → 高度 = 100dvh + 50px（向下延伸）
+                //   - 用户设置 +50 → 高度 = 100dvh - 50px（向上收缩）
+                //   - 用户设置 0   → 高度 = 100dvh（填满视口）
+                // 
+                // 关键：使用 position: absolute + top: 0 固定顶部，禁用 flex 居中
+                // ============================================================
                 
-                // 构建CSS：同时处理背景延伸和内容区域高度
-                // 1. 让 html/body 和 #global-wallpaper 背景延伸到安全区下方，覆盖白色背景
-                // 2. 调整 phone-frame 的高度，让内容被往下推，而不是顶栏被往上挤
-                // 原理：正值减小高度（内容往下推），负值增加高度（内容往上推）
-                const operator = clampedValue >= 0 ? '-' : '+';
+                // 操作符转换：负值变正加成，正值变负减少
+                const operator = clampedValue <= 0 ? '+' : '-';
                 const absValue = Math.abs(clampedValue);
                 const calcValue = `${operator} ${absValue}px`;
                 
-                // 背景延伸逻辑：始终向下延伸足够距离，覆盖安全区白色背景
-                // 使用一个较大的固定值（比如 100px）确保覆盖安全区，不受用户设置影响
-                const bgExtensionPx = 100; // 固定延伸 100px，确保覆盖安全区
-                const bgMarginValue = `-${bgExtensionPx}px`;
-                const bgPaddingValue = `${bgExtensionPx}px`;
-                
                 let cssContent = `
-                    /* 让 html/body 背景延伸到安全区下方，覆盖白色背景（固定延伸，不受用户设置影响） */
-                    html.is-ios-pwa-html {
-                        margin-bottom: ${bgMarginValue} !important;
-                        padding-bottom: ${bgPaddingValue} !important;
+                    /* ===== 1. 背景层设置：确保壁纸覆盖整个屏幕（包括安全区） ===== */
+                    html.is-ios-pwa-html, body.is-ios-pwa {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background-color: transparent !important;
                     }
-                    body.is-ios-pwa {
-                        margin-bottom: ${bgMarginValue} !important;
-                        padding-bottom: ${bgPaddingValue} !important;
-                    }
-                    /* 关键：让 #global-wallpaper 也延伸到安全区下方，覆盖白色背景 */
+                    
                     #global-wallpaper {
                         position: fixed !important;
                         top: 0 !important;
                         left: 0 !important;
                         right: 0 !important;
-                        bottom: ${bgMarginValue} !important;
+                        bottom: 0 !important;
                         width: 100vw !important;
-                        height: calc(100vh + ${bgExtensionPx}px) !important;
-                        height: calc(100dvh + ${bgExtensionPx}px) !important;
+                        height: 100vh !important;
+                        height: 100dvh !important;
                         z-index: -1 !important;
                         background-size: cover !important;
                         background-position: center !important;
                         background-repeat: no-repeat !important;
                     }
-                    /* 调整 phone-frame 的高度 */
+                    
+                    /* ===== 2. 关键修复：禁用 flex 居中，使用 block 布局 ===== */
+                    body.is-ios-pwa {
+                        display: block !important;
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        bottom: 0 !important;
+                        overflow: hidden !important;
+                    }
+                    
+                    /* ===== 3. phone-frame：绝对定位，顶部固定，高度可调 ===== */
                     body.is-ios-pwa .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        position: absolute !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        margin: 0 !important;
+                        width: 100% !important;
+                        /* 高度 = 视口高度 + 用户调节值 */
+                        /* 负值(-50)会增加高度(+50px)，向下延伸覆盖安全区 */
+                        /* 正值(+50)会减少高度(-50px)，在底部留出空间 */
+                        height: calc(100dvh ${calcValue}) !important;
+                        max-height: none !important;
+                        border-radius: 0 !important;
                     }
                 `;
                 
-                // 全屏模式下的额外处理
-                if (isFullscreen) {
-                    cssContent += `
-                    body.is-ios-pwa.fullscreen-mode .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                    }
-                    `;
-                }
-                
                 styleEl.textContent = cssContent;
-                debugLog('🍎 iOS安全区margin已更新:', marginPx, isFullscreen ? '(全屏模式)' : '');
+                debugLog('🍎 iOS安全区margin已更新:', marginPx);
             } catch (error) {
                 console.error('应用iOS安全区margin失败:', error);
             }
