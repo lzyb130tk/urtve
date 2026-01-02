@@ -173,14 +173,48 @@ document.addEventListener('DOMContentLoaded', () => {
         iosMarginSlider.value = currentValue;
         iosMarginDisplay.textContent = currentValue + 'px';
         
-        // 滑块变化事件
+        // 获取新版 UI 元素（用于更新视觉效果）
+        const iosSliderProgress = document.getElementById('ios-slider-progress');
+        const iosSliderThumb = document.getElementById('ios-slider-thumb');
+        
+        // 更新滑块视觉效果的函数
+        function updateSliderVisuals(value) {
+            const val = parseInt(value);
+            // 将 -300 ~ 300 映射到 0% ~ 100%
+            const percentage = ((val + 300) / 600) * 100;
+            
+            if (iosSliderProgress) {
+                iosSliderProgress.style.width = percentage + '%';
+            }
+            if (iosSliderThumb) {
+                iosSliderThumb.style.left = `calc(${percentage}% - 16px)`;
+            }
+        }
+        
+        // 初始化视觉效果
+        updateSliderVisuals(currentValue);
+        
+        // 防抖保存 localStorage 的计时器
+        let saveToStorageTimer = null;
+        
+        // 滑块变化事件 - 优化版本，减少iOS负载
         iosMarginSlider.addEventListener('input', function() {
             const value = this.value;
+            
+            // 1. 立即更新UI文本（轻量操作）
             iosMarginDisplay.textContent = value + 'px';
-            // 实时更新CSS
+            
+            // 2. 立即更新视觉效果（轻量操作）
+            updateSliderVisuals(value);
+            
+            // 3. 防抖更新CSS（已有100ms防抖）
             window.applyIOSSafeAreaMargin(parseInt(value));
-            // 保存到localStorage
-            localStorage.setItem(IOS_MARGIN_KEY, value);
+            
+            // 4. 防抖保存到localStorage（避免频繁写入）
+            if (saveToStorageTimer) clearTimeout(saveToStorageTimer);
+            saveToStorageTimer = setTimeout(() => {
+                localStorage.setItem(IOS_MARGIN_KEY, value);
+            }, 300); // 300ms后才保存，避免每次拖动都写入
         });
     }
     
@@ -192,6 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const value = presets[id];
                 if (iosMarginSlider) iosMarginSlider.value = value;
                 if (iosMarginDisplay) iosMarginDisplay.textContent = value + 'px';
+                
+                // 更新滑块视觉效果
+                const iosSliderProgress = document.getElementById('ios-slider-progress');
+                const iosSliderThumb = document.getElementById('ios-slider-thumb');
+                const percentage = ((value + 300) / 600) * 100;
+                if (iosSliderProgress) iosSliderProgress.style.width = percentage + '%';
+                if (iosSliderThumb) iosSliderThumb.style.left = `calc(${percentage}% - 16px)`;
+                
                 window.applyIOSSafeAreaMargin(value);
                 localStorage.setItem(IOS_MARGIN_KEY, value.toString());
             });
@@ -3034,7 +3076,7 @@ window.TimerManager = {
 
             // 时钟功能
             updateClock();
-            setInterval(updateClock, 30000);
+            window.TimerManager.setInterval(updateClock, 30000, 'main-clock');
 
             console.log("App initialization completed efficiently.");
 
@@ -20478,8 +20520,8 @@ I'm fine, thank you.[Split]我很好，谢谢你。\\\\
 
     // 立即执行一次
     updateStatusBarClock();
-    // 每秒刷新一次 (为了和系统时间同步)
-    setInterval(updateStatusBarClock, 1000);
+    // 每60秒刷新一次 (减少CPU占用，避免iOS崩溃)
+    window.TimerManager.setInterval(updateStatusBarClock, 60000, 'status-bar-clock');
 
     aboutDeviceBtn.addEventListener('click', () => {
         // 复用 show-settings 的逻辑，或者添加一个新的 class

@@ -4926,104 +4926,144 @@
         </div>
       </div>
 
-      <!-- iOS 特性调整页面 -->
-        <div id="ios-settings-screen" class="screen">
-          <div class="settings-header">
-            <button id="ios-settings-back-button" class="header-icon-button">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+      <!-- iOS 特性调整页面 - 现代极简设计 -->
+        <div id="ios-settings-screen" class="screen" style="background: #F5F5F7; min-height: 100%;">
+          
+          <!-- 毛玻璃顶栏 -->
+          <div style="padding: max(50px, env(safe-area-inset-top)) 24px 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; background: #F5F5F7;">
+            <button id="ios-settings-back-button" style="width: 40px; height: 40px; margin-left: -8px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: none; background: transparent; cursor: pointer; transition: background 0.2s;">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
               </svg>
             </button>
-            <h1>iOS 特性</h1>
+            <span style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.4);">iOS Display</span>
+            <div style="width: 40px;"></div>
           </div>
 
-          <div class="settings-content" id="ios-settings-scroll-container">
-            <div class="settings-group-title">安全区适配</div>
-            <div class="modal-section">
-              <div
-                class="modal-cell"
-                style="
-                  flex-direction: column;
-                  align-items: stretch;
-                  padding: 15px;
-                  height: auto;
-                "
-              >
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                  "
-                >
-                  <label style="font-size: 16px; font-weight: 500">底部延伸距离</label>
-                  <span
-                    id="ios-margin-display"
-                    style="color: #007aff; font-weight: 600; font-size: 16px"
-                    >50px</span
-                  >
+          <!-- 主内容区 -->
+          <div style="flex: 1; overflow-y: auto; padding: 16px 24px 96px; display: flex; flex-direction: column; gap: 24px;">
+
+            <!-- 卡片 1: 底部安全区调节 -->
+            <div style="background: white; border-radius: 32px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+              <div style="padding: 24px 24px 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,59,48,0.1); color: #FF3B30; display: flex; align-items: center; justify-content: center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                      <path d="M12 18h.01"/>
+                    </svg>
+                  </div>
+                  <span style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(0,0,0,0.4);">Safe Area Tuner</span>
                 </div>
-                <p style="font-size: 13px; color: #8e8e93; margin: 0 0 12px 0;">
-                  调整此值以消除PWA底部白块，不同iPhone机型可能需要不同数值
-                </p>
-                <input
-                  type="range"
-                  id="ios-margin-slider"
-                  class="settings-slider"
-                  min="-300"
-                  max="300"
-                  value="0"
-                  step="5"
-                />
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-top: 8px;
-                    font-size: 12px;
-                    color: #8e8e93;
-                  "
-                >
-                  <span>-300px</span>
-                  <span>300px</span>
+
+                <!-- 数值显示 -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
+                  <div>
+                    <span style="font-size: 10px; font-weight: 700; color: rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px;">Bottom Inset</span>
+                  </div>
+                  <span id="ios-margin-display" style="font-size: 36px; font-weight: 700; font-family: 'SF Mono', monospace; color: #1D1D1F; line-height: 1;">0px</span>
+                </div>
+
+                <!-- 自定义滑块轨道 -->
+                <div style="position: relative; height: 48px; display: flex; align-items: center;">
+                  <!-- 背景轨道 -->
+                  <div style="position: absolute; width: 100%; height: 8px; background: #F5F5F7; border-radius: 4px; overflow: hidden;">
+                    <!-- 进度条 -->
+                    <div id="ios-slider-progress" style="height: 100%; width: 50%; background: linear-gradient(90deg, #FF3B30, #FF6B6B); transition: width 0.1s;"></div>
+                  </div>
+                  
+                  <!-- 刻度线 -->
+                  <div style="position: absolute; width: 100%; display: flex; justify-content: space-between; padding: 0 4px; opacity: 0.15; pointer-events: none;">
+                    <div style="width: 1px; height: 16px; background: black;"></div>
+                    <div style="width: 1px; height: 16px; background: black;"></div>
+                    <div style="width: 1px; height: 16px; background: black;"></div>
+                    <div style="width: 1px; height: 16px; background: black;"></div>
+                    <div style="width: 1px; height: 16px; background: black;"></div>
+                  </div>
+
+                  <!-- 滑块 thumb -->
+                  <div id="ios-slider-thumb" style="position: absolute; width: 32px; height: 32px; background: white; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; pointer-events: none; left: calc(50% - 16px); transition: left 0.1s;">
+                    <div style="width: 8px; height: 8px; background: #FF3B30; border-radius: 50%;"></div>
+                  </div>
+
+                  <!-- 隐藏的真实 input -->
+                  <input type="range" id="ios-margin-slider" min="-300" max="300" value="0" step="5" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: pointer;">
+                </div>
+
+                <!-- 刻度标签 -->
+                <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: rgba(0,0,0,0.2); text-transform: uppercase; margin-top: 8px;">
+                  <span>-300</span>
+                  <span>0</span>
+                  <span>+300</span>
                 </div>
               </div>
             </div>
 
-            <div class="settings-group-title">快捷预设</div>
-            <div class="modal-section">
-              <div class="modal-cell" id="ios-preset-30" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone SE / 8</label>
-                <span style="color: #8e8e93; font-size: 14px;">30px</span>
+            <!-- 卡片 2: 快捷预设 -->
+            <div style="background: white; border-radius: 32px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007AFF; display: flex; align-items: center; justify-content: center;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(0,0,0,0.4);">Quick Presets</span>
               </div>
-              <div class="modal-cell" id="ios-preset-50" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone X / 11 / 12</label>
-                <span style="color: #8e8e93; font-size: 14px;">50px</span>
-              </div>
-              <div class="modal-cell" id="ios-preset-60" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone 13 / 14 / 15</label>
-                <span style="color: #8e8e93; font-size: 14px;">60px</span>
-              </div>
-              <div class="modal-cell" id="ios-preset-70" style="cursor: pointer;">
-                <label style="flex-grow: 1; font-size: 16px; cursor: pointer;">iPhone 14 Pro Max / 15 Pro Max</label>
-                <span style="color: #8e8e93; font-size: 14px;">70px</span>
+
+              <div style="display: flex; flex-direction: column; gap: 2px; background: #F5F5F7; border-radius: 20px; overflow: hidden;">
+                <div id="ios-preset-30" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#FAFAFA'" onmouseout="this.style.background='white'">
+                  <div>
+                    <div style="font-size: 15px; font-weight: 600; color: #1D1D1F;">iPhone SE / 8</div>
+                    <div style="font-size: 12px; color: rgba(0,0,0,0.4); margin-top: 2px;">Compact display</div>
+                  </div>
+                  <span style="font-size: 15px; font-weight: 700; font-family: 'SF Mono', monospace; color: #007AFF;">30px</span>
+                </div>
+                <div id="ios-preset-50" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#FAFAFA'" onmouseout="this.style.background='white'">
+                  <div>
+                    <div style="font-size: 15px; font-weight: 600; color: #1D1D1F;">iPhone X / 11 / 12</div>
+                    <div style="font-size: 12px; color: rgba(0,0,0,0.4); margin-top: 2px;">Notch generation</div>
+                  </div>
+                  <span style="font-size: 15px; font-weight: 700; font-family: 'SF Mono', monospace; color: #007AFF;">50px</span>
+                </div>
+                <div id="ios-preset-60" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#FAFAFA'" onmouseout="this.style.background='white'">
+                  <div>
+                    <div style="font-size: 15px; font-weight: 600; color: #1D1D1F;">iPhone 13 / 14 / 15</div>
+                    <div style="font-size: 12px; color: rgba(0,0,0,0.4); margin-top: 2px;">Standard size</div>
+                  </div>
+                  <span style="font-size: 15px; font-weight: 700; font-family: 'SF Mono', monospace; color: #007AFF;">60px</span>
+                </div>
+                <div id="ios-preset-70" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#FAFAFA'" onmouseout="this.style.background='white'">
+                  <div>
+                    <div style="font-size: 15px; font-weight: 600; color: #1D1D1F;">iPhone Pro Max</div>
+                    <div style="font-size: 12px; color: rgba(0,0,0,0.4); margin-top: 2px;">Large display</div>
+                  </div>
+                  <span style="font-size: 15px; font-weight: 700; font-family: 'SF Mono', monospace; color: #007AFF;">70px</span>
+                </div>
               </div>
             </div>
 
-            <div class="settings-group-title">说明</div>
-            <div class="modal-section">
-              <div class="modal-cell" style="height: auto; padding: 15px;">
-                <p style="font-size: 14px; color: #8e8e93; margin: 0; line-height: 1.5;">
-                  此设置仅在 iOS PWA 模式下生效。<br><br>
-                  如果你在添加到主屏幕后的 App 底部看到白色区域，请调大此数值直到白块消失。<br><br>
-                  💡 提示：设置会自动保存，刷新后生效。
+            <!-- 卡片 3: 说明信息 -->
+            <div style="background: white; border-radius: 32px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(52,199,89,0.1); color: #34C759; display: flex; align-items: center; justify-content: center;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4M12 8h.01"/>
+                  </svg>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(0,0,0,0.4);">How It Works</span>
+              </div>
+
+              <div style="font-size: 14px; color: rgba(0,0,0,0.5); line-height: 1.6;">
+                <p style="margin: 0 0 12px;">此设置仅在 <strong style="color: #1D1D1F;">iOS PWA 模式</strong> 下生效。</p>
+                <p style="margin: 0 0 12px;">如果添加到主屏幕后底部出现白色区域，请<strong style="color: #1D1D1F;">调大数值</strong>直到白块消失。</p>
+                <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 16px;">💡</span>
+                  <span>设置自动保存，刷新后立即生效。</span>
                 </p>
               </div>
             </div>
+
           </div>
         </div>
 
