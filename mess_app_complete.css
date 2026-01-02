@@ -100,33 +100,19 @@ body.is-ios-pwa {
 }
 
 /* ============================================================ */
-/* === iOS PWA 安全区覆盖（解决底部白块问题）===                 */
+/* === iOS PWA 安全区修复：负margin方法 ===                      */
 /* ============================================================ */
 
-/* 核心方案：使用 html::after 伪元素覆盖iOS安全区底部 */
-html.is-ios-pwa-html::after {
-    content: '';
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: env(safe-area-inset-bottom);
-    background: inherit;
-    z-index: 999998;
-    pointer-events: none;
+/* html元素向下延伸 */
+html.is-ios-pwa-html {
+    margin-bottom: -50px;
+    padding-bottom: 50px;
 }
 
-/* 备用方案：body::after */
-body.is-ios-pwa::after {
-    content: '';
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: env(safe-area-inset-bottom);
-    background: inherit;
-    z-index: 999997;
-    pointer-events: none;
+/* body也应用 */
+body.is-ios-pwa {
+    margin-bottom: -50px;
+    padding-bottom: 50px;
 }
 
 /* ============================================================ */

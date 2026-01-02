@@ -105,43 +105,28 @@ body {
 
 /* iOS PWA 专用样式 */
 body.is-ios-pwa {
-  background-color: transparent; /* 让html的背景透出 */
+  background-color: transparent;
 }
 
 /* ============================================================ */
-/* === iOS PWA 安全区覆盖（解决底部白块问题）===                 */
+/* === iOS PWA 安全区修复：负margin方法 ===                      */
 /* ============================================================ */
-
 /* 
- * 核心方案：使用 html::after 伪元素覆盖iOS安全区底部
- * 这个伪元素继承html的背景（壁纸），覆盖原本显示白色的区域
+ * 核心原理：让html/body向下延伸，用负margin把内容区域
+ * "拉"到安全区下方，这样页面自己的背景就会覆盖白块
  */
-html.is-ios-pwa-html::after {
-  content: '';
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  /* 高度等于安全区底部高度 */
-  height: env(safe-area-inset-bottom);
-  /* 继承html的背景（壁纸） */
-  background: inherit;
-  /* 最高层级确保可见（但低于模态框等） */
-  z-index: 999998;
-  pointer-events: none;
+
+/* 方法：html元素向下延伸 */
+html.is-ios-pwa-html {
+  /* 向下延伸，数值要足够大才能覆盖整个安全区 */
+  margin-bottom: -50px; /* 固定值，确保覆盖 */
+  padding-bottom: 50px; /* 补偿margin */
 }
 
-/* 备用方案：body::after */
-body.is-ios-pwa::after {
-  content: '';
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: env(safe-area-inset-bottom);
-  background: inherit;
-  z-index: 999997;
-  pointer-events: none;
+/* 同时对body也应用 */
+body.is-ios-pwa {
+  margin-bottom: -50px;
+  padding-bottom: 50px;
 }
 
 /* ============================================================ */

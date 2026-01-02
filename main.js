@@ -41,59 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================================
-    // === 🖼️ iOS PWA 安全区修复：同步壁纸到html元素 ===
+    // === 🍎 iOS PWA 安全区修复：添加标记class ===
     // ========================================================================
-    /**
-     * 关键发现：iOS PWA安全区域的背景色来自 html 元素！
-     * 解决方案：把壁纸同步到 html 元素，配合CSS的::after伪元素覆盖安全区
-     */
-    const homeScreenElement = document.getElementById('home-screen');
-    const htmlElement = document.documentElement;
-    
-    // iOS PWA模式下，给html添加标记class（触发CSS中的安全区覆盖样式）
+    // 只需要给html添加class，CSS会用负margin方法处理安全区白块
     if (isIOS && isStandalone) {
-        htmlElement.classList.add('is-ios-pwa-html');
-        debugLog('🍎 iOS PWA模式：已添加 is-ios-pwa-html class');
-    }
-    
-    // 同步壁纸到html元素
-    window.syncWallpaperToHtml = function() {
-        if (!homeScreenElement || !htmlElement) return;
-        
-        const computedStyle = window.getComputedStyle(homeScreenElement);
-        const bgImage = computedStyle.backgroundImage;
-        const bgColor = computedStyle.backgroundColor;
-        
-        // 同步到 html 元素
-        if (bgImage && bgImage !== 'none') {
-            htmlElement.style.backgroundImage = bgImage;
-        }
-        if (bgColor) {
-            htmlElement.style.backgroundColor = bgColor;
-        }
-        
-        debugLog('🖼️ 壁纸已同步到html:', bgImage ? bgImage.substring(0, 50) + '...' : bgColor);
-    };
-    
-    // 保留旧函数名兼容
-    window.syncGlobalWallpaper = window.syncWallpaperToHtml;
-    
-    // 初始同步和监听变化
-    if (homeScreenElement) {
-        setTimeout(() => window.syncWallpaperToHtml(), 100);
-        
-        const wallpaperObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                    window.syncWallpaperToHtml();
-                }
-            });
-        });
-        
-        wallpaperObserver.observe(homeScreenElement, {
-            attributes: true,
-            attributeFilter: ['style']
-        });
+        document.documentElement.classList.add('is-ios-pwa-html');
+        debugLog('🍎 iOS PWA模式：已添加 is-ios-pwa-html class (负margin方法)');
     }
 
 
