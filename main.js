@@ -76,82 +76,67 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.head.appendChild(styleEl);
                 }
                 
-                // ============================================================
-                // 核心逻辑重写（新版）
-                // ============================================================
-                // 目标：
-                //   - 顶部：始终固定在屏幕顶端，不受用户调节影响
-                //   - 底部：用户调节值只影响底部延伸
-                //     - 负值（如 -50）：向下延伸 50px，覆盖更多白色安全区
-                //     - 正值（如 +50）：向上收缩 50px，在底部留出空间
-                //     - 0：使用系统默认的安全区（通常会有一小条白色）
-                // 
-                // 新公式：height = 100dvh + 用户调节值
-                //   - 用户设置 -50 → 高度 = 100dvh + 50px（向下延伸）
-                //   - 用户设置 +50 → 高度 = 100dvh - 50px（向上收缩）
-                //   - 用户设置 0   → 高度 = 100dvh（填满视口）
-                // 
-                // 关键：使用 position: absolute + top: 0 固定顶部，禁用 flex 居中
-                // ============================================================
+                // 检查是否在全屏模式
+                const isFullscreen = document.body.classList.contains('fullscreen-mode');
                 
-                // 操作符转换：负值变正加成，正值变负减少
-                const operator = clampedValue <= 0 ? '+' : '-';
+                // 构建CSS：同时处理背景延伸和内容区域高度
+                // 1. 让 html/body 和 #global-wallpaper 背景延伸到安全区下方，覆盖白色背景
+                // 2. 调整 phone-frame 的高度，让内容被往下推，而不是顶栏被往上挤
+                // 原理：正值减小高度（内容往下推），负值增加高度（内容往上推）
+                const operator = clampedValue >= 0 ? '-' : '+';
                 const absValue = Math.abs(clampedValue);
                 const calcValue = `${operator} ${absValue}px`;
                 
+                // 背景延伸逻辑：始终向下延伸足够距离，覆盖安全区白色背景
+                // 使用一个较大的固定值（比如 100px）确保覆盖安全区，不受用户设置影响
+                const bgExtensionPx = 100; // 固定延伸 100px，确保覆盖安全区
+                const bgMarginValue = `-${bgExtensionPx}px`;
+                const bgPaddingValue = `${bgExtensionPx}px`;
+                
                 let cssContent = `
-                    /* ===== 1. 背景层设置：确保壁纸覆盖整个屏幕（包括安全区） ===== */
-                    html.is-ios-pwa-html, body.is-ios-pwa {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        background-color: transparent !important;
+                    /* 让 html/body 背景延伸到安全区下方，覆盖白色背景（固定延伸，不受用户设置影响） */
+                    html.is-ios-pwa-html {
+                        margin-bottom: ${bgMarginValue} !important;
+                        padding-bottom: ${bgPaddingValue} !important;
                     }
-                    
+                    body.is-ios-pwa {
+                        margin-bottom: ${bgMarginValue} !important;
+                        padding-bottom: ${bgPaddingValue} !important;
+                    }
+                    /* 关键：让 #global-wallpaper 也延伸到安全区下方，覆盖白色背景 */
                     #global-wallpaper {
                         position: fixed !important;
                         top: 0 !important;
                         left: 0 !important;
                         right: 0 !important;
-                        bottom: 0 !important;
+                        bottom: ${bgMarginValue} !important;
                         width: 100vw !important;
-                        height: 100vh !important;
-                        height: 100dvh !important;
+                        height: calc(100vh + ${bgExtensionPx}px) !important;
+                        height: calc(100dvh + ${bgExtensionPx}px) !important;
                         z-index: -1 !important;
                         background-size: cover !important;
                         background-position: center !important;
                         background-repeat: no-repeat !important;
                     }
-                    
-                    /* ===== 2. 关键修复：禁用 flex 居中，使用 block 布局 ===== */
-                    body.is-ios-pwa {
-                        display: block !important;
-                        position: fixed !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        right: 0 !important;
-                        bottom: 0 !important;
-                        overflow: hidden !important;
-                    }
-                    
-                    /* ===== 3. phone-frame：绝对定位，顶部固定，高度可调 ===== */
+                    /* 调整 phone-frame 的高度 */
                     body.is-ios-pwa .phone-frame {
-                        position: absolute !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        right: 0 !important;
-                        margin: 0 !important;
-                        width: 100% !important;
-                        /* 高度 = 视口高度 + 用户调节值 */
-                        /* 负值(-50)会增加高度(+50px)，向下延伸覆盖安全区 */
-                        /* 正值(+50)会减少高度(-50px)，在底部留出空间 */
-                        height: calc(100dvh ${calcValue}) !important;
-                        max-height: none !important;
-                        border-radius: 0 !important;
+                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                     }
                 `;
                 
+                // 全屏模式下的额外处理
+                if (isFullscreen) {
+                    cssContent += `
+                    body.is-ios-pwa.fullscreen-mode .phone-frame {
+                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                    }
+                    `;
+                }
+                
                 styleEl.textContent = cssContent;
-                debugLog('🍎 iOS安全区margin已更新:', marginPx);
+                debugLog('🍎 iOS安全区margin已更新:', marginPx, isFullscreen ? '(全屏模式)' : '');
             } catch (error) {
                 console.error('应用iOS安全区margin失败:', error);
             }
@@ -180,95 +165,22 @@ document.addEventListener('DOMContentLoaded', () => {
         'ios-preset-70': 70
     };
     
-    // === 新增：获取新版 UI 元素 ===
-    const iosTunerSliderFill = document.getElementById('ios-tuner-slider-fill');
-    const iosTunerSafeArea = document.getElementById('ios-tuner-safe-area');
-    const iosTunerPhoneMockup = document.getElementById('ios-tuner-phone-mockup');
-    const iosTunerResetBtn = document.getElementById('ios-tuner-reset-btn');
-    
-    // iOS Tuner UI 更新函数
-    function updateIOSTunerUI(value) {
-        const val = parseInt(value);
-        
-        // 1. 更新数值徽章
-        if (iosMarginDisplay) {
-            iosMarginDisplay.textContent = `${val > 0 ? '+' : ''}${val}px`;
-            
-            // 动态颜色
-            if (val === 0) {
-                iosMarginDisplay.style.color = '#1C1C1E';
-                iosMarginDisplay.style.background = '#F2F2F7';
-            } else if (val > 0) {
-                iosMarginDisplay.style.color = '#007AFF';
-                iosMarginDisplay.style.background = 'rgba(0, 122, 255, 0.1)';
-            } else {
-                iosMarginDisplay.style.color = '#FF3B30';
-                iosMarginDisplay.style.background = 'rgba(255, 59, 48, 0.1)';
-            }
-        }
-        
-        // 2. 更新滑块填充条
-        if (iosTunerSliderFill) {
-            const percentage = ((val + 100) / 200) * 100;
-            iosTunerSliderFill.style.width = `${percentage}%`;
-            
-            // 动态渐变色
-            if (val === 0) {
-                iosTunerSliderFill.style.background = '#8E8E93';
-            } else if (val > 0) {
-                iosTunerSliderFill.style.background = 'linear-gradient(135deg, #007AFF, #5856D6)';
-            } else {
-                iosTunerSliderFill.style.background = '#FF3B30';
-            }
-        }
-        
-        // 3. 更新手机模拟器的安全区可视化
-        if (iosTunerSafeArea) {
-            const baseHeight = 20;
-            const visualHeight = baseHeight + (val * 0.4);
-            const clampedHeight = Math.max(0, Math.min(visualHeight, 100));
-            iosTunerSafeArea.style.height = `${clampedHeight}px`;
-        }
-        
-        // 4. 手机模拟器微缩放效果
-        if (iosTunerPhoneMockup) {
-            if (Math.abs(val) > 80) {
-                iosTunerPhoneMockup.style.transform = 'scale(1.02)';
-            } else {
-                iosTunerPhoneMockup.style.transform = 'scale(1)';
-            }
-        }
-    }
-    
     // 初始化滑块值
     if (iosMarginSlider && iosMarginDisplay) {
         let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '0');
         // 确保值在有效范围内（-300到300）
         currentValue = Math.max(-300, Math.min(300, currentValue));
         iosMarginSlider.value = currentValue;
-        
-        // 初始化 UI
-        updateIOSTunerUI(currentValue);
+        iosMarginDisplay.textContent = currentValue + 'px';
         
         // 滑块变化事件
         iosMarginSlider.addEventListener('input', function() {
             const value = this.value;
-            updateIOSTunerUI(value);
+            iosMarginDisplay.textContent = value + 'px';
             // 实时更新CSS
             window.applyIOSSafeAreaMargin(parseInt(value));
             // 保存到localStorage
             localStorage.setItem(IOS_MARGIN_KEY, value);
-        });
-    }
-    
-    // 重置按钮事件
-    if (iosTunerResetBtn) {
-        iosTunerResetBtn.addEventListener('click', function() {
-            const defaultValue = 0;
-            if (iosMarginSlider) iosMarginSlider.value = defaultValue;
-            updateIOSTunerUI(defaultValue);
-            window.applyIOSSafeAreaMargin(defaultValue);
-            localStorage.setItem(IOS_MARGIN_KEY, defaultValue.toString());
         });
     }
     
@@ -279,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', function() {
                 const value = presets[id];
                 if (iosMarginSlider) iosMarginSlider.value = value;
-                updateIOSTunerUI(value);
+                if (iosMarginDisplay) iosMarginDisplay.textContent = value + 'px';
                 window.applyIOSSafeAreaMargin(value);
                 localStorage.setItem(IOS_MARGIN_KEY, value.toString());
             });
