@@ -99,12 +99,11 @@ body.is-ios-pwa {
     background-color: transparent;
 }
 
-/* iOS安全区覆盖：多种方法组合 */
-html.is-ios-pwa-html {
-    margin-bottom: calc(-1 * env(safe-area-inset-bottom));
-    padding-bottom: env(safe-area-inset-bottom);
-}
+/* ============================================================ */
+/* === iOS PWA 安全区覆盖（解决底部白块问题）===                 */
+/* ============================================================ */
 
+/* 核心方案：使用 html::after 伪元素覆盖iOS安全区底部 */
 html.is-ios-pwa-html::after {
     content: '';
     position: fixed;
@@ -117,6 +116,7 @@ html.is-ios-pwa-html::after {
     pointer-events: none;
 }
 
+/* 备用方案：body::after */
 body.is-ios-pwa::after {
     content: '';
     position: fixed;
@@ -127,39 +127,6 @@ body.is-ios-pwa::after {
     background: inherit;
     z-index: 999997;
     pointer-events: none;
-}
-
-/* ============================================================ */
-/* === 全局壁纸层：解决iOS PWA底部白块问题 ===                  */
-/* ============================================================ */
-#global-wallpaper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: none;
-    z-index: -1;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 0;
-    margin: 0;
-}
-
-/* iOS PWA 模式下：让壁纸层延伸到安全区域 */
-body.is-ios-pwa #global-wallpaper {
-    display: block;
-    padding-bottom: env(safe-area-inset-bottom);
-    background-clip: border-box;
-    box-sizing: content-box;
-}
-
-body.fullscreen-mode #global-wallpaper {
-    display: block;
-    padding-bottom: env(safe-area-inset-bottom);
-    background-clip: border-box;
-    box-sizing: content-box;
 }
 
 /* ============================================================ */

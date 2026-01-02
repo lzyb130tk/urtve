@@ -109,35 +109,29 @@ body.is-ios-pwa {
 }
 
 /* ============================================================ */
-/* === iOS安全区覆盖：多种方法组合尝试 ===                       */
+/* === iOS PWA 安全区覆盖（解决底部白块问题）===                 */
 /* ============================================================ */
 
-/* 方法1: html使用负margin延伸到安全区下方 */
-html.is-ios-pwa-html {
-  /* 向下延伸等于安全区底部高度的距离 */
-  margin-bottom: calc(-1 * env(safe-area-inset-bottom));
-  /* 背景也要延伸 */
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* 方法2: html::after伪元素覆盖安全区 */
+/* 
+ * 核心方案：使用 html::after 伪元素覆盖iOS安全区底部
+ * 这个伪元素继承html的背景（壁纸），覆盖原本显示白色的区域
+ */
 html.is-ios-pwa-html::after {
   content: '';
   position: fixed;
   left: 0;
   right: 0;
-  /* 定位到屏幕最底部（安全区位置） */
   bottom: 0;
-  /* 高度等于安全区 */
+  /* 高度等于安全区底部高度 */
   height: env(safe-area-inset-bottom);
-  /* 继承html的背景 */
+  /* 继承html的背景（壁纸） */
   background: inherit;
-  /* 最高层级确保可见 */
+  /* 最高层级确保可见（但低于模态框等） */
   z-index: 999998;
   pointer-events: none;
 }
 
-/* 方法3: body也使用相同策略 */
+/* 备用方案：body::after */
 body.is-ios-pwa::after {
   content: '';
   position: fixed;
@@ -148,58 +142,6 @@ body.is-ios-pwa::after {
   background: inherit;
   z-index: 999997;
   pointer-events: none;
-}
-
-/* ============================================================ */
-/* === 全局壁纸层：解决iOS PWA底部白块问题 ===                  */
-/* ============================================================ */
-/* 
- * 这个层覆盖整个视口（包括iOS安全区域），
- * 始终显示用户壁纸，避免白色背景露出。
- * 它位于所有内容之下，作为"真正的底色"。
- */
-#global-wallpaper {
-  position: fixed;
-  /* 使用 inset: 0 确保覆盖整个视口 */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  
-  /* 关键修复：不要限制height，用bottom: 0自动延伸 */
-  /* 但iOS安全区可能在bottom: 0之外，所以用负margin延伸 */
-  
-  /* 默认隐藏，只在iOS PWA全屏模式下显示 */
-  display: none;
-
-  /* 层级最低，在所有内容之下 */
-  z-index: -1;
-
-  /* 壁纸样式（会被JS动态更新为用户壁纸） */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  
-  padding: 0;
-  margin: 0;
-}
-
-/* iOS PWA 模式下：让壁纸层延伸到安全区域 */
-body.is-ios-pwa #global-wallpaper {
-  display: block;
-  /* 关键：用padding-bottom把背景延伸到安全区域 */
-  padding-bottom: env(safe-area-inset-bottom);
-  /* 背景也要覆盖padding区域 */
-  background-clip: border-box;
-  box-sizing: content-box; /* padding在原有尺寸之外 */
-}
-
-/* iOS 全屏模式下也启用 */
-body.fullscreen-mode #global-wallpaper {
-  display: block;
-  padding-bottom: env(safe-area-inset-bottom);
-  background-clip: border-box;
-  box-sizing: content-box;
 }
 
 /* ============================================================ */
