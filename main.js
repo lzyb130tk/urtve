@@ -87,9 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const absValue = Math.abs(clampedValue);
                 const calcValue = `${operator} ${absValue}px`;
                 
-                // 背景延伸逻辑：始终向下延伸足够距离，覆盖安全区白色背景
-                // 使用一个较大的固定值（比如 100px）确保覆盖安全区，不受用户设置影响
-                const bgExtensionPx = 100; // 固定延伸 100px，确保覆盖安全区
+                // 背景延伸逻辑：基于用户设置动态扩展，覆盖安全区白色背景
+                // 当用户设置为较大负值时，背景需要比默认更大幅度延伸以避免露出白条
+                const bgExtensionBase = 120; // 最小延伸大小
+                const bgExtensionPx = Math.max(bgExtensionBase, absValue + 120); // 随用户设置增加延伸
                 const bgMarginValue = `-${bgExtensionPx}px`;
                 const bgPaddingValue = `${bgExtensionPx}px`;
                 
@@ -118,10 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         background-position: center !important;
                         background-repeat: no-repeat !important;
                     }
-                    /* 调整 phone-frame 的高度 */
+                    /* 调整 phone-frame 的高度并根据用户设置进行位移（确保负值也能明显可见） */
                     body.is-ios-pwa .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        /* 使用 CSS 变量与 translateY 同步高度，避免负值时内容被遮盖 */
+                        height: calc(100dvh - env(safe-area-inset-bottom) - var(--ios-safe-margin)) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) - var(--ios-safe-margin)) !important;
+                        transform: translateY(var(--ios-safe-margin)) !important;
+                        transition: transform 0.15s ease;
+                        will-change: transform;
                     }
                 `;
                 
@@ -129,8 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isFullscreen) {
                     cssContent += `
                     body.is-ios-pwa.fullscreen-mode .phone-frame {
-                        height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        /* 使用 CSS 变量与 translateY 同步高度，避免负值时内容被遮盖（全屏模式） */
+                        height: calc(100dvh - env(safe-area-inset-bottom) - var(--ios-safe-margin)) !important;
+                        max-height: calc(100dvh - env(safe-area-inset-bottom) - var(--ios-safe-margin)) !important;
+                        transform: translateY(var(--ios-safe-margin)) !important;
+                        transition: transform 0.15s ease;
+                        will-change: transform;
                     }
                     `;
                 }
