@@ -12831,6 +12831,11 @@ body.fullscreen-mode .phone-frame {
   z-index: var(--z-screen-secondary);
 }
 
+/* ios-settings-screen 作为二级页面，层级高于 settings-screen */
+#ios-settings-screen.opened {
+  z-index: var(--z-screen-secondary);
+}
+
 /* === 新增：动态电池组件样式 === */
 
 /* 1. 容器 */

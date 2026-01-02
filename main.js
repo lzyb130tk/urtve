@@ -83,69 +83,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // iOS设置页面逻辑
-    document.addEventListener('DOMContentLoaded', function() {
-        const navToIosSettings = document.getElementById('nav-to-ios-settings');
-        const iosSettingsScreen = document.getElementById('ios-settings-screen');
-        const iosSettingsBackBtn = document.getElementById('ios-settings-back-button');
-        const iosMarginSlider = document.getElementById('ios-margin-slider');
-        const iosMarginDisplay = document.getElementById('ios-margin-display');
-        const settingsScreen = document.getElementById('settings-screen');
+    const navToIosSettings = document.getElementById('nav-to-ios-settings');
+    const iosSettingsScreen = document.getElementById('ios-settings-screen');
+    const iosSettingsBackBtn = document.getElementById('ios-settings-back-button');
+    const iosMarginSlider = document.getElementById('ios-margin-slider');
+    const iosMarginDisplay = document.getElementById('ios-margin-display');
+    
+    // 预设按钮
+    const presets = {
+        'ios-preset-30': 30,
+        'ios-preset-50': 50,
+        'ios-preset-60': 60,
+        'ios-preset-70': 70
+    };
+    
+    // 初始化滑块值
+    if (iosMarginSlider && iosMarginDisplay) {
+        const currentValue = localStorage.getItem(IOS_MARGIN_KEY) || '50';
+        iosMarginSlider.value = currentValue;
+        iosMarginDisplay.textContent = currentValue + 'px';
         
-        // 预设按钮
-        const presets = {
-            'ios-preset-30': 30,
-            'ios-preset-50': 50,
-            'ios-preset-60': 60,
-            'ios-preset-70': 70
-        };
-        
-        // 初始化滑块值
-        if (iosMarginSlider && iosMarginDisplay) {
-            const currentValue = localStorage.getItem(IOS_MARGIN_KEY) || '50';
-            iosMarginSlider.value = currentValue;
-            iosMarginDisplay.textContent = currentValue + 'px';
-            
-            // 滑块变化事件
-            iosMarginSlider.addEventListener('input', function() {
-                const value = this.value;
-                iosMarginDisplay.textContent = value + 'px';
-                // 实时更新CSS
-                window.applyIOSSafeAreaMargin(parseInt(value));
-                // 保存到localStorage
-                localStorage.setItem(IOS_MARGIN_KEY, value);
-            });
-        }
-        
-        // 预设按钮点击事件
-        Object.keys(presets).forEach(function(id) {
-            const btn = document.getElementById(id);
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    const value = presets[id];
-                    if (iosMarginSlider) iosMarginSlider.value = value;
-                    if (iosMarginDisplay) iosMarginDisplay.textContent = value + 'px';
-                    window.applyIOSSafeAreaMargin(value);
-                    localStorage.setItem(IOS_MARGIN_KEY, value.toString());
-                });
-            }
+        // 滑块变化事件
+        iosMarginSlider.addEventListener('input', function() {
+            const value = this.value;
+            iosMarginDisplay.textContent = value + 'px';
+            // 实时更新CSS
+            window.applyIOSSafeAreaMargin(parseInt(value));
+            // 保存到localStorage
+            localStorage.setItem(IOS_MARGIN_KEY, value);
         });
-        
-        // 导航到iOS设置页面
-        if (navToIosSettings && iosSettingsScreen && settingsScreen) {
-            navToIosSettings.addEventListener('click', function() {
-                settingsScreen.classList.remove('active');
-                iosSettingsScreen.classList.add('active');
-            });
-        }
-        
-        // 返回设置页面
-        if (iosSettingsBackBtn && iosSettingsScreen && settingsScreen) {
-            iosSettingsBackBtn.addEventListener('click', function() {
-                iosSettingsScreen.classList.remove('active');
-                settingsScreen.classList.add('active');
+    }
+    
+    // 预设按钮点击事件
+    Object.keys(presets).forEach(function(id) {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.addEventListener('click', function() {
+                const value = presets[id];
+                if (iosMarginSlider) iosMarginSlider.value = value;
+                if (iosMarginDisplay) iosMarginDisplay.textContent = value + 'px';
+                window.applyIOSSafeAreaMargin(value);
+                localStorage.setItem(IOS_MARGIN_KEY, value.toString());
             });
         }
     });
+    
+    // 导航到iOS设置页面
+    if (navToIosSettings && iosSettingsScreen) {
+        navToIosSettings.addEventListener('click', function() {
+            // 使用 .opened 类，与其他子页面保持一致
+            iosSettingsScreen.classList.add('opened');
+        });
+    }
+    
+    // 返回设置页面
+    if (iosSettingsBackBtn && iosSettingsScreen) {
+        iosSettingsBackBtn.addEventListener('click', function() {
+            iosSettingsScreen.classList.remove('opened');
+        });
+    }
 
 
     // ========================================================================
