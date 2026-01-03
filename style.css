@@ -156,20 +156,15 @@ body.is-ios-pwa {
 
 /* iOS PWA 模式下的 .phone-frame 适配 */
 body.is-ios-pwa .phone-frame {
-  /* 让内容区域填满除底部安全区外的空间 */
-  /* safe-area-inset-top 不用于 margin-top，而是让内容自然在该区域显示（沉浸式） */
-  /* 或者，如果需要避让，应该使用 padding-top 在内部处理，而不是 margin */
-  
+  /* 恢复全屏高度，不要减去安全区，让背景延伸到底部 */
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   
-  /*计算高度：视口高度 - 底部安全区*/
-  height: calc(100dvh - env(safe-area-inset-bottom)) !important;
-  max-height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   
-  /* 移除 margin-top，防止顶部出现空隙 */
   margin-top: 0; 
   border-radius: 0 !important;
 }
@@ -177,8 +172,8 @@ body.is-ios-pwa .phone-frame {
 /* iOS PWA 全屏模式组合 */
 body.is-ios-pwa.fullscreen-mode .phone-frame {
   width: 100vw !important;
-  height: calc(100dvh - env(safe-area-inset-bottom)) !important;
-  max-height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   margin-top: 0;
   border-radius: 0 !important;
   border: none !important;
@@ -189,7 +184,7 @@ body.is-ios-pwa.fullscreen-mode .phone-frame {
 /* ============================================================ */
 /* 
  * 在禁止body橡皮筋效应的同时，保持内容区域的正常滚动。
- * 使用 -webkit-overflow-scrolling: touch 保持iOS原生滚动手感。
+ * 核心修复：为滚动容器底部增加安全区内边距，防止内容被Home Bar遮挡
  */
 body.is-ios-pwa .chat-messages-container,
 body.is-ios-pwa .settings-content,
@@ -200,6 +195,18 @@ body.is-ios-pwa [class*="-container"][style*="overflow"],
 body.is-ios-pwa .screen {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain; /* 允许内部滚动，但不传递到body */
+    
+    /* 增加底部安全区内边距，确保内容不被 Home Bar 遮挡 */
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    
+    /* 某些容器可能有自己的padding，使用 calc 叠加 */
+    /* 注意：对于已经有 padding-bottom 的元素，这可能会覆盖。通常这些容器底部留白较多，直接覆盖通常没问题 */
+}
+
+/* 特殊处理：主屏幕 .content 已经有很大 padding-bottom，叠加安全区 */
+body.is-ios-pwa .content {
+   /* 保持原有的 padding 设计，并额外增加安全区 */
+   padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important;
 }
 
 * {
