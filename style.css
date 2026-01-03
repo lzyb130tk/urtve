@@ -278,6 +278,11 @@ body.is-ios-pwa .content {
     flex-grow: 1;
     height: 0; /* 这是一个 Flexbox hack，强迫浏览器计算真实高度，防止溢出失效 */
     min-height: 0;
+    
+    /* === 终极修复：Hack for iOS Safari === */
+    /* 在 iOS 上，如果内容高度只比容器高 0px-1px，有时候无法触发滚动 */
+    /* 我们强制给所有这些容器底部加一点 padding，确保内容区一定比容器大 */
+    padding-bottom: 2px;
 }
 
 /* 默认状态：主屏幕 */
