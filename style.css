@@ -133,13 +133,14 @@ body.is-ios-pwa {
 /* ============================================================ */
 /* === iOS PWA 橡皮筋效应禁用 + 安全区适配 ===                   */
 /* ============================================================ */
+/* iOS PWA 模式专用：绝对锁定与防回弹 */
 body.is-ios-pwa {
-  /* 禁止整个页面的过度滚动（橡皮筋效应） */
+  /* 禁止整个页面的滚动和橡皮筋效应 */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: auto;
-  overflow: hidden; /* 禁止body滚动 */
+  overflow: hidden; /* 核心：禁止body滚动 */
 
-  /* 确保body占满整个视口 */
+  /* 强制固定在视口，防止位移 */
   position: fixed;
   top: 0;
   left: 0;
@@ -148,17 +149,29 @@ body.is-ios-pwa {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
+  
+  /* 确保背景色为黑色（状态栏区域） */
+  background-color: black; 
 }
 
 /* iOS PWA 模式下的 .phone-frame 适配 */
 body.is-ios-pwa .phone-frame {
-  /* 关键：让内容区域的高度减去底部安全区高度 */
-  /* 这样C区域的内容会"上移"到可视区域内 */
+  /* 让内容区域填满除底部安全区外的空间 */
+  /* safe-area-inset-top 不用于 margin-top，而是让内容自然在该区域显示（沉浸式） */
+  /* 或者，如果需要避让，应该使用 padding-top 在内部处理，而不是 margin */
+  
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  
+  /*计算高度：视口高度 - 底部安全区*/
   height: calc(100dvh - env(safe-area-inset-bottom)) !important;
   max-height: calc(100dvh - env(safe-area-inset-bottom)) !important;
-
-  /* 顶部也要考虑 */
-  margin-top: env(safe-area-inset-top);
+  
+  /* 移除 margin-top，防止顶部出现空隙 */
+  margin-top: 0; 
+  border-radius: 0 !important;
 }
 
 /* iOS PWA 全屏模式组合 */
@@ -166,7 +179,7 @@ body.is-ios-pwa.fullscreen-mode .phone-frame {
   width: 100vw !important;
   height: calc(100dvh - env(safe-area-inset-bottom)) !important;
   max-height: calc(100dvh - env(safe-area-inset-bottom)) !important;
-  margin-top: env(safe-area-inset-top);
+  margin-top: 0;
   border-radius: 0 !important;
   border: none !important;
 }

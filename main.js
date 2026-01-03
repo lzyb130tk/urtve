@@ -397,11 +397,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100); // 100ms 防抖延迟
     };
     
-    // iOS PWA模式下，给html添加class并应用margin
+    // ========================================================================
+    // === 🛡️ iOS 强力防回弹系统 (RubberBandShield) ===
+    // === 解决 "界面掉下来" 和 "顶部白块" 的终极方案 ===
+    // ========================================================================
     if (isIOS && isStandalone) {
+        document.body.classList.add('is-ios-pwa');
+        
+        // 1. 强制无视安全区 margin (由 CSS 控制)
         document.documentElement.classList.add('is-ios-pwa-html');
-        window.applyIOSSafeAreaMargin(iosMarginValue);
-        debugLog('🍎 iOS PWA模式：已添加 is-ios-pwa-html class，margin=' + iosMarginValue + 'px');
+
+        // 2. 核心：主动拦截橡皮筋效果
+        // 原理：如果用户试图在不能滚动的区域滑动，或者在顶部向下拉，强制 preventDefault
+        document.addEventListener('touchmove', function(e) {
+            // 如果有 open 状态的 modal，可能需要允许某些滚动，这里简化处理，优先保证不掉下来
+            const target = e.target;
+            
+            // 检查目标是否在可滚动容器内
+            let scrollableParent = target.closest('.chat-messages-container, .settings-content, .settings-content-ios, .music-content, .content, .scrollable');
+            
+            if (!scrollableParent) {
+                // 如果不在已知的滚动容器内，直接禁止滑动 -> 锁死背景
+                e.preventDefault();
+            } else {
+                // 如果在滚动容器内，检查是否滚动到了边缘
+                const isAtTop = scrollableParent.scrollTop <= 0;
+                const isAtBottom = scrollableParent.scrollTop + scrollableParent.clientHeight >= scrollableParent.scrollHeight;
+                
+                // 向上滑动 (scrollTop减少) 且已经在顶部 -> 禁止 (防止拉下整个页面)
+                if (isAtTop && e.touches[0].clientY > (window.lastTouchY || 0)) {
+                   // 只有当这是“下拉”动作时才阻止
+                   // 这里需要记录上一次 touch 的位置来判断方向，或者简单地粗暴阻止顶部下拉
+                   // 简单策略：在顶部的下拉动作极其危险，直接禁止
+                   e.preventDefault(); 
+                }
+                
+                // 向下滑动 (scrollTop增加) 且已经在底部 -> 禁止 (防止拉起底部)
+                if (isAtBottom && e.touches[0].clientY < (window.lastTouchY || 0)) {
+                    e.preventDefault();
+                }
+            }
+            // 更新 lastTouchY
+            window.lastTouchY = e.touches[0].clientY;
+        }, { passive: false });
+        
+        // 记录触摸起始点
+        document.addEventListener('touchstart', function(e) {
+            window.lastTouchY = e.touches[0].clientY;
+        }, { passive: false });
+
+        debugLog('🛡️ iOS PWA 防回弹护盾已启动');
     }
     
     // iOS设置页面逻辑
