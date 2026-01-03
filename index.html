@@ -524,7 +524,7 @@
   <div id="ios-calibration-overlay" style="
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.2);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     z-index: 10000;
@@ -538,11 +538,10 @@
     font-family: -apple-system, sans-serif;
   ">
     <div style="font-size: 40px; margin-bottom: 20px;">👆</div>
-    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 10px;">调整全屏视图</h2>
+    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 10px;">正在自动调整全屏视图</h2>
     <p style="font-size: 15px; opacity: 0.8; line-height: 1.5; max-width: 280px; margin-bottom: 30px;">
-      请<strong>缓慢上滑</strong>整个页面<br>
-      直到顶部状态栏黑边完全消失<br>
-      界面填满屏幕
+      请<strong>等待</strong>整个页面加载<br>
+      直到填满屏幕，底下白块消失
     </p>
     <button id="ios-calibration-confirm-btn" style="
       background: #007AFF;
@@ -555,7 +554,7 @@
       box-shadow: 0 4px 12px rgba(0,122,255,0.3);
       cursor: pointer;
     ">
-      我滑好了，锁定视图
+      OK了，锁定视图
     </button>
   </div>
 
