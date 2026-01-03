@@ -3377,8 +3377,8 @@ window.TimerManager = {
                 loadPlaylists(),
                 loadContacts(),         // 联系人通常较多，并行加载收益很大
                 loadAndRenderEmojis(),
-                loadCartFromDB(),
-                loadOrdersFromDB(),
+                window.shopCeramic ? window.shopCeramic.loadCartFromDB() : Promise.resolve(),
+                window.shopCeramic ? window.shopCeramic.loadOrdersFromDB() : Promise.resolve(),
                 initializeUnlockCodes(),
                 loadMottoStyle(),
                 loadAppNameStyle(),
@@ -12118,6 +12118,11 @@ if (shopperModalCloseBtn) {
         thoughtBubble.classList.toggle('visible');
     });
 
+
+    // ========================================================================
+    // === 旧商城代码已被 shop-ceramic.js 替代，以下代码已禁用 ===
+    // ========================================================================
+    /*
     // 监听分类按钮的点击事件 (使用事件委托)
     categoryTabsContainer.addEventListener('click', (event) => {
         const targetTab = event.target.closest('.category-tab');
@@ -12138,11 +12143,15 @@ if (shopperModalCloseBtn) {
     });
 
     // 初始化时，默认加载第一个分类的商品
-    renderProducts('takeout');
+    // renderProducts('takeout'); // 已移至 shop-ceramic.js
 
     // === END: SHOPMALL 商品购物 JS (DATA & FUNCTIONS) ===
+    // === 分类和商品渲染代码结束 ===
+    */
 
     // === START: SHOPMALL 购物流程 JS (FUNCTIONS & EVENTS) ===
+    // === 购物流程代码因变量声明丢失暂时禁用，功能已由 shop-ceramic.js 提供 ===
+    /*
 
     // --- 数据库操作 ---
     async function saveCartToDB() {
@@ -12280,6 +12289,8 @@ if (shopperModalCloseBtn) {
     }
 
     // --- 事件监听 ---
+    // === LEGACY SHOP LOGIC COMMENTED OUT (Now handled by src/scripts/shop-ceramic.js) ===
+    /*
     selectRecipientBtn.addEventListener('click', async () => {
         recipientListContainer.innerHTML = '<p style="text-align:center; color:#888;">正在加载...</p>';
         try {
@@ -12309,7 +12320,9 @@ if (shopperModalCloseBtn) {
         // 调用我们新的、带动画的打开函数
         openRecipientSelectModal();
     });
+    */
 
+    /*
     // 关闭按钮调用新的关闭函数
     if (recipientModalCloseBtn) {
     recipientModalCloseBtn.addEventListener('click', () => {
@@ -12327,8 +12340,10 @@ if (shopperModalCloseBtn) {
             closeRecipientSelectModal(); // 调用新的关闭函数
         }
     });
+    */
 
     // === END: 收货人选择 JS (V2 - 已修复冻结问题) ===
+    /*
     // --- 确认购买 ---
     confirmPurchaseBtn.addEventListener('click', async () => {
 
@@ -12336,6 +12351,7 @@ if (shopperModalCloseBtn) {
             alert("购物车是空的！");
             return;
         }
+
         if (!currentRecipient) {
             alert("请先选择收货人！");
             return;
@@ -12375,6 +12391,7 @@ if (shopperModalCloseBtn) {
         phoneFrame.classList.remove('show-cart');
         phoneFrame.classList.add('show-orders');
     });
+    */
 
     // --- 订单渲染 ---
     // 用这个更健壮的新版本，替换旧的 renderOrders 函数

@@ -167,10 +167,8 @@
 .form-textarea:focus,
 .role-form input:focus,
 .role-form textarea:focus {
-    background: #FFFFFF !important;
-    border-color: #45494D !important;
-    box-shadow: 0 0 0 3px rgba(69, 73, 77, 0.08) !important;
-    outline: none !important;
+    background:#fff;
+box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
 }
 
 /* ===== 7. 表单标签 ===== */
@@ -241,8 +239,7 @@ select {
     appearance: none;
     -webkit-appearance: none;
    
-    border: 1px solid rgba(69, 73, 77, 0.12) !important;
-    border-radius: 4px !important;
+    border: 1px solid transparent;
     padding: 8px 40px 8px 16px;
     font-size: 15px;
     color: #45494D !important;
@@ -255,9 +252,8 @@ select {
 }
 
 select:focus {
-    border-color: #45494D !important;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(69, 73, 77, 0.08);
+    background:#fff;
+box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
 }
 
 /* ===== 10. 滚动条样式 ===== */
@@ -329,9 +325,8 @@ select:focus {
     .form-textarea:focus,
     .role-form input:focus,
     .role-form textarea:focus {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: #636366 !important;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) !important;
+        background:#fff;
+box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
     }
     
     select {
@@ -401,20 +396,18 @@ select:focus {
 
 /* ===== 12. Glass Segment Control - 月白与青黛风格 ===== */
 .glass-segment-control {
-    pointer-events: auto;
-    position: relative;
-    display: flex;
-    /* 月白色背景，去除磨砂 */
-    background-color: #F4F7F9;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    padding: 3px;
-    border-radius: 10px;
-    /* 更克制的圆角 */
-    box-shadow: none;
-    border: 1px solid rgba(69, 73, 77, 0.1);
-    width: 160px;
-    height: 34px;
+ pointer-events: auto;
+            position: relative;
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.65); /* 提亮 */
+            backdrop-filter: blur(25px) saturate(180%); /* iOS 核心模糊参数 */
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            padding: 4px;
+            border-radius: 100px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); /* 更柔和的投影 */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            width: 200px; /* 略微加宽 */
+            height: 48px; /* 更加适合手指点击的高度 */
 }
 
 /* 单个按钮 */
@@ -430,7 +423,7 @@ select:focus {
     /* 淡灰：未选中 */
     cursor: pointer;
     transition: color 0.25s ease;
-    border-radius: 8px;
+    border-radius: 80px;
     padding: 0;
     display: flex;
     align-items: center;
@@ -452,7 +445,7 @@ select:focus {
     width: calc(50% - 3px);
     height: calc(100% - 6px);
     background-color: #FFFFFF;
-    border-radius: 8px;
+    border-radius: 80px;
     box-shadow: 0 1px 3px rgba(69, 73, 77, 0.1);
     z-index: 1;
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -625,12 +618,7 @@ select:focus {
 }
 
 /* ===== 16. 添加联系人模态框底部布局修复 ===== */
-#add-contact-modal .modal-footer {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px;
-    padding: 20px !important;
-}
+
 
 #add-contact-modal .save-button {
     width: 100%;
@@ -969,67 +957,356 @@ select:focus {
     transform: scale(0.98);
 }
 
-/* ===== 21. 保存按钮布局强化修复 ===== */
-/* 针对添加联系人模态框的底部布局 */
+/* ===== 21. 添加联系人模态 - 与 prototype/add.html 完全一致 ===== */
+#add-contact-modal {
+    --bg-body: #F4F4F6;
+    --bg-card: #FFFFFF;
+    --bg-input: #F5F5F7;
+    --text-primary: #1D1D1F;
+    --text-secondary: #86868B;
+    --accent-brand: #000000;
+    --shadow-modal: 0 24px 48px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.8) inset;
+    --ease-spring: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+#add-contact-modal.modal-overlay {
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+#add-contact-modal.modal-overlay.show,
+#add-contact-modal.modal-overlay[style*="display: block"],
+#add-contact-modal.modal-overlay[style*="display: flex"] {
+    opacity: 1;
+    visibility: visible;
+    display: flex !important;
+}
+
 #add-contact-modal .modal-content {
+    width: 90% !important;
+    max-width: 360px !important;
+    background: var(--bg-card) !important;
+    border-radius: 36px !important;
+    padding: 32px 24px !important;
+    box-shadow: var(--shadow-modal) !important;
+    transform: scale(0.95) translateY(10px);
+    transition: 0.4s var(--ease-spring);
     display: flex;
     flex-direction: column;
-    max-height: 80vh;
+    gap: 24px;
+    position: relative;
     overflow: hidden;
+    border: none !important;
+    color: var(--text-primary);
+    max-height: 90vh; /* 防止溢出屏幕 */
 }
 
+#add-contact-modal.modal-overlay.show .modal-content,
+#add-contact-modal.modal-overlay[style*="display: block"] .modal-content,
+#add-contact-modal.modal-overlay[style*="display: flex"] .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* 1. Header & Switcher */
+#add-contact-modal .modal-header {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: relative !important;
+    margin-bottom: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+}
+
+#add-contact-modal .modal-close-button {
+    position: absolute !important;
+    right: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 32px !important;
+    height: 32px !important;
+    background: var(--bg-input) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    color: var(--text-secondary) !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: 0.2s !important;
+    z-index: 10 !important;
+}
+
+#add-contact-modal .modal-close-button:hover {
+    background: #E5E5EA !important;
+    color: #000 !important;
+}
+
+/* 瑞士风格切换器 */
+#add-contact-modal .role-switcher {
+    background: var(--bg-input) !important;
+    border-radius: 99px !important;
+    padding: 4px !important;
+    display: flex !important;
+   
+    width: 180px !important;
+    height: 44px !important;
+    border: 1px solid rgba(0,0,0,0.02) !important;
+    margin: 0 auto !important;
+    flex-shrink: 0 !important;
+}
+
+#add-contact-modal #role-switch-checkbox {
+    display: none !important;
+}
+
+#add-contact-modal .switch-label {
+    flex: 1 !important;
+    text-align: center !important;
+    z-index: 2 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: 0.3s !important;
+    user-select: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 滑块背景 */
+#add-contact-modal .role-switcher::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    bottom: 4px;
+    width: calc(50% - 4px);
+    background: #fff;
+    border-radius: 99px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: 0.3s var(--ease-spring);
+    z-index: 1;
+}
+
+/* 状态切换样式 */
+#add-contact-modal .role-switcher.is-user::before {
+    transform: translateX(100%);
+}
+
+#add-contact-modal .role-switcher .switch-label.active {
+    color: #000 !important;
+}
+
+/* 2. Forms */
 #add-contact-modal .role-form {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    padding-bottom: 10px;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    padding: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
+#add-contact-modal .role-form.active {
+    display: flex;
+    animation: modalFadeIn 0.4s ease;
+}
+
+/* Avatar Uploader - Ceramic Style */
+#add-contact-modal .avatar-uploader {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+#add-contact-modal .avatar-preview {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 28px !important;
+    background: var(--bg-input) !important;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05) !important;
+    transition: 0.3s !important;
+    border: none !important;
+}
+
+#add-contact-modal .avatar-input {
+    display: none !important;
+}
+
+#add-contact-modal .avatar-upload-label {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0;
+    transition: 0.2s;
+    backdrop-filter: blur(2px);
+}
+
+#add-contact-modal .avatar-uploader:hover .avatar-upload-label {
+    opacity: 1;
+}
+
+#add-contact-modal .avatar-uploader:hover .avatar-preview {
+    transform: scale(0.98);
+}
+
+/* Inputs */
+#add-contact-modal .form-input,
+#add-contact-modal .form-textarea {
+    width: 100% !important;
+    background: var(--bg-input) !important;
+    border: 1px solid transparent !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    font-size: 15px !important;
+    color: var(--text-primary) !important;
+    font-family: inherit !important;
+    transition: 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+
+#add-contact-modal .form-input:focus,
+#add-contact-modal .form-textarea:focus {
+   background:#fff;
+box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+
+#add-contact-modal .form-input {
+    height: 52px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+}
+
+#add-contact-modal .form-input::placeholder {
+    font-weight: 500 !important;
+    color: rgba(0,0,0,0.2) !important;
+}
+
+#add-contact-modal .form-textarea {
+    height: 100px !important;
+    resize: none !important;
+    line-height: 1.5 !important;
+    font-size: 14px !important;
+}
+
+/* 3. Footer & Settings */
 #add-contact-modal .modal-footer {
-    flex-shrink: 0;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    
+    background: transparent !important;
+    border: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0px !important;
+}
+
+/* 上下文记忆设置块 */
+#add-contact-modal .form-group-inline {
+    background: var(--bg-input) !important;
+    border-radius: 20px !important;
+    padding: 16px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 16px 20px !important;
-    background: #FFFFFF !important;
-    border-top: 1px solid rgba(69, 73, 77, 0.08) !important;
-    gap: 16px;
-}
-
-#add-contact-modal .form-group-inline {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    flex-shrink: 0;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 #add-contact-modal .form-group-inline label {
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    color: #5F6B73 !important;
-    text-transform: none !important;
-    letter-spacing: 0 !important;
-    margin: 0 !important;
-    white-space: nowrap !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
 
-#add-contact-modal .form-group-inline input[type="number"] {
+#add-contact-modal #context-memory-input {
     width: 60px !important;
-    padding: 8px 10px !important;
-    text-align: center !important;
-    font-size: 14px !important;
-    background: #F4F7F9 !important;
-    border: 1px solid rgba(69, 73, 77, 0.12) !important;
+    height: 32px !important;
+    border: none !important;
+    background: #fff !important;
     border-radius: 8px !important;
+    text-align: center !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+    padding: 0 !important;
+}
+
+/* Save Button */
+#add-contact-modal .save-button {
+    width: 100% !important;
+    height: 52px !important;
+    background: var(--text-primary) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
     margin: 0 !important;
 }
 
-#add-contact-modal .save-button {
-    padding: 10px 24px !important;
-    font-size: 14px !important;
-    min-width: 80px !important;
-    flex-shrink: 0;
+#add-contact-modal .save-button:hover {
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25) !important;
 }
+
+#add-contact-modal .save-button:active {
+    transform: scale(0.96) !important;
+}
+
+@media (max-width: 420px) {
+    #add-contact-modal .modal-footer {
+        flex-direction: column !important;
+    }
+}
+
 
 /* ===== 22. 深色模式下的气泡预设卡片 ===== */
 @media (prefers-color-scheme: dark) {
@@ -1360,5 +1637,266 @@ select:focus {
 #books-in-group-list .contact-item .contact-time,
 #books-in-group-list .contact-item .contact-avatar {
     display: none;
+}
+
+/* ===== 27. 群成员管理弹窗样式 (Group Member Modals) ===== */
+
+/* 共享重置样式 - 确保这些弹窗内部元素不受全局污染 */
+#add-group-member-modal .modal-content,
+#edit-group-user-modal .modal-content,
+#edit-member-modal .modal-content {
+    border-radius: 36px !important;
+    padding: 32px 24px !important;
+    box-shadow: 0 24px 60px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.8) inset !important;
+    gap: 24px !important;
+    max-width: 360px !important;
+    width: 90% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+/* Header Adjustments */
+#add-group-member-modal .modal-header,
+#edit-group-user-modal .modal-header,
+#edit-member-modal .modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 8px !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    min-height: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    gap: 0 !important;
+}
+
+#add-group-member-modal .modal-header h2,
+#edit-group-user-modal .modal-header h2,
+#edit-member-modal .modal-header h2 {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: var(--text-primary) !important;
+    margin: 0 !important;
+    letter-spacing: -0.02em !important;
+}
+
+#add-group-member-modal .modal-close-button,
+#edit-group-user-modal .modal-close-button,
+#edit-member-modal .modal-close-button {
+    width: 32px !important; 
+    height: 32px !important; 
+    background: var(--bg-input) !important; 
+    border-radius: 50% !important;
+    color: var(--text-secondary) !important; 
+    display: flex !important; 
+    align-items: center !important; 
+    justify-content: center !important; 
+    cursor: pointer !important; 
+    transition: 0.2s !important; 
+    font-size: 20px !important; 
+    padding: 0 !important;
+    border: none !important;
+    position: static !important;
+    transform: none !important;
+}
+
+#add-group-member-modal .modal-close-button:hover,
+#edit-group-user-modal .modal-close-button:hover,
+#edit-member-modal .modal-close-button:hover {
+    background: #E5E5EA !important; 
+    color: #000 !important;
+}
+
+
+/* Modal Body & Forms */
+#add-group-member-modal .modal-body,
+#edit-group-user-modal .modal-body,
+#edit-member-modal .modal-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+#add-group-member-modal .form-group,
+#edit-group-user-modal .form-group,
+#edit-member-modal .form-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+#add-group-member-modal label,
+#edit-group-user-modal label,
+#edit-member-modal label {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-left: 4px !important;
+    margin-bottom: 0 !important;
+}
+
+#add-group-member-modal .form-input,
+#add-group-member-modal .form-textarea,
+#edit-group-user-modal .form-input,
+#edit-group-user-modal .form-textarea,
+#edit-member-modal .form-input,
+#edit-member-modal .form-textarea {
+    width: 100% !important;
+    background: var(--bg-input) !important;
+    border: 1px solid transparent !important;
+    border-radius: 16px !important;
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+    color: var(--text-primary) !important;
+    font-family: inherit !important;
+    font-weight: 500 !important;
+    outline: none !important;
+    transition: 0.2s !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+
+#add-group-member-modal .form-input:focus,
+#add-group-member-modal .form-textarea:focus,
+#edit-group-user-modal .form-input:focus,
+#edit-group-user-modal .form-textarea:focus,
+#edit-member-modal .form-input:focus,
+#edit-member-modal .form-textarea:focus {
+    background: #fff !important;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.05) !important;
+}
+
+/* Avatar Stylings - Specific Per Modal */
+
+/* 1. Add Group Member - Black Accent */
+#add-group-member-modal .avatar-uploader {
+    position: relative; width: 100px; height: 100px; margin: 0 auto 8px; cursor: pointer;
+}
+#add-group-member-modal .avatar-preview {
+    width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 32px !important;
+    background: var(--bg-input) !important; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05) !important; border: none !important;
+}
+#add-group-member-modal .avatar-upload-label {
+    position: absolute; bottom: -6px; right: -6px;
+    width: 32px; height: 32px; background: #000000;
+    border-radius: 50%; border: 3px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: pointer; transition: transform 0.2s;
+}
+
+/* 2. Edit My Profile - Blue Accent */
+#edit-group-user-modal .avatar-uploader {
+    position: relative; width: 100px; height: 100px; margin: 0 auto 8px; cursor: pointer;
+}
+#edit-group-user-modal .avatar-preview {
+    width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 32px !important;
+    background: var(--bg-input) !important; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05) !important; border: none !important;
+}
+#edit-group-user-modal .avatar-upload-label {
+    position: absolute; bottom: -6px; right: -6px;
+    width: 32px; height: 32px; background: #007AFF;
+    border-radius: 50%; border: 3px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 4px 10px rgba(0,122,255,0.3);
+    cursor: pointer; transition: transform 0.2s;
+}
+#edit-group-user-modal .form-input:focus,
+#edit-group-user-modal .form-textarea:focus {
+   background:#fff;
+box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
+}
+
+/* 3. Edit Generic Member - Grey Accent */
+#edit-member-modal .avatar-uploader {
+    position: relative; width: 100px; height: 100px; margin: 0 auto 8px; cursor: pointer;
+}
+#edit-member-modal .avatar-preview {
+    width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 32px !important;
+    background: var(--bg-input) !important; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05) !important; border: none !important;
+}
+#edit-member-modal .avatar-upload-label {
+    position: absolute; bottom: -6px; right: -6px;
+    width: 32px; height: 32px; background: #8E8E93;
+    border-radius: 50%; border: 3px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: pointer; transition: transform 0.2s;
+}
+
+/* Footer & Buttons */
+#add-group-member-modal .modal-footer,
+#edit-group-user-modal .modal-footer,
+#edit-member-modal .modal-footer {
+    margin-top: 8px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-top: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Button Colors */
+#add-group-member-modal .save-button {
+    width: 100% !important; height: 52px !important;
+    background: #000000 !important; color: #fff !important;
+    border: none !important; border-radius: 20px !important;
+    font-size: 16px !important; font-weight: 600 !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+#edit-group-user-modal .save-button {
+    width: 100% !important; height: 52px !important;
+    background: #1D1D1F !important; color: #fff !important;
+    border: none !important; border-radius: 20px !important;
+    font-size: 16px !important; font-weight: 600 !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+#edit-member-modal .save-button {
+    width: 100% !important; height: 52px !important;
+    background: #1D1D1F !important; color: #fff !important;
+    border: none !important; border-radius: 20px !important;
+    font-size: 16px !important; font-weight: 600 !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+/* Dark Mode Overrides for these specific modals */
+@media (prefers-color-scheme: dark) {
+    #add-group-member-modal .modal-content,
+    #edit-group-user-modal .modal-content,
+    #edit-member-modal .modal-content {
+        background: #1C1C1E !important;
+        box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset !important;
+    }
+    #add-group-member-modal .modal-header h2,
+    #edit-group-user-modal .modal-header h2,
+    #edit-member-modal .modal-header h2 {
+        color: #fff !important;
+    }
+    #add-group-member-modal .avatar-upload-label { border-color: #2C2C2E !important; }
+    #edit-group-user-modal .avatar-upload-label { border-color: #2C2C2E !important; }
+    #edit-member-modal .avatar-upload-label { border-color: #2C2C2E !important; }
+    
+    #add-group-member-modal .save-button,
+    #edit-group-user-modal .save-button,
+    #edit-member-modal .save-button {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+    }
 }
 
