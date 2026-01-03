@@ -255,6 +255,10 @@ body.is-ios-pwa .content {
 .screen,
 [class*="overflow-y-auto"] {
   -webkit-overflow-scrolling: touch;
+  /* 关键修复：当 body 禁止滚动时，必须显式恢复子元素的滚动能力 */
+  overscroll-behavior-y: auto; 
+  /* 关键修复：明确允许垂直方向的手势操作 */
+  touch-action: pan-y;
 }
 
 /* 修复 Settings Page 的布局定位 */
@@ -264,8 +268,16 @@ body.is-ios-pwa .content {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 10;
+    z-index: 50; /* 提高层级，防止被遮挡 */
+    pointer-events: auto; /* 确保能接收点击和滑动事件 */
     /* 确保它在 settings-screen 内部也是全屏的 */
+}
+
+/* 确保 Flex 布局下的滚动容器能正确响应 */
+.flex-1.overflow-y-auto {
+    flex-grow: 1;
+    height: 0; /* 这是一个 Flexbox hack，强迫浏览器计算真实高度，防止溢出失效 */
+    min-height: 0;
 }
 
 /* 默认状态：主屏幕 */
