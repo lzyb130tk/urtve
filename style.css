@@ -228,6 +228,7 @@ body.is-ios-pwa .content {
 }
 
 /* 通用过渡配置：统一应用于所有主屏幕和App屏幕 */
+/* 通用过渡配置：统一应用于所有主屏幕和App屏幕 */
 #home-screen,
 #settings-screen,
 #music-screen,
@@ -242,6 +243,29 @@ body.is-ios-pwa .content {
   transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1),
     transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
     filter 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  /* 关键：必须显式设置高度为100%，否则内部 Flex 布局无法撑开 */
+  height: 100%;
+}
+
+/* 确保所有滚动容器在 iOS 上都有原生惯性滚动体验 */
+.overflow-y-auto, 
+.overflow-auto,
+.overflow-scroll,
+.settings-content,
+.screen,
+[class*="overflow-y-auto"] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 修复 Settings Page 的布局定位 */
+.settings-page {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    /* 确保它在 settings-screen 内部也是全屏的 */
 }
 
 /* 默认状态：主屏幕 */
@@ -264,6 +288,8 @@ body.is-ios-pwa .content {
   transform: scale(0.92);
   /* 配合 font-smoothing 让变焦更清晰 */
   will-change: transform, opacity;
+  /* 确保父容器也是 Flex，方便 absolute 子元素定位 */
+  position: relative;
 }
 
 /* --- 统一的主屏幕退后效果 --- */
