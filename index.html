@@ -42,7 +42,14 @@
             );
 
             // 2. 手动检查更新 (每次页面加载都检查)
-            registration.update();
+            // iOS 兼容性: 添加安全检查避免更新null对象导致崩溃
+            try {
+              if (registration && typeof registration.update === 'function') {
+                registration.update();
+              }
+            } catch (e) {
+              console.warn('Service Worker 更新检查失败:', e);
+            }
 
             // 3. 监听发现新 Service Worker
             registration.onupdatefound = () => {
@@ -50,13 +57,16 @@
               newWorker.onstatechange = () => {
                 if (newWorker.state === "installed") {
                   if (navigator.serviceWorker.controller) {
-                    // 新内容已安装，但还没激活 -> 【确实有更新】
+                    // 新内容已安装
                     console.log("检测到 Service Worker 更新");
+                    // 尝试让新 SW 立即接管
+                     if (newWorker) {
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                     }
                     if (window.showUpdateNotification) {
                       window.showUpdateNotification();
                     }
                   } else {
-                    // 首次安装内容
                     console.log("内容已缓存供离线使用");
                   }
                 }
@@ -911,7 +921,7 @@
         <!-- Legacy Settings View Removed (was overlapping) -->
         <!-- Preserved Hidden Inputs for Functionality -->
         <input type="file" id="skin-upload" accept="image/*" style="display: none" onchange="handleSkinUpload(this)" />
-        <input type="file" id="import-file-input" style="display: none" onchange="handleFileImport(event)"
+        <input type="file" id="import-file-input" style="display: none"
           accept=".json,.zip,application/json,application/zip,application/x-zip-compressed,multipart/x-zip" />
         <input type="file" id="wallpaper-upload-input" accept="image/*" style="display: none" />
         <input type="file" id="font-import-input" accept=".ttf,.otf" style="display: none" />
@@ -959,13 +969,12 @@
                     <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">Endpoint
                       URL</label>
                     <input type="text" id="api-url" placeholder="https://api.openai.com/v1"
-                      onchange="handleInputChange('api-url')"
                       class="w-full text-lg font-medium bg-transparent border-b border-black/10 py-1 focus:border-black transition-colors focus:outline-none placeholder-black/10 font-mono" />
                   </div>
                   <div class="group">
                     <label class="block text-[10px] font-bold text-black/30 uppercase tracking-wider mb-1">Secret
                       Key</label>
-                    <input type="password" id="api-key" placeholder="sk-..." onchange="handleInputChange('api-key')"
+                    <input type="password" id="api-key" placeholder="sk-..."
                       class="w-full text-lg font-medium bg-transparent border-b border-black/10 py-1 focus:border-black transition-colors focus:outline-none placeholder-black/10 font-mono tracking-widest" />
                   </div>
                 </div>

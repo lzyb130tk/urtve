@@ -41,13 +41,263 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================================
+    // === 🧠 iOS 激进内存优化器 (让 PWA 与微信等大内存应用共存) ===
+    // ========================================================================
+    if (isIOS) {
+        // === 1. 后台时激进释放内存 ===
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                debugLog('📱 iOS: 页面进入后台，执行激进内存清理...');
+                
+                // 1.1 停止并释放所有音频
+                if (window.currentTTSAudio) {
+                    window.currentTTSAudio.pause();
+                    window.currentTTSAudio.src = '';
+                    window.currentTTSAudio = null;
+                }
+                if (window.currentTTSAudioUrl) {
+                    URL.revokeObjectURL(window.currentTTSAudioUrl);
+                    window.currentTTSAudioUrl = null;
+                }
+                
+                // 1.2 清理图片缓存
+                if (window.imageCache) {
+                    window.imageCache.clear && window.imageCache.clear();
+                }
+                
+                // 1.3 释放非可见区域的图片（懒加载优化）
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    if (img.src && img.src.startsWith('data:')) {
+                        img.dataset.cachedSrc = img.src;
+                        img.src = '';
+                    }
+                });
+                
+                // 1.4 清理离屏canvas
+                document.querySelectorAll('canvas:not(:visible)').forEach(canvas => {
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+                
+                // 1.5 清理定时器（可选，保留核心）
+                if (window.TimerManager) {
+                    window.TimerManager.clear('voice-call');
+                    window.TimerManager.clear('proactive');
+                    window.TimerManager.clear('animation');
+                }
+            } else {
+                // 页面恢复前台时，恢复必要资源
+                debugLog('📱 iOS: 页面恢复前台');
+                document.querySelectorAll('img[data-cached-src]').forEach(img => {
+                    if (img.dataset.cachedSrc) {
+                        img.src = img.dataset.cachedSrc;
+                        delete img.dataset.cachedSrc;
+                    }
+                });
+            }
+        });
+        
+        // === 2. pagehide 时更彻底的清理 ===
+        window.addEventListener('pagehide', (event) => {
+            debugLog('📱 iOS: pagehide 事件触发，彻底清理');
+            // 清理所有定时器
+            if (window.TimerManager && window.TimerManager.clearAll) {
+                window.TimerManager.clearAll();
+            }
+            // 关闭 IndexedDB 连接（释放文件句柄）
+            if (window._ttsDBConnection) {
+                window._ttsDBConnection.close();
+                window._ttsDBConnection = null;
+            }
+        });
+        
+        // === 3. 定期内存巡检 (每30秒检查一次) ===
+        let memoryCheckInterval = null;
+        const startMemoryCheck = () => {
+            if (memoryCheckInterval) return;
+            memoryCheckInterval = setInterval(() => {
+                // 使用 performance.memory 检测（如果可用）
+                if (performance.memory) {
+                    const usedMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                    const limitMB = Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024);
+                    const usage = usedMB / limitMB;
+                    
+                    if (usage > 0.7) {
+                        debugWarn(`⚠️ iOS 内存警告: 使用 ${usedMB}MB / ${limitMB}MB (${Math.round(usage*100)}%)`);
+                        // 触发轻度清理
+                        if (window.TTSCache && window.TTSCache.cleanup) {
+                            window.TTSCache.cleanup(5); // 只保留5条缓存
+                        }
+                    }
+                    if (usage > 0.85) {
+                        debugError(`🚨 iOS 内存危险: 执行紧急清理!`);
+                        // 紧急清理：清空TTS缓存
+                        if (window.TTSCache && window.TTSCache.clear) {
+                            window.TTSCache.clear();
+                        }
+                        // 清理消息历史中的旧消息DOM
+                        const chatBubbles = document.querySelectorAll('.chat-bubble');
+                        if (chatBubbles.length > 100) {
+                            for (let i = 0; i < chatBubbles.length - 50; i++) {
+                                chatBubbles[i].remove();
+                            }
+                            debugLog('📱 iOS: 清理了旧聊天气泡以释放内存');
+                        }
+                    }
+                }
+            }, 30000); // 每30秒检查一次
+        };
+        
+        // 页面加载后启动内存检查
+        if (document.readyState === 'complete') {
+            startMemoryCheck();
+        } else {
+            window.addEventListener('load', startMemoryCheck);
+        }
+        
+        // === 4. 低内存时隐藏动画效果 ===
+        // iOS Safari 在内存压力下会发送 lowmemory 事件（非标准但有效）
+        window.addEventListener('lowmemory', () => {
+            debugWarn('📱 iOS: 收到低内存事件！');
+            document.body.classList.add('low-memory-mode');
+            // 禁用所有CSS动画
+            const style = document.createElement('style');
+            style.id = 'low-memory-style';
+            style.textContent = `
+                .low-memory-mode * {
+                    animation: none !important;
+                    transition: none !important;
+                }
+            `;
+            if (!document.getElementById('low-memory-style')) {
+                document.head.appendChild(style);
+            }
+        });
+    }
+
+    // ========================================================================
+    // === 📦 ImageStore: 用 IndexedDB 存储大图片 (替代 localStorage) ===
+    // ========================================================================
+    // 优势：
+    // 1. 不占用 JS 堆内存（localStorage 会被解析到内存中）
+    // 2. 支持更大的存储空间（localStorage 限制 5-10MB）
+    // 3. 异步读写不阻塞主线程
+    // 4. 兼容旧数据：首次运行时自动从 localStorage 迁移
+    // ========================================================================
+    const ImageStore = {
+        dbName: 'AppImageStore',
+        storeName: 'images',
+        version: 1,
+        _db: null,
+        
+        // 获取数据库连接
+        async getDB() {
+            if (this._db) return this._db;
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(this.dbName, this.version);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(this.storeName)) {
+                        db.createObjectStore(this.storeName);
+                    }
+                };
+                req.onsuccess = (e) => { 
+                    this._db = e.target.result; 
+                    resolve(this._db); 
+                };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        },
+        
+        // 获取图片 (优先从 IndexedDB，回退到 localStorage 并自动迁移)
+        async get(key) {
+            try {
+                const db = await this.getDB();
+                const result = await new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readonly');
+                    const req = tx.objectStore(this.storeName).get(key);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+                
+                if (result) {
+                    return result;
+                }
+                
+                // 回退：检查 localStorage 并迁移
+                const legacyData = localStorage.getItem(key);
+                if (legacyData && legacyData.startsWith('data:image')) {
+                    debugLog(`[ImageStore] 迁移旧数据: ${key}`);
+                    // 异步迁移到 IndexedDB
+                    this.set(key, legacyData).then(() => {
+                        // 迁移成功后删除 localStorage 副本
+                        localStorage.removeItem(key);
+                        debugLog(`[ImageStore] 迁移完成，已删除localStorage副本: ${key}`);
+                    });
+                    return legacyData;
+                }
+                
+                return null;
+            } catch (e) {
+                // IndexedDB 失败时回退到 localStorage
+                console.warn('[ImageStore] IndexedDB failed, fallback to localStorage', e);
+                return localStorage.getItem(key);
+            }
+        },
+        
+        // 保存图片
+        async set(key, data) {
+            try {
+                const db = await this.getDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite');
+                    tx.objectStore(this.storeName).put(data, key);
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject();
+                });
+            } catch (e) {
+                // IndexedDB 失败时回退到 localStorage
+                console.warn('[ImageStore] IndexedDB failed, fallback to localStorage', e);
+                localStorage.setItem(key, data);
+            }
+        },
+        
+        // 删除图片
+        async remove(key) {
+            try {
+                const db = await this.getDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite');
+                    tx.objectStore(this.storeName).delete(key);
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject();
+                });
+            } catch (e) {
+                console.warn('[ImageStore] Remove failed', e);
+            }
+            // 同时清理 localStorage 中的残留
+            localStorage.removeItem(key);
+        },
+        
+        // 检查是否存在
+        async has(key) {
+            const data = await this.get(key);
+            return !!data;
+        }
+    };
+    
+    // 暴露到 window 供全局使用
+    window.ImageStore = ImageStore;
+
+
+    // ========================================================================
     // === 🍎 iOS PWA 安全区修复：用户可调节的负margin方法 ===
     // ========================================================================
     const IOS_MARGIN_KEY = 'ios_safe_area_margin';
     
-    // 从localStorage读取用户设置的margin值，默认50px（覆盖大多数iPhone底部白块）
+    // 从localStorage读取用户设置的margin值，默认0px
     const savedMargin = localStorage.getItem(IOS_MARGIN_KEY);
-    const iosMarginValue = savedMargin !== null ? parseInt(savedMargin) : 50; // 默认50px
+    const iosMarginValue = savedMargin ? parseInt(savedMargin) : 0; // 默认0px
     
     // 应用iOS安全区margin的函数
     // 防抖计时器，避免频繁调用导致崩溃
@@ -167,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 初始化滑块值
     if (iosMarginSlider && iosMarginDisplay) {
-        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '50'); // 默认50px
+        let currentValue = parseInt(localStorage.getItem(IOS_MARGIN_KEY) || '0'); // 默认0px
         // 确保值在有效范围内（-300到300）
         currentValue = Math.max(-300, Math.min(300, currentValue));
         iosMarginSlider.value = currentValue;
@@ -3011,13 +3261,15 @@ window.TimerManager = {
         applyDarkMode(isDarkModeEnabled);
 
         // =======================================================
-        // 8. [新增] 加载自定义手机壳
+        // 8. [新增] 加载自定义手机壳 (使用 ImageStore 优化内存)
         // =======================================================
-        // 从 localStorage 读取之前保存的图片数据
-        const savedSkin = localStorage.getItem('userDeviceSkin');
-        // 如果有数据，并且 applySkin 函数存在，就应用它
-        if (savedSkin && typeof applySkin === 'function') {
-            applySkin(savedSkin);
+        // 从 ImageStore 读取之前保存的图片数据 (自动兼容旧 localStorage 数据)
+        if (window.ImageStore && typeof applySkin === 'function') {
+            window.ImageStore.get('userDeviceSkin').then(savedSkin => {
+                if (savedSkin) {
+                    applySkin(savedSkin);
+                }
+            });
         }
     }
 
@@ -24960,11 +25212,13 @@ Content: [回复内容]
 
     // === 手机外壳功能逻辑 ===
 
-    // 1. 初始化：页面加载时检查有没有存过的皮肤
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedSkin = localStorage.getItem('userDeviceSkin');
-        if (savedSkin) {
-            applySkin(savedSkin);
+    // 1. 初始化：页面加载时检查有没有存过的皮肤 (使用 ImageStore)
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (window.ImageStore) {
+            const savedSkin = await window.ImageStore.get('userDeviceSkin');
+            if (savedSkin) {
+                applySkin(savedSkin);
+            }
         }
     });
 
@@ -24982,8 +25236,12 @@ Content: [回复内容]
         reader.onload = function (e) {
             const base64Url = e.target.result;
 
-            // 保存并应用
-            localStorage.setItem('userDeviceSkin', base64Url);
+            // 保存并应用 (使用 ImageStore 优化内存)
+            if (window.ImageStore) {
+                window.ImageStore.set('userDeviceSkin', base64Url);
+            } else {
+                localStorage.setItem('userDeviceSkin', base64Url);
+            }
             applySkin(base64Url);
 
             // 提示成功
@@ -25024,8 +25282,12 @@ Content: [回复内容]
     function resetSkin() {
         if (!confirm('确定要移除自定义手机壳，恢复默认样式吗？')) return;
 
-        // 清除数据
-        localStorage.removeItem('userDeviceSkin');
+        // 清除数据 (使用 ImageStore)
+        if (window.ImageStore) {
+            window.ImageStore.remove('userDeviceSkin');
+        } else {
+            localStorage.removeItem('userDeviceSkin');
+        }
 
         // 隐藏图片层
         const skinImg = document.getElementById('device-skin');
@@ -28645,8 +28907,48 @@ ${chatText}
             // 使用 前20字符 + hash 组合作为key，既直观又唯一
             const prefix = text.substring(0, 20).replace(/[^\w\u4e00-\u9fa5]/g, '_'); 
             return `${voiceId || 'def'}_${lang || 'auto'}_${prefix}_${hash}`;
+        },
+        // iOS内存优化：清空所有缓存
+        async clear() {
+            try {
+                const db = await this.getDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite');
+                    tx.objectStore(this.storeName).clear();
+                    tx.oncomplete = () => {
+                        console.log('[TTSCache] 缓存已清空');
+                        resolve();
+                    };
+                    tx.onerror = () => reject();
+                });
+            } catch (e) { console.warn('[TTSCache] 清空失败', e); }
+        },
+        // iOS内存优化：只保留最近N条缓存
+        async cleanup(keepCount = 10) {
+            try {
+                const db = await this.getDB();
+                const tx = db.transaction(this.storeName, 'readwrite');
+                const store = tx.objectStore(this.storeName);
+                const keys = await new Promise((resolve, reject) => {
+                    const req = store.getAllKeys();
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+                
+                if (keys.length > keepCount) {
+                    // 删除最旧的记录（假设key按时间顺序）
+                    const toDelete = keys.slice(0, keys.length - keepCount);
+                    for (const key of toDelete) {
+                        store.delete(key);
+                    }
+                    console.log(`[TTSCache] 清理了 ${toDelete.length} 条旧缓存`);
+                }
+            } catch (e) { console.warn('[TTSCache] 清理失败', e); }
         }
     };
+    
+    // 暴露到window供iOS内存优化器调用
+    window.TTSCache = TTSCache;
 
     // 播放TTS音频 (带缓存)
     async function playTTS(text, voiceId, language) {
@@ -32401,7 +32703,12 @@ window.resetWallpaper = async function() {
 window.resetSkin = function() {
     if (!confirm('确定要恢复默认手机外壳吗？')) return;
     try {
-        localStorage.removeItem('userDeviceSkin');
+        // 使用 ImageStore 删除
+        if (window.ImageStore) {
+            window.ImageStore.remove('userDeviceSkin');
+        } else {
+            localStorage.removeItem('userDeviceSkin');
+        }
         localStorage.removeItem('deviceSkinConfig'); 
         
         const skinLayer = document.getElementById('device-skin-layer');
