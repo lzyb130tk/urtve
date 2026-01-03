@@ -541,7 +541,7 @@
     <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 10px;">正在自动调整全屏视图</h2>
     <p style="font-size: 15px; opacity: 0.8; line-height: 1.5; max-width: 280px; margin-bottom: 30px;">
       请<strong>等待</strong>整个页面加载<br>
-      直到填满屏幕，底下白块消失
+      直到填满屏幕，底下白块消失，然后点击下面的按钮
     </p>
     <button id="ios-calibration-confirm-btn" style="
       background: #007AFF;
@@ -921,8 +921,8 @@
         <!-- ============================================ -->
         <!-- 子页面 1: Model (API & 模型参数) -->
         <!-- ============================================ -->
-        <div id="page-model" class="settings-page max-w-md mx-auto min-h-screen bg-[#F5F5F7]">
-          <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md sticky top-0"
+        <div id="page-model" class="settings-page max-w-md mx-auto h-full overflow-hidden flex flex-col bg-[#F5F5F7]">
+          <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md shrink-0"
             style="padding-top: max(50px, env(safe-area-inset-top));">
             <button onclick="closeSettingsPage('page-model')"
               class="w-10 h-10 -ml-2 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors text-black">
@@ -1133,8 +1133,8 @@
         <!-- ============================================ -->
         <!-- 子页面 3: Appearance (外观设置) -->
         <!-- ============================================ -->
-        <div id="page-appearance" class="settings-page max-w-md mx-auto">
-          <div class="sticky top-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between"
+        <div id="page-appearance" class="settings-page max-w-md mx-auto h-full overflow-hidden flex flex-col bg-[#F5F5F7]">
+          <div class="z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between shrink-0"
             style="padding-top: max(50px, env(safe-area-inset-top));">
             <button onclick="closeSettingsPage('page-appearance')"
               class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-black">
@@ -1143,7 +1143,7 @@
             <span class="text-[15px] font-semibold text-gray-900">Appearance</span>
             <div class="w-9"></div>
           </div>
-          <div class="p-5 space-y-8">
+          <div class="p-5 space-y-8 flex-1 overflow-y-auto no-scrollbar">
             <section>
               <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Theme</h4>
               <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
@@ -1447,9 +1447,9 @@
         <!-- ============================================ -->
         <!-- 子页面 6: Data (数据备份与恢复) -->
         <!-- ============================================ -->
-        <div id="page-data" class="settings-page max-w-md mx-auto bg-[#F5F5F7] min-h-screen">
+        <div id="page-data" class="settings-page max-w-md mx-auto bg-[#F5F5F7] h-full overflow-hidden flex flex-col">
           <!-- Header -->
-          <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md sticky top-0"
+          <div class="px-6 py-2 flex justify-between items-center z-20 bg-[#F5F5F7]/80 backdrop-blur-md shrink-0"
             style="padding-top: max(50px, env(safe-area-inset-top));">
             <button onclick="closeSettingsPage('page-data')"
               class="w-10 h-10 -ml-2 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors text-black">
@@ -4474,9 +4474,9 @@
         </div>
       </div>
 
-      <div id="about-device-screen" class="screen" style="background-color: #F5F5F7;">
+      <div id="about-device-screen" class="screen flex flex-col h-full overflow-hidden" style="background-color: #F5F5F7;">
         <!-- Header (Consistent with page-model) -->
-        <div class="sticky top-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between"
+        <div class="shrink-0 z-10 settings-nav-blur px-5 pb-4 flex items-center justify-between"
           style="padding-top: max(50px, env(safe-area-inset-top)); background-color: rgba(245, 245, 247, 0.8);">
           <button id="about-device-back-button"
             class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-200/50 hover:bg-gray-300/50 transition-colors text-black">
@@ -4487,7 +4487,7 @@
         </div>
 
         <!-- Content (Based on prototype/aboutphone.html) -->
-        <div class="p-5 space-y-5 overflow-y-auto no-scrollbar" style="padding-bottom: 120px;">
+        <div class="p-5 space-y-5 overflow-y-auto no-scrollbar flex-1" style="padding-bottom: 120px;">
 
           <!-- 1. The Identity Card -->
           <div class="bg-white rounded-[32px] p-8 shadow-sm border border-black/5 relative overflow-hidden">

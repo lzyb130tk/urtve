@@ -89,6 +89,15 @@ html.is-ios-pwa-html {
   background-color: transparent;
 }
 
+/* === 全局滚动条隐藏 (App质感) === */
+::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
 body {
   background-color: #dfdfdf; /* 安卓默认灰色 */
   display: flex;
@@ -101,11 +110,16 @@ body {
   margin: 0;
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
+  
+  /* === 修复橡皮筋效应 === */
+  overscroll-behavior-y: none;
+  /* 仅在body层面禁止，内部容器如果需要则设为 auto */
 }
 
 /* iOS PWA 专用样式 */
 body.is-ios-pwa {
   background-color: transparent;
+  overscroll-behavior-y: none; /* 双重保险 */
   /* 移除强制锁定，恢复默认滚动以修复界面错乱 */
 }
 
