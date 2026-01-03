@@ -118,15 +118,16 @@ body.is-ios-pwa {
  */
 
 /* html元素向下延伸（默认值，JS会覆盖） */
+/* html元素向下延伸（默认值，JS会覆盖） */
 html.is-ios-pwa-html {
-  margin-bottom: -50px;
-  padding-bottom: 50px;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 /* body也应用（默认值，JS会覆盖） */
 body.is-ios-pwa {
-  margin-bottom: -50px;
-  padding-bottom: 50px;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 /* ============================================================ */
@@ -1724,8 +1725,8 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 54px;
+  padding: 10px 16px;
+  /* height: 54px; */
   padding-top: 40px;
   background-color: rgb(243 243 243 / 85%) !important;
   backdrop-filter: blur(20px);
@@ -18794,3 +18795,18 @@ body.ios-optimize-mode .glass, body.ios-optimize-mode .modal-content, body.ios-o
 @media (prefers-color-scheme: dark) { body.ios-optimize-mode .glass, body.ios-optimize-mode .modal-content, body.ios-optimize-mode .system-loader-card, body.ios-optimize-mode .nav-bar, body.ios-optimize-mode .tab-bar, body.ios-optimize-mode [class*='overlay'], body.ios-optimize-mode [class*='blur'] { background-color: rgba(30, 30, 30, 0.98) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important; } }
 body.ios-optimize-mode img { box-shadow: none !important; filter: none !important; }
 body.ios-optimize-mode .scroll-container { -webkit-overflow-scrolling: touch; transform: translateZ(0); }
+
+
+/* === 🚨 iOS 终极防崩补丁 (SAFE GUARD) === */
+.ios-optimize-mode * { 
+    will-change: auto !important; 
+    transform: none !important; 
+    animation: none !important; 
+    transition: none !important;
+    background-attachment: scroll !important;
+}
+.ios-optimize-mode .phone-frame {
+    transform: none !important; /* 保持基本布局但移除 GPU 缩放 */
+    width: 100vw !important;
+}
+

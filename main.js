@@ -345,13 +345,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 let cssContent = `
                     /* 让 html/body 背景延伸到安全区下方，覆盖白色背景（固定延伸，不受用户设置影响） */
+                    /* 让 html/body 背景延伸到安全区下方，覆盖白色背景（固定延伸，不受用户设置影响） */
                     html.is-ios-pwa-html {
-                        margin-bottom: ${bgMarginValue} !important;
-                        padding-bottom: ${bgPaddingValue} !important;
+                        /* 移除导致白块的 padding-bottom */
+                        margin-bottom: 0 !important;
+                        padding-bottom: 0 !important;
                     }
                     body.is-ios-pwa {
-                        margin-bottom: ${bgMarginValue} !important;
-                        padding-bottom: ${bgPaddingValue} !important;
+                        /* 移除导致白块的 padding-bottom */
+                        margin-bottom: 0 !important;
+                        padding-bottom: 0 !important;
                     }
                     /* 关键：让 #global-wallpaper 也延伸到安全区下方，覆盖白色背景 */
                     #global-wallpaper {
@@ -368,12 +371,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         background-position: center !important;
                         background-repeat: no-repeat !important;
                     }
-                    /* 调整 phone-frame 的高度和位置 */
+                    /* 调整 phone-frame 的高度 */
                     body.is-ios-pwa .phone-frame {
                         height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                         max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        /* 关键修复：移除 margin-top，防止内容被往下推导致底部出现白块 */
-                        margin-top: 0 !important;
                     }
                 `;
                 
@@ -383,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     body.is-ios-pwa.fullscreen-mode .phone-frame {
                         height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                         max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
-                        margin-top: 0 !important;
                     }
                     `;
                 }
