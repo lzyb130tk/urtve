@@ -398,55 +398,73 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // ========================================================================
-    // === 🛡️ iOS 强力防回弹系统 (RubberBandShield) ===
-    // === 解决 "界面掉下来" 和 "顶部白块" 的终极方案 ===
+    // === 🛡️ iOS PWA 手动校准与锁定系统 (User-Guided Lock) ===
     // ========================================================================
     if (isIOS && isStandalone) {
         document.body.classList.add('is-ios-pwa');
-        
-        // 1. 强制无视安全区 margin (由 CSS 控制)
         document.documentElement.classList.add('is-ios-pwa-html');
 
-        // 2. 核心：主动拦截橡皮筋效果
-        // 原理：如果用户试图在不能滚动的区域滑动，或者在顶部向下拉，强制 preventDefault
-        document.addEventListener('touchmove', function(e) {
-            // 如果有 open 状态的 modal，可能需要允许某些滚动，这里简化处理，优先保证不掉下来
-            const target = e.target;
-            
-            // 检查目标是否在可滚动容器内
-            let scrollableParent = target.closest('.chat-messages-container, .settings-content, .settings-content-ios, .music-content, .content, .scrollable');
-            
-            if (!scrollableParent) {
-                // 如果不在已知的滚动容器内，直接禁止滑动 -> 锁死背景
-                e.preventDefault();
-            } else {
-                // 如果在滚动容器内，检查是否滚动到了边缘
-                const isAtTop = scrollableParent.scrollTop <= 0;
-                const isAtBottom = scrollableParent.scrollTop + scrollableParent.clientHeight >= scrollableParent.scrollHeight;
-                
-                // 向上滑动 (scrollTop减少) 且已经在顶部 -> 禁止 (防止拉下整个页面)
-                if (isAtTop && e.touches[0].clientY > (window.lastTouchY || 0)) {
-                   // 只有当这是“下拉”动作时才阻止
-                   // 这里需要记录上一次 touch 的位置来判断方向，或者简单地粗暴阻止顶部下拉
-                   // 简单策略：在顶部的下拉动作极其危险，直接禁止
-                   e.preventDefault(); 
-                }
-                
-                // 向下滑动 (scrollTop增加) 且已经在底部 -> 禁止 (防止拉起底部)
-                if (isAtBottom && e.touches[0].clientY < (window.lastTouchY || 0)) {
-                    e.preventDefault();
-                }
-            }
-            // 更新 lastTouchY
-            window.lastTouchY = e.touches[0].clientY;
-        }, { passive: false });
-        
-        // 记录触摸起始点
-        document.addEventListener('touchstart', function(e) {
-            window.lastTouchY = e.touches[0].clientY;
-        }, { passive: false });
+        const calibrationOverlay = document.getElementById('ios-calibration-overlay');
+        const confirmBtn = document.getElementById('ios-calibration-confirm-btn');
+        const CALIBRATION_KEY = 'ios_pwa_calibrated_v2';
 
-        debugLog('🛡️ iOS PWA 防回弹护盾已启动');
+        // 核心：纯 JS 防回弹锁 (不修改 CSS overflow，防止破坏布局)
+        function enableRubberBandShield() {
+            debugLog('🛡️ 启用触摸锁定护盾');
+            
+            document.addEventListener('touchmove', function(e) {
+                // 1. 查找所有可能的滚动容器
+                const target = e.target;
+                const scrollableParent = target.closest('.chat-messages-container, .settings-content, .settings-content-ios, .music-content, .content, .scrollable, .settings-page');
+                
+                // 2. 如果不在白名单容器内 -> 也就是在背景/Body上 -> 坚决阻止
+                if (!scrollableParent) {
+                    if (e.cancelable) e.preventDefault();
+                    return;
+                }
+
+                // 3. 如果在滚动容器内，处理边缘情况 (防止连带拉动 Body)
+                const isAtTop = scrollableParent.scrollTop <= 0;
+                const isAtBottom = scrollableParent.scrollTop + scrollableParent.clientHeight >= scrollableParent.scrollHeight - 1;
+
+                if (isAtTop && e.touches[0].clientY > (window.lastTouchY || 0)) {
+                    // 到顶了还往下拉 -> 阻止
+                    if (e.cancelable) e.preventDefault();
+                } else if (isAtBottom && e.touches[0].clientY < (window.lastTouchY || 0)) {
+                    // 到底了还往上拉 -> 阻止
+                    if (e.cancelable) e.preventDefault();
+                }
+                
+                window.lastTouchY = e.touches[0].clientY;
+            }, { passive: false });
+
+            // 记录触摸起点
+            document.addEventListener('touchstart', function(e) {
+                window.lastTouchY = e.touches[0].clientY;
+            }, { passive: false });
+        }
+
+        // 检查是否需要显示校准
+        // 如果用户之前已经校准过，我们直接启用锁定，跳过显示遮罩
+        if (localStorage.getItem(CALIBRATION_KEY) === 'true') {
+            enableRubberBandShield();
+        } else {
+            // 首次：显示遮罩，让用户手动滑
+            if (calibrationOverlay) {
+                calibrationOverlay.style.display = 'flex';
+                
+                confirmBtn.addEventListener('click', () => {
+                    // 用户说滑好了
+                    localStorage.setItem(CALIBRATION_KEY, 'true');
+                    calibrationOverlay.style.opacity = '0';
+                    calibrationOverlay.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => calibrationOverlay.style.display = 'none', 300);
+                    
+                    // 立即上锁
+                    enableRubberBandShield();
+                });
+            }
+        }
     }
     
     // iOS设置页面逻辑
@@ -2690,15 +2708,7 @@ window.TimerManager = {
             if (targetPanel) targetPanel.classList.add('active');
         });
     });
-    // 1. 打开抽屉
-    openDrawerBtn.addEventListener('click', () => {
-        bottomDrawer.classList.add('active');
-    });
-
-    // 2. 关闭抽屉 (点击顶部横条)
-    closeDrawerBtn.addEventListener('click', () => {
-        bottomDrawer.classList.remove('active');
-    });
+   
     // --- 使用事件委托，监听所有App图标的点击 ---
     appGrid.addEventListener('click', (event) => {
         const iconContainer = event.target.closest('.app-container[data-app-id]');

@@ -106,18 +106,13 @@ body {
 /* iOS PWA 专用样式 */
 body.is-ios-pwa {
   background-color: transparent;
+  /* 移除强制锁定，恢复默认滚动以修复界面错乱 */
 }
 
 /* ============================================================ */
 /* === iOS PWA 安全区修复：负margin方法 ===                      */
 /* ============================================================ */
-/* 
- * 核心原理：让html/body向下延伸，用负margin覆盖安全区白块
- * 注意：实际margin值由JS动态设置，用户可在设置中调整
- * 下面的50px是默认fallback值
- */
 
-/* html元素向下延伸（默认值，JS会覆盖） */
 /* html元素向下延伸（默认值，JS会覆盖） */
 html.is-ios-pwa-html {
   margin-bottom: 0;
@@ -131,82 +126,32 @@ body.is-ios-pwa {
 }
 
 /* ============================================================ */
-/* === iOS PWA 橡皮筋效应禁用 + 安全区适配 ===                   */
+/* === iOS PWA 适配：恢复默认 Phone Frame ===                    */
 /* ============================================================ */
-/* iOS PWA 模式专用：绝对锁定与防回弹 */
-body.is-ios-pwa {
-  /* 禁止整个页面的滚动和橡皮筋效应 */
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: auto;
-  overflow: hidden; /* 核心：禁止body滚动 */
 
-  /* 强制固定在视口，防止位移 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  
-  /* 确保背景色为黑色（状态栏区域） */
-  background-color: black; 
-}
-
-/* iOS PWA 模式下的 .phone-frame 适配 */
+/* 确保在所有平台上 .phone-frame 都是正确显示的 */
 body.is-ios-pwa .phone-frame {
-  /* 恢复全屏高度，不要减去安全区，让背景延伸到底部 */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  
-  margin-top: 0; 
-  border-radius: 0 !important;
-}
-
-/* iOS PWA 全屏模式组合 */
-body.is-ios-pwa.fullscreen-mode .phone-frame {
-  width: 100vw !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
   margin-top: 0;
-  border-radius: 0 !important;
-  border: none !important;
 }
 
-/* ============================================================ */
-/* === iOS PWA 内容区域滚动优化 ===                              */
-/* ============================================================ */
-/* 
- * 在禁止body橡皮筋效应的同时，保持内容区域的正常滚动。
- * 核心修复：为滚动容器底部增加安全区内边距，防止内容被Home Bar遮挡
- */
+/* iOS PWA 全屏模式 */
+body.is-ios-pwa.fullscreen-mode .phone-frame {
+  margin-top: 0;
+}
+
+/* 恢复之前的滚动行为 */
 body.is-ios-pwa .chat-messages-container,
 body.is-ios-pwa .settings-content,
 body.is-ios-pwa .settings-content-ios,
 body.is-ios-pwa .music-content,
 body.is-ios-pwa .content,
-body.is-ios-pwa [class*="-container"][style*="overflow"],
 body.is-ios-pwa .screen {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain; /* 允许内部滚动，但不传递到body */
-    
-    /* 增加底部安全区内边距，确保内容不被 Home Bar 遮挡 */
-    padding-bottom: env(safe-area-inset-bottom) !important;
-    
-    /* 某些容器可能有自己的padding，使用 calc 叠加 */
-    /* 注意：对于已经有 padding-bottom 的元素，这可能会覆盖。通常这些容器底部留白较多，直接覆盖通常没问题 */
 }
 
-/* 特殊处理：主屏幕 .content 已经有很大 padding-bottom，叠加安全区 */
+/* 特殊处理：主屏幕 .content */
 body.is-ios-pwa .content {
-   /* 保持原有的 padding 设计，并额外增加安全区 */
-   padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+   /* 保持原有的 padding 设计 */
 }
 
 * {
