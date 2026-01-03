@@ -368,10 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         background-position: center !important;
                         background-repeat: no-repeat !important;
                     }
-                    /* 调整 phone-frame 的高度 */
+                    /* 调整 phone-frame 的高度和位置 */
                     body.is-ios-pwa .phone-frame {
                         height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                         max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        /* 关键修复：移除 margin-top，防止内容被往下推导致底部出现白块 */
+                        margin-top: 0 !important;
                     }
                 `;
                 
@@ -381,9 +383,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     body.is-ios-pwa.fullscreen-mode .phone-frame {
                         height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
                         max-height: calc(100dvh - env(safe-area-inset-bottom) ${calcValue}) !important;
+                        margin-top: 0 !important;
                     }
                     `;
                 }
+
                 
                 styleEl.textContent = cssContent;
                 debugLog('🍎 iOS安全区margin已更新:', marginPx, isFullscreen ? '(全屏模式)' : '');
