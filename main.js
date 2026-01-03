@@ -74,9 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 // 1.4 清理离屏canvas
-                document.querySelectorAll('canvas:not(:visible)').forEach(canvas => {
-                    const ctx = canvas.getContext('2d');
-                    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.querySelectorAll('canvas').forEach(canvas => {
+                    // Check if element is visible (offsetParent is null if display:none)
+                    if (canvas.offsetParent === null || window.getComputedStyle(canvas).display === 'none') {
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
                 });
                 
                 // 1.5 清理定时器（可选，保留核心）
@@ -414,8 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.addEventListener('touchmove', function(e) {
                 // 1. 查找所有可能的滚动容器
+                // ⚠️ 关键修复：加入 .overflow-y-auto, .overflow-auto 等通用类名，防止误伤 Flex 布局的滚动区
                 const target = e.target;
-                const scrollableParent = target.closest('.chat-messages-container, .settings-content, .settings-content-ios, .music-content, .content, .scrollable, .settings-page');
+                const scrollableParent = target.closest('.chat-messages-container, .settings-content, .settings-content-ios, .music-content, .content, .scrollable, .settings-page .overflow-y-auto, .overflow-y-auto, .overflow-auto');
                 
                 // 2. 如果不在白名单容器内 -> 也就是在背景/Body上 -> 坚决阻止
                 if (!scrollableParent) {
@@ -424,14 +428,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // 3. 如果在滚动容器内，处理边缘情况 (防止连带拉动 Body)
+                // 关键补充：检查元素是否真的“可滚动”（内容是否真的溢出）
+                // 如果内容没有溢出（scrollHeight <= clientHeight），则在这个区域滑动等于滑背景，应该阻止
+                // 除非它是特意允许滚动的区域（比如下拉刷新，但这里没有）
+                const isScrollable = scrollableParent.scrollHeight > scrollableParent.clientHeight;
+                
+                if (!isScrollable) {
+                     // 内容不够长，滑不动，直接阻止以防漏给 body
+                     if (e.cancelable) e.preventDefault();
+                     return;
+                }
+
                 const isAtTop = scrollableParent.scrollTop <= 0;
                 const isAtBottom = scrollableParent.scrollTop + scrollableParent.clientHeight >= scrollableParent.scrollHeight - 1;
 
                 if (isAtTop && e.touches[0].clientY > (window.lastTouchY || 0)) {
-                    // 到顶了还往下拉 -> 阻止
+                    // 到顶了还往下拉 -> 阻止 (防止橡皮筋)
                     if (e.cancelable) e.preventDefault();
                 } else if (isAtBottom && e.touches[0].clientY < (window.lastTouchY || 0)) {
-                    // 到底了还往上拉 -> 阻止
+                    // 到底了还往上拉 -> 阻止 (防止橡皮筋)
                     if (e.cancelable) e.preventDefault();
                 }
                 
