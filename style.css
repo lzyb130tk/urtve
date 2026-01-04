@@ -9692,7 +9692,7 @@ body.fullscreen-mode .phone-frame {
   white-space: nowrap;
   text-shadow: 0 1px 10px rgba(255, 255, 255, 0.5);
   /* 防止背景太花看不清 */
-  top: 50px;
+  top: 58px;
 }
 
 /* 4. 通用图标按钮 (Header Icon Button) */
