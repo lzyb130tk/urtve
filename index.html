@@ -17,7 +17,7 @@
   <meta http-equiv="Expires" content="0" />
 
   <!-- 🚨 前端黑匣子 (Crash Reporter) - 必须放在最前面 -->
-  <script src="crash-reporter.js"></script>
+  <!-- <script src="crash-reporter.js"></script> -->
 
   <!-- iOS PWA 配置 (暂时注释以测试是否为 PWA 内存限制导致崩溃) -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -268,6 +268,7 @@
   <link rel="stylesheet" href="meetu-ios-style.css" />
   <link rel="stylesheet" href="shopping-ios-style.css" />
   <link rel="stylesheet" href="src/styles/shop-ceramic.css" />
+  <link rel="stylesheet" href="src/styles/music-player.css" />
   <link rel="stylesheet" href="anecdotes.css" />
 
   <!-- Tailwind CSS for Settings Page -->
@@ -2351,6 +2352,19 @@
                 </svg>
               </div>
               <span class="feature-name">定位</span>
+            </div>
+
+            <!-- 一起听音乐入口 -->
+            <div class="feature-item" id="music-feature" onclick="sendMusicInvite()">
+              <div class="feature-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 6V22" stroke="#FF2D55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 6L26 3V19" stroke="#FF2D55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="8" cy="22" r="4" stroke="#FF2D55" stroke-width="2"/>
+                  <circle cx="22" cy="19" r="4" stroke="#FF2D55" stroke-width="2"/>
+                </svg>
+              </div>
+              <span class="feature-name">一起听</span>
             </div>
 
             <input type="file" id="file-attachment-input" accept=".doc,.docx,.pdf,.ppt,.pptx" style="display: none" />
@@ -6969,6 +6983,10 @@
   </script>
   <script src="voice-settings-logic.js"></script>
   <script src="src/scripts/shop-ceramic.js"></script>
+  <!-- Color Thief - 用于提取图片主色调 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+  <script src="src/scripts/netease-music.js"></script>
+  <script src="src/scripts/music-player.js"></script>
   <script>
     function toggleRole() {
       const checkbox = document.getElementById('role-switch-checkbox');
@@ -6996,6 +7014,231 @@
       }
     }
   </script>
+
+  <!-- =============== 音乐播放器界面 =============== -->
+  <!-- 沉浸式播放器主界面 -->
+  <div id="music-player-screen">
+    <!-- 动态背景 -->
+    <div class="music-player-bg" id="music-player-bg"></div>
+    <div class="music-player-glow"></div>
+
+    <div class="music-player-ui">
+      <!-- 顶部栏 -->
+      <div class="music-player-header">
+        <button class="music-header-btn" onclick="MusicPlayer.minimize()">
+          <i data-lucide="chevron-down"></i>
+        </button>
+        <span class="music-header-title">一起听</span>
+        <button class="music-header-btn" onclick="MusicPlayer.toggleSheet('search', true)">
+          <i data-lucide="search"></i>
+        </button>
+      </div>
+
+      <!-- 专辑封面 / 歌词视图 (点击切换) -->
+      <div class="music-album-art-container" onclick="MusicPlayer.toggleLyricView()">
+        <div class="music-album-art" id="music-album-art"></div>
+        <!-- 歌词视图 -->
+        <div class="music-lyric-view" id="music-lyric-view" style="display:none;">
+          <div class="music-lyric-scroll" id="music-lyric-scroll">
+            <div class="music-lyric-line" data-time="0">歌词加载中...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 歌曲信息 -->
+      <div class="music-track-info">
+        <div class="music-track-title" id="music-track-title">选择一首歌</div>
+        <div class="music-track-artist" id="music-track-artist">搜索添加音乐</div>
+      </div>
+
+      <!-- 进度条 -->
+      <div class="music-progress-bar" id="music-progress-bar">
+        <div class="music-progress-fill" id="music-progress-fill">
+          <div class="music-progress-knob" id="music-progress-knob"></div>
+        </div>
+      </div>
+      <div class="music-time-labels">
+        <span id="music-current-time">0:00</span>
+        <span id="music-total-time">0:00</span>
+      </div>
+
+      <!-- 播放控制 -->
+      <div class="music-controls">
+        <button class="music-ctrl-btn" id="music-shuffle-btn">
+          <i data-lucide="shuffle"></i>
+        </button>
+        <button class="music-ctrl-btn" id="music-prev-btn" style="transform: scale(1.2)">
+          <i data-lucide="skip-back"></i>
+        </button>
+        <button class="music-play-btn" id="music-play-btn">
+          <i data-lucide="play"></i>
+        </button>
+        <button class="music-ctrl-btn" id="music-next-btn" style="transform: scale(1.2)">
+          <i data-lucide="skip-forward"></i>
+        </button>
+        <button class="music-ctrl-btn" id="music-playlist-btn">
+          <i data-lucide="list-music"></i>
+        </button>
+      </div>
+
+      <!-- 一起听聊天区域 -->
+      <div class="music-mini-chat-overlay">
+        <div class="music-mini-chat-header">
+          <i data-lucide="message-circle" style="width:14px; height:14px;"></i>
+          <span>和 TA 聊聊这首歌...</span>
+        </div>
+        <div class="music-mini-chat-list" id="music-mini-chat-list">
+          <!-- 聊天消息会动态添加到这里 -->
+        </div>
+        <div class="music-mini-input-box">
+          <input type="text" class="music-mini-input" id="music-mini-chat-input" 
+                 placeholder="说点什么..." />
+          <i data-lucide="send" style="width:14px; height:14px; opacity:0.5; cursor:pointer;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮动音乐胶囊 -->
+  <div id="music-floating-capsule">
+    <div class="music-capsule-art" id="music-capsule-art"></div>
+    <div class="music-capsule-info">
+      <div class="music-capsule-text" id="music-capsule-text">未播放</div>
+      <div class="music-capsule-bars">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 歌单底部面板 -->
+  <div class="music-sheet-overlay" id="music-playlist-sheet" 
+       onclick="if(event.target === this) MusicPlayer.toggleSheet('playlist', false)">
+    <div class="music-sheet-card">
+      <div class="music-sheet-handle"></div>
+      <div class="music-sheet-header">
+        <div class="music-sheet-title">我们的歌单</div>
+        <button onclick="MusicPlayer.toggleSheet('search', true)" 
+                style="background:#F5F5F7; border:none; padding:8px 16px; border-radius:20px; font-size:13px; cursor:pointer;">
+          + 添加歌曲
+        </button>
+      </div>
+      <div class="music-sheet-content" id="music-playlist-container">
+        <!-- 歌单列表会动态添加到这里 -->
+        <div class="music-empty-state">
+          <div class="music-empty-icon">🎵</div>
+          <p>歌单是空的</p>
+          <button onclick="MusicPlayer.toggleSheet('search', true)">搜索添加歌曲</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 搜索底部面板 -->
+  <div class="music-sheet-overlay" id="music-search-sheet"
+       onclick="if(event.target === this) MusicPlayer.toggleSheet('search', false)">
+    <div class="music-sheet-card">
+      <div class="music-sheet-handle"></div>
+      <div class="music-sheet-header">
+        <div class="music-sheet-title">搜索歌曲</div>
+        <button onclick="MusicPlayer.toggleSheet('search', false)"
+                style="background:none; border:none; font-size:16px; cursor:pointer; padding:8px;">✕</button>
+      </div>
+      <div class="music-search-box">
+        <i data-lucide="search"></i>
+        <input type="text" class="music-search-input" id="music-search-input" 
+               placeholder="搜索歌曲、歌手..." />
+      </div>
+      <div class="music-sheet-content" id="music-search-results">
+        <!-- 搜索结果会动态添加到这里 -->
+        <div class="music-empty-state" style="padding:20px;">
+          <p style="color:#999;">输入关键词开始搜索</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 音乐邀请卡片模板（隐藏，供JS克隆使用） -->
+  <template id="music-invite-card-template">
+    <div class="music-invite-card">
+      <div class="music-invite-cover">
+        <div class="music-vinyl-decor">
+          <div class="music-vinyl-inner"></div>
+        </div>
+      </div>
+      <div class="music-invite-body">
+        <div class="music-invite-title">邀请一起听</div>
+        <div class="music-invite-text">想和你一起分享喜欢的歌曲...</div>
+        <div class="music-invite-actions">
+          <button class="music-invite-btn decline" onclick="this.closest('.music-invite-card').remove()">拒绝</button>
+          <button class="music-invite-btn accept" onclick="MusicPlayer.startListenTogether(); this.closest('.music-invite-card').remove()">接受</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- 音乐功能初始化 -->
+  <script>
+    // 初始化Lucide图标
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+
+    // 发送一起听邀请卡片到聊天
+    window.sendMusicInvite = function() {
+      // 检查是否需要先登录
+      if (!NeteaseMusic.isLoggedIn()) {
+        NeteaseMusic.showLoginModal().then(() => {
+          createAndSendInviteCard();
+        }).catch(() => {
+          // 用户取消登录，仍然可以使用基础功能
+          createAndSendInviteCard();
+        });
+      } else {
+        createAndSendInviteCard();
+      }
+    };
+
+    function createAndSendInviteCard() {
+      // 获取聊天消息容器
+      const chatStream = document.querySelector('#chat-messages') || 
+                         document.querySelector('.chat-stream') ||
+                         document.querySelector('.messages-container');
+      
+      if (!chatStream) {
+        console.warn('[Music] 未找到聊天消息容器');
+        // 直接打开播放器
+        MusicPlayer.startListenTogether();
+        return;
+      }
+
+      // 克隆邀请卡片模板
+      const template = document.getElementById('music-invite-card-template');
+      const card = template.content.cloneNode(true);
+      
+      // 创建消息包装
+      const msgWrapper = document.createElement('div');
+      msgWrapper.className = 'message-row user-message';
+      msgWrapper.appendChild(card);
+      
+      chatStream.appendChild(msgWrapper);
+      chatStream.scrollTop = chatStream.scrollHeight;
+    }
+
+    // 在加号菜单中添加音乐入口的辅助函数
+    window.initMusicEntryPoint = function() {
+      // 寻找聊天界面的加号按钮
+      const plusBtn = document.querySelector('#chat-plus-btn, .plus-menu-btn, [data-action="plus-menu"]');
+      if (plusBtn) {
+        // 监听加号菜单展开，添加音乐选项
+        console.log('[Music] 已找到加号按钮，音乐入口已准备就绪');
+      }
+    };
+  </script>
+
 </body>
 
 </html>
