@@ -253,19 +253,21 @@
     display: flex;
     flex-direction: column;
     padding: 0 24px;
-    padding-top: env(safe-area-inset-top, 0);
+    /* 核心修复：确保顶部至少有 20px 距离，防止紧贴顶部或被状态栏遮挡 */
+    padding-top: max(20px, env(safe-area-inset-top)); 
     height: 100%;
     overflow: hidden; /* 强制在一屏内 */
 }
 
 /* 顶部栏 */
 .music-player-header {
-    height: 50px; /* 压缩高度 */
+    height: 44px; /* iOS 标准高度 */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0; 
+    margin-bottom: 4px; /* 极小间距 */
     flex-shrink: 0;
+    z-index: 20; /* 确保层级 */
 }
 
 /* ... existing header styles ... */
@@ -273,13 +275,14 @@
 /* 专辑封面 - 关键修改：允许无限压缩 */
 .music-album-art-container {
     width: 100%;
-    flex: 1; /* 占据剩余所有空间 */
+    flex: 1 1 0px; /* Basis 设为 0，完全由剩余空间决定高度 */
     min-height: 0; /* 允许压缩到 0 */
     margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding: 10px 0; /* 给上下留点余地 */
 }
 
 .music-album-art {
