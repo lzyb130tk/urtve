@@ -294,6 +294,11 @@ const NeteaseMusic = (function() {
                     });
                     
                     const statusEl = document.getElementById('netease-qr-status');
+                    if (!statusEl) {
+                        // 元素不存在（模态框已关闭），停止轮询
+                        clearInterval(_qrPollTimer);
+                        return;
+                    }
                     
                     switch (checkResult.code) {
                         case 801:

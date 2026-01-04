@@ -891,6 +891,9 @@ const MusicPlayer = (function() {
         renderPlaylist();
         
         togglePlayerScreen(true);
+        if (els.playerScreen) {
+            els.playerScreen.classList.add('listen-together-active');
+        }
         
         // 发送开始消息给AI
         addChatMessage('system', '一起听会话已开始');
@@ -1194,6 +1197,9 @@ ${recentMessages}
         
         // 关闭播放器
         togglePlayerScreen(false);
+        if (els.playerScreen) {
+            els.playerScreen.classList.remove('listen-together-active');
+        }
         if (els.floatingCapsule) {
             els.floatingCapsule.classList.remove('visible');
             els.floatingCapsule.style.display = 'none'; // 强制隐藏

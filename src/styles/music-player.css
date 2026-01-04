@@ -245,6 +245,7 @@
 }
 
 /* 播放器内容 */
+/* 播放器内容 */
 .music-player-ui {
     position: relative;
     z-index: 10;
@@ -252,60 +253,43 @@
     display: flex;
     flex-direction: column;
     padding: 0 24px;
-    padding-top: env(safe-area-inset-top, 0);
+    /* 核心修复：确保顶部至少有 20px 距离，防止紧贴顶部或被状态栏遮挡 */
+    padding-top: max(20px, env(safe-area-inset-top)); 
+    height: 100%;
+    overflow: hidden; /* 强制在一屏内 */
 }
 
 /* 顶部栏 */
 .music-player-header {
-    height: 60px;
+    padding-top: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 4px; /* 极小间距 */
+    flex-shrink: 0;
+    z-index: 20; /* 确保层级 */
 }
 
-.music-header-btn {
-    background: rgba(255, 255, 255, 0.1);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    transition: background 0.2s;
-}
+/* ... existing header styles ... */
 
-.music-header-btn:active {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.music-header-title {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    opacity: 0.7;
-}
-
-/* 专辑封面 */
+/* 专辑封面 - 关键修改：允许无限压缩 */
 .music-album-art-container {
     width: 100%;
-    aspect-ratio: 1;
-    position: relative;
-    margin-bottom: 40px;
+    flex: 1 1 0px; /* Basis 设为 0，完全由剩余空间决定高度 */
+    min-height: 0; /* 允许压缩到 0 */
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: 280px;
+    overflow: hidden;
+    padding: 10px 0; /* 给上下留点余地 */
 }
 
 .music-album-art {
-    width: 85%;
-    height: 85%;
-    max-width: 260px;
-    max-height: 260px;
+    height: 100%;       /* 填满容器高度 */
+    width: auto;        /* 宽度自适应 */
+    aspect-ratio: 1;    /* 保持正方形 */
+    max-width: 100%;    /* 但不超过容器宽度 */
     border-radius: 20px;
     background-color: #333;
     background-size: cover;
@@ -313,29 +297,31 @@
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     transform: scale(1);
     transition: transform 0.5s ease;
+    object-fit: cover;
 }
 
 #music-player-screen.playing .music-album-art {
-    transform: scale(1.05);
+    transform: scale(0.95); /* 稍微缩小一点，避免贴边 */
 }
 
-/* 歌曲信息 */
+/* 歌曲信息 - 压缩间距 */
 .music-track-info {
-    margin-bottom: 24px;
+    margin-bottom: 10px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .music-track-title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .music-track-artist {
-    font-size: 15px;
+    font-size: 13px;
     color: var(--music-text-secondary);
 }
 
@@ -345,39 +331,22 @@
     height: 4px;
     background: rgba(255, 255, 255, 0.15);
     border-radius: 2px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     position: relative;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
-.music-progress-fill {
-    width: 0%;
-    height: 100%;
-    background: #fff;
-    border-radius: 2px;
-    position: relative;
-    transition: width 0.1s linear;
-}
-
-.music-progress-knob {
-    width: 12px;
-    height: 12px;
-    background: #fff;
-    border-radius: 50%;
-    position: absolute;
-    right: -6px;
-    top: 50%;
-    transform: translateY(-50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+/* ... progress fill/knob ... */
 
 .music-time-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.4);
     font-variant-numeric: tabular-nums;
-    margin-bottom: 32px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
 /* 播放控制 */
@@ -385,35 +354,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 10px;
-    margin-bottom: 40px;
+    padding: 0 4px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
-.music-ctrl-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: 0.2s;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.music-ctrl-btn:active {
-    opacity: 0.5;
-}
-
-.music-ctrl-btn.active {
-    color: var(--music-accent);
-}
+/* ... btn styles ... */
 
 .music-play-btn {
-    width: 72px;
-    height: 72px;
+    width: 40px; /* 稍微调小 */
+    height: 40px;
     border-radius: 50%;
     background: #fff;
     color: #000;
@@ -426,13 +376,12 @@
     transition: transform 0.2s;
 }
 
-.music-play-btn:active {
-    transform: scale(0.95);
-}
+/* ... active styles ... */
 
-/* 一起听聊天区域 */
+/* 一起听聊天区域 - 固定占比 */
 .music-mini-chat-overlay {
-    flex: 1;
+    flex: 0 0 25vh; /* 固定占屏幕高度的 1/4 */
+    min-height: 140px;
     background: rgba(0, 0, 0, 0.2);
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
@@ -443,6 +392,7 @@
     overflow: hidden;
     margin: 0 -24px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    margin-top: auto;
 }
 
 .music-mini-chat-header {
@@ -1172,5 +1122,84 @@
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ================= 一起听模式适配 (Mobile Fix V3 - Balanced) ================= */
+#music-player-screen.listen-together-active .music-player-ui {
+    
+    padding-bottom: 0;
+    height: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    overflow: hidden;
+}
+
+#music-player-screen.listen-together-active .music-player-header {
+    flex-shrink: 0;
+    margin-bottom: 5px;
+   padding-top: 50px;
+}
+
+#music-player-screen.listen-together-active .music-album-art-container {
+    /* 让封面占据剩余空间，成为视觉主体 */
+    flex: 1;
+    max-height: 40vh; /* 只要不超过屏幕的40% */
+    min-height: 150px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 1;
+}
+
+#music-player-screen.listen-together-active .music-album-art {
+    /* 保持正方形，高度自适应容器，但不超过容器 */
+    width: 200px;
+    height: 200px;
+    aspect-ratio: 1;
+    max-width: unset;
+    max-height: 100%;
+    border-radius: 16px;
+    transform: none !important;
+}
+
+#music-player-screen.listen-together-active .music-track-info {
+    margin-bottom: 5px;
+    flex-shrink: 0;
+}
+
+#music-player-screen.listen-together-active .music-track-title {
+    font-size: 15px; /* 稍微恢复一点字号 */
+}
+
+#music-player-screen.listen-together-active .music-track-artist {
+    font-size: 12px;
+}
+
+#music-player-screen.listen-together-active .music-controls {
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+/* 聊天区域限制高度，不再贪婪占用所有空间 */
+#music-player-screen.listen-together-active .music-mini-chat-overlay {
+    flex: none; /* 不要自动伸缩 */
+    height: 28vh; /* 固定占用屏幕高度的约 1/4 到 1/3 */
+    min-height: 200px; /* 最小高度保障 */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: max(10px, env(safe-area-inset-bottom));
+    padding-bottom: 0;
+}
+
+#music-player-screen.listen-together-active .music-mini-chat-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#music-player-screen.listen-together-active .music-mini-input-box {
+    flex-shrink: 0;
+    margin-top: 8px;
 }
 
