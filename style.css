@@ -3106,7 +3106,7 @@ body.fullscreen-mode .phone-frame {
 
 /* 输入栏上移，移动的距离就是变量的值 */
 #chat-screen.emoji-panel-active .chat-input-area {
-  bottom: calc(var(--emoji-panel-height) + 20px);
+  bottom: var(--emoji-panel-height);
 }
 
 /* 消息容器增加内边距，使用 calc() 自动计算总高度 */

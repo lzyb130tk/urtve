@@ -2758,7 +2758,7 @@ window.TimerManager = {
             }
 
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open(this.dbName, 18); 
+                const request = indexedDB.open(this.dbName, 19); 
 
                 request.onerror = (event) => {
                     // 如果打开失败，直接拒绝Promise
@@ -2771,7 +2771,7 @@ window.TimerManager = {
                     const db = event.target.result;
                     const transaction = event.target.transaction;
 
-                    const objectStores = ['settingsStore', 'messageContacts', 'musicPlaylists', 'worldBooks', 'emojiStore', 'gachaPosts', 'gachaPostInteractions', 'worldBookGroups', 'iconPresets', 'datingSetupStore', 'writingStylePresets', 'datingHistoryStore', 'fontUrlStore', 'groupChats', 'qilangPosts', 'wowPosts', 'memoryCheques'];
+                    const objectStores = ['settingsStore', 'messageContacts', 'musicPlaylists', 'worldBooks', 'emojiStore', 'gachaPosts', 'gachaPostInteractions', 'worldBookGroups', 'iconPresets', 'datingSetupStore', 'writingStylePresets', 'datingHistoryStore', 'fontUrlStore', 'groupChats', 'qilangPosts', 'wowPosts', 'memoryCheques', 'wowoData'];
 
                     try {
                         objectStores.forEach(name => {
@@ -5681,7 +5681,74 @@ const voiceCallSystemPrompt = `
             completionsUrl += '/chat/completions';
 
             // --- Context building logic remains the same ---
-            let timeInfo = contact.timePerceptionEnabled ? `### 现实时间参考\n当前用户的现实时间是：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' })}\n---\n\n` : "";
+            // ===== 增强版时间感知系统 =====
+            let timeInfo = "";
+            if (contact.timePerceptionEnabled) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1; // 0-indexed
+                const day = now.getDate();
+                const hour = now.getHours();
+                const minute = now.getMinutes();
+                const second = now.getSeconds();
+                const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                const weekday = weekdays[now.getDay()];
+                
+                // 时间段描述
+                let timePeriod = '';
+                if (hour >= 0 && hour < 5) timePeriod = '深夜';
+                else if (hour >= 5 && hour < 7) timePeriod = '凌晨';
+                else if (hour >= 7 && hour < 9) timePeriod = '早晨';
+                else if (hour >= 9 && hour < 11) timePeriod = '上午';
+                else if (hour >= 11 && hour < 13) timePeriod = '中午';
+                else if (hour >= 13 && hour < 17) timePeriod = '下午';
+                else if (hour >= 17 && hour < 19) timePeriod = '傍晚';
+                else if (hour >= 19 && hour < 22) timePeriod = '晚上';
+                else timePeriod = '深夜';
+                
+                // 节日/特殊日期检测
+                const specialDates = [];
+                // 固定节日
+                if (month === 1 && day === 1) specialDates.push('🎊 元旦');
+                if (month === 2 && day === 14) specialDates.push('💕 情人节');
+                if (month === 3 && day === 8) specialDates.push('💐 妇女节');
+                if (month === 3 && day === 14) specialDates.push('🍬 白色情人节');
+                if (month === 4 && day === 1) specialDates.push('🤡 愚人节');
+                if (month === 5 && day === 1) specialDates.push('💪 劳动节');
+                if (month === 5 && day === 4) specialDates.push('🔥 青年节');
+                if (month === 5 && day === 20) specialDates.push('💗 520');
+                if (month === 6 && day === 1) specialDates.push('🧸 儿童节');
+                if (month === 7 && day === 7) specialDates.push('🌟 七夕（公历日期，农历七夕另算）');
+                if (month === 10 && day === 1) specialDates.push('🇨🇳 国庆节');
+                if (month === 10 && day === 31) specialDates.push('🎃 万圣节');
+                if (month === 11 && day === 11) specialDates.push('🛒 双十一/光棍节');
+                if (month === 12 && day === 24) specialDates.push('🎄 平安夜');
+                if (month === 12 && day === 25) specialDates.push('🎁 圣诞节');
+                if (month === 12 && day === 31) specialDates.push('🎆 跨年夜');
+                
+                // 周末提示
+                if (now.getDay() === 0 || now.getDay() === 6) {
+                    specialDates.push('🌴 周末');
+                }
+                // 周一提示（很多人讨厌周一）
+                if (now.getDay() === 1) {
+                    specialDates.push('😮‍💨 周一');
+                }
+                // 周五提示
+                if (now.getDay() === 5) {
+                    specialDates.push('🎉 周五（快周末了！）');
+                }
+                
+                const specialDateStr = specialDates.length > 0 ? `\n特殊日期：${specialDates.join('、')}` : '';
+                
+                // 格式化输出
+                timeInfo = `### 📅 现实时间感知
+当前精确时间：${year}年${month}月${day}日 星期${weekday} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}
+时间段：${timePeriod}${specialDateStr}
+---
+
+`;
+            }
             let worldBookContent = "无特定世界观设定，请自由发挥。";
             // --- 重构：世界书内容加载 (支持 new linkedWorldBookIds) ---
             try {
@@ -5787,6 +5854,17 @@ if (typeof window.getEnabledMemories === 'function') {
 // 将记忆注入到system prompt中
 currentSystemPrompt += memoryContext;
 // ============ 记忆注入结束 ============
+
+// --- Wowo 生理期提示词注入 ---
+try {
+    const wowoInjection = localStorage.getItem('wowo_pending_prompt');
+    if (wowoInjection) {
+        currentSystemPrompt += `\n\n${wowoInjection}\n`;
+        console.log('[Wowo] Injected prompt:', wowoInjection);
+        localStorage.removeItem('wowo_pending_prompt'); // 仅注入一次
+    }
+} catch (e) { console.error('Wowo prompt injection failed:', e); }
+// -----------------------------
 
 // ============ 双语翻译注入 ============
 if (currentOpenContact && currentOpenContact.enableBilingualBubble) {
@@ -5941,6 +6019,11 @@ How are you today?[Split]你今天好吗？\\\\
             // ▲▲▲ 粘贴到这里结束 ▲▲▲
 
             if (aiResponseText) {
+                // 🏠 小窝：AI 小声贴触发检查（每 100 条消息后台自动生成）
+                if (window.WowoModule && window.WowoModule.checkAndGenerateAIWhisper) {
+                    window.WowoModule.checkAndGenerateAIWhisper(contact.id);
+                }
+                
                 // Call the new execution function
                 return await executePlainTextResponse(aiResponseText, contact, initialTypingIndicator, contextData);
             } else {
@@ -9637,7 +9720,8 @@ function cleanMessageForPreview(text) {
         'datingSetupStore',         // 约会设置 (立绘/背景)
         'datingHistoryStore',       // 约会历史记录
         'writingStylePresets',      // 文笔偏好
-        'fontUrlStore'              // 字体URL
+        'fontUrlStore',             // 字体URL
+        'wowoData'                  // 【新增】小窝数据 (纪念日、日记、小声贴)
         // 注意：musicPlaylists (歌单) 如果包含由 file input 读取的 Blob/File 对象，
         // 是无法通过 JSON 序列化备份的。如果只存 URL 则可以。
         // 为了防止备份文件过大或报错，这里暂不包含含有二进制文件的表。

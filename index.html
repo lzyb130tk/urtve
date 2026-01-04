@@ -2362,13 +2362,28 @@
             <div class="feature-item" id="music-feature" onclick="sendMusicInvite()">
               <div class="feature-icon">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 6V22" stroke="#FF2D55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 6L26 3V19" stroke="#FF2D55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="8" cy="22" r="4" stroke="#FF2D55" stroke-width="2"/>
-                  <circle cx="22" cy="19" r="4" stroke="#FF2D55" stroke-width="2"/>
+                  <path d="M12 6V22" stroke="#464646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 6L26 3V19" stroke="#464646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="8" cy="22" r="4" stroke="#464646" stroke-width="2"/>
+                  <circle cx="22" cy="19" r="4" stroke="#464646" stroke-width="2"/>
                 </svg>
               </div>
               <span class="feature-name">一起听</span>
+            </div>
+
+            <!-- 小窝入口 -->
+            <div class="feature-item" id="wowo-feature" onclick="openWowoScreen()">
+              <div class="feature-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- 房子轮廓 -->
+                  <path d="M5 14L16 5L27 14V26C27 26.5523 26.5523 27 26 27H6C5.44772 27 5 26.5523 5 26V14Z" stroke="#464646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- 房顶 -->
+                  <path d="M3 14L16 3L29 14" stroke="#464646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- 爱心 -->
+                  <path d="M16 21C16 21 12 18 12 15.5C12 14.1193 13.1193 13 14.5 13C15.2286 13 15.8768 13.3407 16 13.8C16.1232 13.3407 16.7714 13 17.5 13C18.8807 13 20 14.1193 20 15.5C20 18 16 21 16 21Z" fill="#464646" stroke="#464646" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="feature-name">小窝</span>
             </div>
 
             <input type="file" id="file-attachment-input" accept=".doc,.docx,.pdf,.ppt,.pptx" style="display: none" />
@@ -7242,6 +7257,213 @@
       }
     };
   </script>
+
+  <!-- ============================================
+       小窝 (Wowo) - 情侣空间界面
+       ============================================ -->
+  <link rel="stylesheet" href="src/styles/wowo.css" />
+
+  <div id="wowo-screen">
+    <!-- 返回按钮 -->
+    <button class="wowo-back-btn" id="wowo-back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <!-- ============ Page 1: 纪念日 ============ -->
+    <div id="wowo-page-love" class="wowo-page active">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div class="wowo-love-card">
+          <div class="wowo-days-big" id="wowo-days-count">?</div>
+          <div class="wowo-days-label">days with you</div>
+        </div>
+        <svg class="wowo-love-separator" width="100" height="20">
+          <path d="M0,10 Q50,20 100,10" stroke="#E0E0E0" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="wowo-date-edit-hint" id="wowo-anniversary-hint">点击设置纪念日</div>
+      </div>
+    </div>
+
+    <!-- ============ Page 2: 生理期 ============ -->
+    <div id="wowo-page-cycle" class="wowo-page">
+      <div class="wowo-page-title">My Cycle</div>
+      
+      <div class="wowo-cycle-container">
+        <div class="wowo-blob-bg"></div>
+        <div class="wowo-cycle-content">
+          <div class="wowo-cycle-day" id="wowo-cycle-day">--</div>
+          <div class="wowo-cycle-status" id="wowo-cycle-status">点击右上角设置开始日期</div>
+        </div>
+        <div class="wowo-date-wrapper" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+          <div class="wowo-date-btn">调整开始日</div>
+          <input type="date" id="wowo-cycle-date-input" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;">
+        </div>
+        <div class="wowo-cycle-history-entry" id="wowo-cycle-history-entry" style="position: absolute; top: 10px; left: 10px; font-size: 12px; color: #999; padding: 6px 12px; background: #fff; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); cursor: pointer; z-index: 100;">
+            记录历史
+        </div>
+      </div>
+
+      <!-- 经期预测区域 -->
+      <div class="wowo-cycle-prediction" id="wowo-cycle-prediction" style="display: none;">
+        <!-- 内容由JS动态填充 -->
+      </div>
+
+      <button class="wowo-btn-soft" id="wowo-record-feeling-btn">
+        记录今日感受
+      </button>
+    </div>
+
+    <!-- ============ Page 3: 打卡日记 ============ -->
+    <div id="wowo-page-journal" class="wowo-page">
+      <div class="wowo-page-title">Daily Journal</div>
+      
+      <div class="wowo-journal-card">
+        <div class="wowo-question-text" id="wowo-daily-question">Q: 今天有什么让你开心的小事吗？</div>
+        
+        <textarea class="wowo-journal-input" id="wowo-journal-textarea" placeholder="在这里写下你的想法..."></textarea>
+        
+        <div class="wowo-mood-section">
+          <div class="wowo-mood-title">TODAY'S MOOD</div>
+          <div class="wowo-mood-row">
+            <div class="wowo-mood-opt" data-mood="happy">
+              <svg class="wowo-mood-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#FFF9C4"/>
+                <path d="M30 40 Q35 30 40 40 M60 40 Q65 30 70 40 M30 65 Q50 85 70 65" stroke="#FBC02D" stroke-width="5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="wowo-mood-opt" data-mood="calm">
+              <svg class="wowo-mood-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#E2F0CB"/>
+                <circle cx="35" cy="40" r="5" fill="#7CB342"/>
+                <circle cx="65" cy="40" r="5" fill="#7CB342"/>
+                <line x1="35" y1="70" x2="65" y2="70" stroke="#7CB342" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="wowo-mood-opt" data-mood="tired">
+              <svg class="wowo-mood-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#E0F7FA"/>
+                <path d="M30 45 L40 45 M60 45 L70 45 M35 75 Q50 60 65 75" stroke="#00ACC1" stroke-width="5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="wowo-mood-opt" data-mood="angry">
+              <svg class="wowo-mood-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#FFCCBC"/>
+                <line x1="30" y1="35" x2="45" y2="45" stroke="#D84315" stroke-width="5" stroke-linecap="round"/>
+                <line x1="70" y1="35" x2="55" y2="45" stroke="#D84315" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="35" cy="50" r="3" fill="#D84315"/>
+                <circle cx="65" cy="50" r="3" fill="#D84315"/>
+                <path d="M40 70 Q50 65 60 70" stroke="#D84315" stroke-width="5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="wowo-btn-post" id="wowo-submit-journal-btn">交换卡签</button>
+      
+      <!-- 打卡历史区域 -->
+      <div class="wowo-journal-history">
+        <div class="wowo-journal-history-title">往期卡签</div>
+        <div class="wowo-journal-history-scroll" id="wowo-journal-history-scroll">
+          <!-- 内容由JS动态填充 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Page 4: 小声贴 ============ -->
+    <div id="wowo-page-whisper" class="wowo-page">
+      <div class="wowo-page-title">Whispers</div>
+      <div class="wowo-waterfall" id="wowo-note-wall">
+        <!-- 便签会动态添加 -->
+      </div>
+    </div>
+
+    <!-- FAB 添加小声贴按钮 -->
+    <div class="wowo-fab" id="wowo-whisper-fab" style="display: none;">+</div>
+
+    <!-- ============ 底部导航 ============ -->
+    <div class="wowo-tab-bar">
+      <div class="wowo-tab-item active" data-page="wowo-page-love">
+        <svg class="wowo-tab-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      </div>
+      <div class="wowo-tab-item" data-page="wowo-page-cycle">
+        <svg class="wowo-tab-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="5"/></svg>
+      </div>
+      <div class="wowo-tab-item" data-page="wowo-page-journal">
+        <svg class="wowo-tab-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </div>
+      <div class="wowo-tab-item" data-page="wowo-page-whisper">
+        <svg class="wowo-tab-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 11H7V9h2v2zm4 0h-2V9h2v2zm4 0h-2V9h2v2z"/></svg>
+      </div>
+    </div>
+
+    <!-- ============ 弹窗：纪念日设置 ============ -->
+    <div id="wowo-anniversary-sheet" class="wowo-mask">
+      <div class="wowo-sheet" onclick="event.stopPropagation()">
+        <h3>设置纪念日</h3>
+        <input type="date" class="wowo-anniversary-input" id="wowo-anniversary-date-input" />
+        <button class="wowo-btn-post" id="wowo-save-anniversary-btn">保存</button>
+      </div>
+    </div>
+
+    <!-- ============ 弹窗：生理期感受 ============ -->
+    <div id="wowo-cycle-sheet" class="wowo-mask">
+      <div class="wowo-sheet" onclick="event.stopPropagation()">
+        <h3>Today's Feeling</h3>
+        <div class="wowo-pill-group">
+          <div class="wowo-pill">腰酸</div>
+          <div class="wowo-pill">肚子胀气</div>
+          <div class="wowo-pill active">痛感 Lv.Max</div>
+          <div class="wowo-pill">头痛</div>
+          <div class="wowo-pill">手脚冰凉</div>
+          <div class="wowo-pill">无感</div>
+          <div class="wowo-pill">浑身无力</div>
+          <div class="wowo-pill">需要抱抱</div>
+          <div class="wowo-pill">想吃甜的</div>
+          <div class="wowo-pill">情绪低落</div>
+          <div class="wowo-pill">易燃易爆</div>
+          <div class="wowo-pill">莫名想哭</div>
+          <div class="wowo-pill">想被摸头</div>
+
+
+        </div>
+        <textarea id="wowo-cycle-note-input" class="wowo-journal-input" style="height: 60px; margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 12px;" placeholder="记录一下心情或具体症状..."></textarea>
+        <button class="wowo-btn-post" id="wowo-save-feeling-btn">保存记录</button>
+      </div>
+    </div>
+
+    <!-- ============ 弹窗：经期历史记录 ============ -->
+    <div id="wowo-cycle-history-sheet" class="wowo-mask">
+      <div class="wowo-sheet" onclick="event.stopPropagation()" style="height: 70vh; display: flex; flex-direction: column;">
+        <h3>经期记录</h3>
+        <div id="wowo-cycle-history-list" style="flex: 1; overflow-y: auto; padding: 10px 0;">
+            <!-- 历史记录列表 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 弹窗：新建小声贴 ============ -->
+    <div id="wowo-note-sheet" class="wowo-mask">
+      <div class="wowo-sheet" onclick="event.stopPropagation()">
+        <h3>New Whisper</h3>
+        <textarea class="wowo-journal-input" id="wowo-note-input" style="height:80px; background:#F9F9F9; padding:10px;" placeholder="写给TA..."></textarea>
+        <button class="wowo-btn-post" id="wowo-add-whisper-btn">贴到墙上</button>
+      </div>
+    </div>
+
+    <!-- ============ 弹窗：日记详情 ============ -->
+    <div id="wowo-journal-detail-sheet" class="wowo-mask">
+      <div class="wowo-sheet" onclick="event.stopPropagation()">
+        <h3>卡签详情</h3>
+        <div id="wowo-journal-detail-content">
+          <!-- 内容由JS动态填充 -->
+        </div>
+        <button class="wowo-btn-post" onclick="document.getElementById('wowo-journal-detail-sheet').classList.remove('show')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="src/scripts/wowo.js"></script>
 
 </body>
 
