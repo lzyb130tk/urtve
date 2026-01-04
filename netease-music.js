@@ -14,6 +14,7 @@ const NeteaseMusic = (function() {
     // =============== 状态管理 ===============
     let _isLoggedIn = false;
     let _userInfo = null;
+    let _cookie = null; // 用户登录Cookie
     let _userId = null; // 用于后端Cookie关联
     
     // =============== 初始化 ===============
@@ -31,6 +32,7 @@ const NeteaseMusic = (function() {
             try {
                 const auth = JSON.parse(savedAuth);
                 _userInfo = auth.userInfo;
+                _cookie = auth.cookie;
                 _isLoggedIn = true;
                 console.log('[NeteaseMusic] 已恢复登录状态:', _userInfo?.nickname);
                 
@@ -106,7 +108,10 @@ const NeteaseMusic = (function() {
      */
     async function checkLoginStatus() {
         try {
-            const result = await apiGet('/api/login/status', { userId: _userId });
+            const result = await apiGet('/api/login/status', { 
+                userId: _userId,
+                cookie: _cookie
+            });
             if (result.code === 200 && result.data?.isLoggedIn) {
                 _isLoggedIn = true;
                 if (result.data.profile) {
@@ -119,6 +124,7 @@ const NeteaseMusic = (function() {
             } else {
                 _isLoggedIn = false;
                 _userInfo = null;
+                _cookie = null;
                 localStorage.removeItem(STORAGE_KEY);
             }
         } catch (e) {
@@ -136,7 +142,7 @@ const NeteaseMusic = (function() {
             overlay.innerHTML = `
                 <div class="netease-login-modal">
                     <div class="netease-login-header">
-                        <span>登录网易云音乐</span>
+                        <span>登录云音乐</span>
                         <button class="netease-login-close" onclick="NeteaseMusic.closeLoginModal()">✕</button>
                     </div>
                     <div class="netease-login-body">
@@ -157,7 +163,7 @@ const NeteaseMusic = (function() {
                         <div id="netease-qr-container" style="display:none;">
                             <div class="netease-qr-wrapper" style="display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:10px;">
                                 <img id="netease-qr-img" src="" alt="二维码" style="width:180px; height:180px; display:block;" />
-                                <p id="netease-qr-status" style="margin-top:10px; font-size:13px; color:#666;">使用网易云音乐APP扫码登录</p>
+                                <p id="netease-qr-status" style="margin-top:10px; font-size:13px; color:#666;">使用云音乐APP扫码登录</p>
                             </div>
                         </div>
                     </div>
@@ -248,10 +254,12 @@ const NeteaseMusic = (function() {
                     nickname: result.data.nickname,
                     avatarUrl: result.data.avatarUrl
                 };
+                _cookie = result.data.cookie;
                 _isLoggedIn = true;
                 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    userInfo: _userInfo
+                    userInfo: _userInfo,
+                    cookie: _cookie
                 }));
                 
                 return { success: true, userInfo: _userInfo };
@@ -316,10 +324,12 @@ const NeteaseMusic = (function() {
                                 nickname: checkResult.data?.nickname || '用户',
                                 avatarUrl: checkResult.data?.avatarUrl
                             };
+                            _cookie = checkResult.data?.cookie;
                             _isLoggedIn = true;
                             
                             localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                                userInfo: _userInfo
+                                userInfo: _userInfo,
+                                cookie: _cookie
                             }));
                             
                             closeLoginModal();
@@ -354,6 +364,7 @@ const NeteaseMusic = (function() {
         
         _isLoggedIn = false;
         _userInfo = null;
+        _cookie = null;
         localStorage.removeItem(STORAGE_KEY);
         console.log('[NeteaseMusic] 已退出登录');
     }
@@ -369,7 +380,7 @@ const NeteaseMusic = (function() {
         console.log('[NeteaseMusic] 搜索:', keywords);
         
         try {
-            const result = await apiGet('/api/search', { keywords, limit });
+            const result = await apiGet('/api/search', { keywords, limit, cookie: _cookie });
             
             if (result.code === 200) {
                 return result.data.songs || [];
@@ -394,7 +405,8 @@ const NeteaseMusic = (function() {
         try {
             const result = await apiGet('/api/song/url', { 
                 id: songId, 
-                userId: _userId 
+                userId: _userId,
+                cookie: _cookie
             });
             
             if (result.code === 200 && result.data?.url) {
@@ -421,7 +433,7 @@ const NeteaseMusic = (function() {
         console.log('[NeteaseMusic] 获取歌曲详情:', songIds);
         
         try {
-            const result = await apiGet('/api/song/detail', { ids: songIds });
+            const result = await apiGet('/api/song/detail', { ids: songIds, cookie: _cookie });
             
             if (result.code === 200) {
                 return result.data.songs || [];
@@ -441,7 +453,7 @@ const NeteaseMusic = (function() {
         console.log('[NeteaseMusic] 获取歌词:', songId);
         
         try {
-            const result = await apiGet('/api/lyric', { id: songId });
+            const result = await apiGet('/api/lyric', { id: songId, cookie: _cookie });
             
             if (result.code === 200) {
                 return {
@@ -464,7 +476,7 @@ const NeteaseMusic = (function() {
         }
         
         try {
-            const result = await apiGet('/api/user/playlist', { userId: _userId });
+            const result = await apiGet('/api/user/playlist', { userId: _userId, cookie: _cookie });
             
             if (result.code === 200) {
                 return result.data.playlists || [];
@@ -480,7 +492,8 @@ const NeteaseMusic = (function() {
         try {
             const result = await apiGet('/api/playlist/detail', { 
                 id: playlistId, 
-                userId: _userId 
+                userId: _userId,
+                cookie: _cookie
             });
             
             if (result.code === 200) {

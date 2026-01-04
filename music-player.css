@@ -261,7 +261,7 @@
 
 /* 顶部栏 */
 .music-player-header {
-    height: 44px; /* iOS 标准高度 */
+    padding-top: 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -362,8 +362,8 @@
 /* ... btn styles ... */
 
 .music-play-btn {
-    width: 64px; /* 稍微调小 */
-    height: 64px;
+    width: 40px; /* 稍微调小 */
+    height: 40px;
     border-radius: 50%;
     background: #fff;
     color: #000;
@@ -983,7 +983,7 @@
 /* ================= 响应式调整 ================= */
 @media (max-height: 700px) {
     .music-album-art-container {
-        max-height: 200px;
+        max-height: 280px;
         margin-bottom: 24px;
     }
     
@@ -998,7 +998,7 @@
 
 /* ================= 歌词视图 ================= */
 .music-lyric-view {
-    position: absolute;
+    /* position: absolute; */
     inset: 0;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(20px);
@@ -1015,7 +1015,7 @@
     align-items: center;
     gap: 12px;
     /* 上下padding让歌词能滚动到中间位置 */
-    padding: 120px 24px;
+    padding: 120px 120px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
@@ -1127,7 +1127,7 @@
 
 /* ================= 一起听模式适配 (Mobile Fix V3 - Balanced) ================= */
 #music-player-screen.listen-together-active .music-player-ui {
-    padding-top: max(60px, env(safe-area-inset-top));
+    
     padding-bottom: 0;
     height: 100%;
     box-sizing: border-box;
@@ -1138,7 +1138,7 @@
 #music-player-screen.listen-together-active .music-player-header {
     flex-shrink: 0;
     margin-bottom: 5px;
-    height: 44px;
+   padding-top: 40px;
 }
 
 #music-player-screen.listen-together-active .music-album-art-container {
@@ -1155,8 +1155,8 @@
 
 #music-player-screen.listen-together-active .music-album-art {
     /* 保持正方形，高度自适应容器，但不超过容器 */
-    width: auto;
-    height: 100%;
+    width: 260px;
+    height: 260px;
     aspect-ratio: 1;
     max-width: unset;
     max-height: 100%;
@@ -1170,15 +1170,15 @@
 }
 
 #music-player-screen.listen-together-active .music-track-title {
-    font-size: 20px; /* 稍微恢复一点字号 */
+    font-size: 15px; /* 稍微恢复一点字号 */
 }
 
 #music-player-screen.listen-together-active .music-track-artist {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 #music-player-screen.listen-together-active .music-controls {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     flex-shrink: 0;
 }
 
