@@ -245,6 +245,7 @@
 }
 
 /* 播放器内容 */
+/* 播放器内容 */
 .music-player-ui {
     position: relative;
     z-index: 10;
@@ -253,6 +254,9 @@
     flex-direction: column;
     padding: 0 24px;
     padding-top: env(safe-area-inset-top, 0);
+    height: 100%;
+    overflow-y: auto; /* 允许在极端高度下滚动，防止内容被截断 */
+    overflow-x: hidden;
 }
 
 /* 顶部栏 */
@@ -261,7 +265,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* 减小间距 */
+    flex-shrink: 0; /* 防止被压缩 */
 }
 
 .music-header-btn {
@@ -289,23 +294,25 @@
     opacity: 0.7;
 }
 
-/* 专辑封面 */
+/* 专辑封面 - 改为弹性容器 */
 .music-album-art-container {
     width: 100%;
-    aspect-ratio: 1;
+    /* aspect-ratio: 1;  <-- 删除固定比例，允许高度收缩 */
+    flex: 1 1 auto; /* 允许伸缩 */
+    min-height: 100px; /* 最小高度 */
     position: relative;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: 280px;
+    /* max-height: 280px; <-- 移动到内部图片控制 */
 }
 
 .music-album-art {
-    width: 85%;
-    height: 85%;
-    max-width: 260px;
-    max-height: 260px;
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1;
+    max-height: 280px; /* 限制最大高度 */
     border-radius: 20px;
     background-color: #333;
     background-size: cover;
@@ -313,6 +320,7 @@
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     transform: scale(1);
     transition: transform 0.5s ease;
+    object-fit: cover;
 }
 
 #music-player-screen.playing .music-album-art {
@@ -321,8 +329,9 @@
 
 /* 歌曲信息 */
 .music-track-info {
-    margin-bottom: 24px;
+    margin-bottom: 16px; /* 减小间距 */
     text-align: center;
+    flex-shrink: 0; /* 防止被压缩 */
 }
 
 .music-track-title {
@@ -348,6 +357,7 @@
     margin-bottom: 8px;
     position: relative;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .music-progress-fill {
@@ -377,7 +387,8 @@
     font-size: 11px;
     color: rgba(255, 255, 255, 0.4);
     font-variant-numeric: tabular-nums;
-    margin-bottom: 32px;
+    margin-bottom: 20px; /* 减小间距 */
+    flex-shrink: 0;
 }
 
 /* 播放控制 */
@@ -386,7 +397,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 10px;
-    margin-bottom: 40px;
+    margin-bottom: 20px; /* 减小间距 */
+    flex-shrink: 0;
 }
 
 .music-ctrl-btn {
@@ -432,7 +444,9 @@
 
 /* 一起听聊天区域 */
 .music-mini-chat-overlay {
-    flex: 1;
+    /* flex: 1; <-- 移除纯 flex: 1，改为有基准的伸缩 */
+    flex: 1 0 150px; /* 占用剩余空间，但至少150px高 */
+    min-height: 120px;
     background: rgba(0, 0, 0, 0.2);
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
@@ -443,6 +457,7 @@
     overflow: hidden;
     margin: 0 -24px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    margin-top: auto; /* 确保推到底部 */
 }
 
 .music-mini-chat-header {
