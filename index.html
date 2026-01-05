@@ -1129,6 +1129,46 @@
                 </div>
               </div>
             </section>
+
+            <section>
+              <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Offline Life</h4>
+              <div class="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+                <!-- Toggle -->
+                <div class="flex items-center justify-between p-4 border-b border-gray-50/80">
+                  <div class="flex flex-col">
+                    <span class="text-[16px] font-medium text-gray-900">Offline Messages</span>
+                    <span class="text-[13px] text-gray-400 mt-0.5">Let AI contact you when away</span>
+                  </div>
+                  <label class="ios-switch-label">
+                    <input type="checkbox" id="offline-msg-toggle" class="ios-switch-input">
+                    <span class="ios-switch-slider"></span>
+                  </label>
+                </div>
+                
+                <!-- Cloud Service URL (Hidden for security, using proxy) -->
+                <div class="setting-item" id="offline-service-url-container" style="display: none !important;">
+                    <div class="setting-label">
+                        <span class="setting-name">Cloud Service URL</span>
+                        <span class="setting-desc">Server address for offline brain</span>
+                    </div>
+                    <input type="text" id="offline-service-url" class="setting-input" placeholder="https://your-server.com">
+                </div>
+
+                <!-- Quiet Hours -->
+                <div class="p-4" id="offline-dnd-container" style="display:none;">
+                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3">Do Not Disturb (DND)</span>
+                  <div class="flex items-center gap-2">
+                    <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                         <input type="time" id="offline-quiet-start" class="bg-transparent text-sm border-none focus:ring-0 text-gray-900 font-semibold cursor-pointer outline-none" value="23:00">
+                    </div>
+                    <span class="text-gray-400 text-sm font-medium">to</span>
+                    <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                        <input type="time" id="offline-quiet-end" class="bg-transparent text-sm border-none focus:ring-0 text-gray-900 font-semibold cursor-pointer outline-none" value="08:00">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -2384,6 +2424,21 @@
                 </svg>
               </div>
               <span class="feature-name">小窝</span>
+            </div>
+
+            <!-- 心跳信号入口 -->
+            <div class="feature-item" id="boomboom-feature" onclick="openBoomboomScreen()">
+              <div class="feature-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- 手机轮廓 -->
+                  <rect x="8" y="4" width="16" height="24" rx="2" stroke="#464646" stroke-width="2"/>
+                  <!-- 心跳线 -->
+                  <path d="M11 16L13 16L15 12L17 20L19 14L21 16" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- 底部按钮 -->
+                  <circle cx="16" cy="25" r="1.5" fill="#464646"/>
+                </svg>
+              </div>
+              <span class="feature-name">心跳信号</span>
             </div>
 
             <input type="file" id="file-attachment-input" accept=".doc,.docx,.pdf,.ppt,.pptx" style="display: none" />
@@ -7464,6 +7519,186 @@
   </div>
 
   <script src="src/scripts/wowo.js"></script>
+
+  <!-- ============================================
+       心跳信号 (Boomboom) - CHAR手机界面
+       ============================================ -->
+  <link rel="stylesheet" href="src/styles/boomboom.css" />
+
+  <div id="boomboom-screen">
+    <!-- 返回按钮 -->
+    <button class="bb-back-btn" id="bb-back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <!-- 加载界面 -->
+    <div id="bb-loading-overlay" class="bb-loading-overlay">
+      <div class="bb-loading-lock">
+        <div class="bb-loading-lock-shackle"></div>
+        <div class="bb-loading-lock-body">
+          <div class="bb-loading-keyhole"></div>
+        </div>
+      </div>
+      <div class="bb-loading-text">正在解锁手机</div>
+    </div>
+
+    <div class="bb-device-frame">
+      <!-- 顶部英雄区域 -->
+      <div class="bb-hero-header">
+        <div class="bb-hero-date" id="bb-hero-date">Phone // --:--</div>
+        <div class="bb-hero-title" id="bb-page-title">Dashboard</div>
+      </div>
+
+      <!-- 视口 -->
+      <div class="bb-viewport bb-hide-scroll">
+
+        <!-- ============ View 1: Home ============ -->
+        <div id="bb-view-home" class="bb-view-section active">
+          
+          <!-- 状态卡片 -->
+          <div class="bb-void-card active-border">
+            <div class="bb-card-label">
+              <span>STATUS</span>
+              <span style="color: var(--bb-accent-blue)">RUNNING</span>
+            </div>
+            <div id="bb-status-content" style="font-family: var(--bb-font-mono); font-size: 13px; line-height: 1.6; color: #ccc;">
+              > 正在加载状态...<br>
+            </div>
+          </div>
+
+          <!-- 视网膜记忆流 -->
+          <div style="margin: 30px 0;">
+            <div class="bb-card-label">RETINA_MEMORY (TODAY)</div>
+            <div class="bb-retina-scroll bb-hide-scroll" id="bb-retina-container">
+              <div class="bb-retina-item">
+                <div class="bb-retina-overlay">
+                  <div class="bb-retina-desc">加载中...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 紧急备忘 -->
+          <div class="bb-void-card" style="background: #1a0505;">
+            <div class="bb-card-label">URGENT MEMO</div>
+            <div id="bb-urgent-memo" style="font-family: var(--bb-font-display); font-size: 16px; color: #ffcccc;">
+              加载中...
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============ View 2: Search/Intelligence ============ -->
+        <div id="bb-view-search" class="bb-view-section">
+          <div class="bb-input-line-wrapper">
+            <input type="text" class="bb-input-line" placeholder="Access Database..." value="">
+            <svg class="bb-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+
+          <div class="bb-card-label">RECENT QUERIES</div>
+          <div id="bb-search-list">
+            <!-- 搜索历史由JS动态填充 -->
+          </div>
+        </div>
+
+        <!-- ============ View 3: Wallet ============ -->
+        <div id="bb-view-wallet" class="bb-view-section">
+          <div style="margin-bottom: 30px; text-align: center;">
+            <div style="font-family: var(--bb-font-mono); font-size: 12px; color: #666; margin-bottom: 4px;">DISPOSABLE ASSETS</div>
+            <div style="font-family: var(--bb-font-display); font-size: 48px; color: #fff;">∞ Unlimited</div>
+          </div>
+
+          <div class="bb-tab-bar bb-hide-scroll">
+            <div class="bb-tab-item active" data-type="all">全部流水</div>
+            <div class="bb-tab-item" data-type="secret">私密/特殊</div>
+           
+          </div>
+
+          <div id="bb-receipt-list">
+            <!-- 消费记录由JS动态填充 -->
+          </div>
+        </div>
+
+        <!-- ============ View 4: Messages ============ -->
+        <div id="bb-view-messages" class="bb-view-section">
+          
+          <!-- 心跳入口 -->
+          <div class="bb-heartbeat-trigger" id="bb-heartbeat-trigger">
+            <div class="bb-pulse-core"></div>
+            <div style="margin-top: 16px; font-family: var(--bb-font-display); font-size: 18px; color: #ffcccc;">HEARTBEAT_SIGNAL</div>
+            <div style="font-family: var(--bb-font-mono); font-size: 10px; color: #C0392B; letter-spacing: 2px;">CLICK TO ACCESS HIDDEN EMOTIONS</div>
+          </div>
+
+          <div style="margin-top: 30px;">
+            <div class="bb-card-label">SECURE LINES</div>
+            <div id="bb-chat-list">
+              <!-- 聊天列表由JS动态填充 -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 底部导航 -->
+      <div class="bb-nav-dock">
+        <div class="bb-nav-icon active" data-view="home" data-title="Dashboard">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <div class="bb-nav-dot"></div>
+        </div>
+        <div class="bb-nav-icon" data-view="search" data-title="Intelligence">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div class="bb-nav-dot"></div>
+        </div>
+        <div class="bb-nav-icon" data-view="wallet" data-title="Assets">
+          <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <div class="bb-nav-dot"></div>
+        </div>
+        <div class="bb-nav-icon" data-view="messages" data-title="Secure Line">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="bb-nav-dot"></div>
+        </div>
+      </div>
+
+      <!-- ============ Overlay: 心跳信号 ============ -->
+      <div id="bb-overlay-heartbeat" class="bb-overlay bb-heartbeat-room">
+        <div class="bb-overlay-nav">
+          <button class="bb-overlay-close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+          <div style="font-family: var(--bb-font-display); font-size: 20px; color: #fff;">INNER THOUGHTS</div>
+          <div style="width: 24px;"></div>
+        </div>
+        <div class="bb-viewport" id="bb-heartbeat-list">
+          <!-- 心跳内容由JS动态填充 -->
+        </div>
+      </div>
+
+      <!-- ============ Overlay: 聊天详情 ============ -->
+      <div id="bb-overlay-chat" class="bb-overlay">
+        <div class="bb-overlay-nav" style="border-bottom: 1px solid #222;">
+          <button class="bb-overlay-close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div style="font-family: var(--bb-font-ui); font-size: 16px; font-weight: bold; color: #fff;" id="bb-chat-title">Chat</div>
+          <div style="width: 24px;"></div>
+        </div>
+        <div class="bb-chat-window" id="bb-chat-container">
+          <!-- 聊天内容由JS动态填充 -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="src/scripts/boomboom.js"></script>
 
 </body>
 

@@ -7,8 +7,8 @@ const NeteaseMusic = (function() {
     'use strict';
 
     // =============== 配置 ===============
-    // 后端代理服务地址
-    const API_BASE = localStorage.getItem('netease_api_base') || 'https://wyyyyapi-ten.vercel.app';
+    // 后端代理服务地址（腾讯云国内服务器）
+    const API_BASE = localStorage.getItem('netease_api_base') || 'http://121.4.83.241:3001';
     const STORAGE_KEY = 'netease_music_auth';
     
     // =============== 状态管理 ===============
@@ -62,6 +62,61 @@ const NeteaseMusic = (function() {
     
     // =============== HTTP 请求封装 ===============
     
+    // 请求超时时间（毫秒）- Vercel 冷启动可能需要更长时间
+    const REQUEST_TIMEOUT = 30000; // 30秒
+    const MAX_RETRIES = 2; // 最大重试次数
+    
+    /**
+     * 带超时的 fetch 封装
+     */
+    async function fetchWithTimeout(url, options = {}, timeout = REQUEST_TIMEOUT) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('请求超时，请检查网络连接');
+            }
+            throw error;
+        }
+    }
+    
+    /**
+     * 带重试的 fetch 封装
+     */
+    async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+        let lastError;
+        
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                if (attempt > 0) {
+                    console.log(`[NeteaseMusic] 第 ${attempt} 次重试...`);
+                    // 重试前等待一小段时间
+                    await new Promise(r => setTimeout(r, 1000 * attempt));
+                }
+                return await fetchWithTimeout(url, options);
+            } catch (error) {
+                lastError = error;
+                console.warn(`[NeteaseMusic] 请求失败 (尝试 ${attempt + 1}/${retries + 1}):`, error.message);
+                
+                // 如果不是超时或网络错误，不重试
+                if (!error.message.includes('超时') && !error.message.includes('Failed to fetch')) {
+                    throw error;
+                }
+            }
+        }
+        
+        throw lastError;
+    }
+    
     async function apiGet(path, params = {}) {
         const url = new URL(API_BASE + path);
         Object.keys(params).forEach(key => {
@@ -71,21 +126,40 @@ const NeteaseMusic = (function() {
         });
         
         try {
-            const response = await fetch(url.toString());
+            // console.log('[NeteaseMusic] 请求:', url.toString());
+            // 使用带重试的 fetch
+            const response = await fetchWithRetry(url.toString());
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             return await response.json();
         } catch (error) {
-            console.error('[NeteaseMusic] API请求失败:', path, error);
+            // console.error('[NeteaseMusic] API请求失败:', path, error);
+            // 添加更多诊断信息
+            if (error.message.includes('Failed to fetch') || error.message.includes('超时')) {
+                console.error('[NeteaseMusic] 可能原因: 1. 后端服务冷启动中 2. 网络问题 3. CORS限制');
+                console.error('[NeteaseMusic] 请尝试访问:', API_BASE + '/api/health');
+            }
             throw error;
         }
     }
     
     async function apiPost(path, body = {}) {
         try {
-            const response = await fetch(API_BASE + path, {
+            console.log('[NeteaseMusic] POST 请求:', API_BASE + path);
+            // 使用带重试的 fetch
+            const response = await fetchWithRetry(API_BASE + path, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('[NeteaseMusic] API请求失败:', path, error);

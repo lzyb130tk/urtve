@@ -314,6 +314,8 @@
     overflow: hidden;
     padding: 10px 0;
     /* 给上下留点余地 */
+    position: relative;
+    /* 让歌词视图能正确获取高度 */
 }
 
 .music-album-art {
@@ -373,7 +375,30 @@
     flex-shrink: 0;
 }
 
-/* ... progress fill/knob ... */
+.music-progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 2px;
+    width: 0%;
+    position: relative;
+}
+
+.music-progress-knob {
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%) scale(0);
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s;
+}
+
+.music-progress-bar:hover .music-progress-knob {
+    transform: translateY(-50%) scale(1);
+}
 
 .music-time-labels {
     display: flex;
@@ -1052,31 +1077,44 @@
 
 /* ================= 歌词视图 ================= */
 .music-lyric-view {
-    /* position: absolute; */
+    position: absolute;
     inset: 0;
+    /* 填满整个父容器 */
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(20px);
     border-radius: 20px;
     overflow: hidden;
-    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+    /* 确保在封面之上 */
 }
 
 .music-lyric-scroll {
-    height: 100%;
+    position: relative;
+    flex: 1;
+    width: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    /* 上下padding让歌词能滚动到中间位置 */
-    padding: 120px 120px;
+    /* 上下 padding 让歌词能滚动到中间位置，左右适当减小 */
+    padding: 40% 20px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
 }
 
 /* 隐藏滚动条 */
 .music-lyric-scroll::-webkit-scrollbar {
     display: none;
+}
+
+.music-lyric-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .music-lyric-line {
@@ -1087,7 +1125,10 @@
     transition: all 0.3s ease;
     padding: 4px 0;
     width: 100%;
+    max-width: 100%;
     cursor: pointer;
+    word-break: break-word;
+    flex-shrink: 0;
 }
 
 .music-lyric-line:hover {

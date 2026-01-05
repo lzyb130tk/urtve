@@ -98,16 +98,22 @@
 
 .save-button, 
 .confirm-button {
-    background: #45494D !important;
+     width: 100% !important;
+    height: 52px !important;
+    background: var(--text-primary) !important;
     color: #fff !important;
-    border-radius: 12px !important;
-    font-weight: 500;
-    font-size: 14px;
-    padding: 12px 24px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
 }
 
 .save-button:hover,
@@ -142,21 +148,7 @@
 }
 
 /* ===== 6. 输入框样式 ===== */
-.form-input, 
-.form-textarea, 
-.role-form input, 
-.role-form textarea {
-    background: #F4F7F9 !important;
-    border: 1px solid rgba(69, 73, 77, 0.12) !important;
-    border-radius: 12px !important;
-    padding: 14px 16px;
-    font-size: 15px;
-    color: #45494D !important;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    box-sizing: border-box;
-    width: 100%;
-}
+
 
 .form-input::placeholder,
 .form-textarea::placeholder {
@@ -990,7 +982,7 @@ box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
     display: flex !important;
 }
 
-#add-contact-modal .modal-content {
+.modal-content {
     width: 90% !important;
     max-width: 360px !important;
     background: var(--bg-card) !important;
@@ -1009,14 +1001,14 @@ box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
     max-height: 90vh; /* 防止溢出屏幕 */
 }
 
-#add-contact-modal.modal-overlay.show .modal-content,
-#add-contact-modal.modal-overlay[style*="display: block"] .modal-content,
-#add-contact-modal.modal-overlay[style*="display: flex"] .modal-content {
+.modal-overlay.show .modal-content,
+.modal-overlay[style*="display: block"] .modal-content,
+.modal-overlay[style*="display: flex"] .modal-content {
     transform: scale(1) translateY(0);
 }
 
 /* 1. Header & Switcher */
-#add-contact-modal .modal-header {
+.modal-header {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -1030,7 +1022,7 @@ box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
     box-sizing: border-box !important;
 }
 
-#add-contact-modal .modal-close-button {
+.modal-close-button {
     position: absolute !important;
     right: 0 !important;
     top: 50% !important;
@@ -1051,7 +1043,7 @@ box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
     z-index: 10 !important;
 }
 
-#add-contact-modal .modal-close-button:hover {
+.modal-close-button:hover {
     background: #E5E5EA !important;
     color: #000 !important;
 }
@@ -1182,8 +1174,8 @@ box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
 }
 
 /* Inputs */
-#add-contact-modal .form-input,
-#add-contact-modal .form-textarea {
+.form-input,
+.form-textarea {
     width: 100% !important;
     background: var(--bg-input) !important;
     border: 1px solid transparent !important;
@@ -1198,24 +1190,24 @@ box-shadow: 0 0 0 2px rgba(0，0,0,0.05);
     box-sizing: border-box !important;
 }
 
-#add-contact-modal .form-input:focus,
-#add-contact-modal .form-textarea:focus {
+.form-input:focus,
+.form-textarea:focus {
    background:#fff;
 box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
 }
 
-#add-contact-modal .form-input {
+.form-input {
     height: 52px !important;
     font-weight: 600 !important;
     text-align: center !important;
 }
 
-#add-contact-modal .form-input::placeholder {
+.form-input::placeholder {
     font-weight: 500 !important;
     color: rgba(0,0,0,0.2) !important;
 }
 
-#add-contact-modal .form-textarea {
+.form-textarea {
     height: 100px !important;
     resize: none !important;
     line-height: 1.5 !important;

@@ -3672,15 +3672,24 @@ window.TimerManager = {
     connectButton.addEventListener('click', async () => {
         const apiUrl = apiUrlInput.value.trim();
         const apiKey = apiKeyInput.value.trim();
+        const apiStatusIconContainer = document.getElementById('api-status-icon-container');
 
         if (!apiUrl || !apiKey) {
-            apiStatusSpan.textContent = "URL和Key不能为空";
+            if (apiStatusSpan) apiStatusSpan.textContent = "URL和Key不能为空";
             return;
         }
 
         connectButton.textContent = "connecting...";
         connectButton.disabled = true;
-        apiStatusSpan.textContent = "";
+        if (apiStatusSpan) apiStatusSpan.textContent = "";
+        
+        // 更新图标状态为加载中/初始状态
+        if (apiStatusIconContainer) {
+             // 保持原有结构，只是重置颜色或设为加载色
+             apiStatusIconContainer.className = "w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-black/5 text-black/40"; 
+             // 如果想要加载效果，可以加 animate-pulse
+             apiStatusIconContainer.classList.add('animate-pulse');
+        }
 
         try {
             // --- START: CORRECTED LOGIC ---
@@ -3715,6 +3724,12 @@ window.TimerManager = {
             apiStatusSpan.textContent = "✓ 连接成功";
             apiStatusSpan.style.color = "green";
 
+            // 更新图标状态为成功 (绿色)
+            if (apiStatusIconContainer) {
+                apiStatusIconContainer.className = "w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-[#34C759]/10 text-[#34C759]";
+                apiStatusIconContainer.classList.remove('animate-pulse');
+            }
+
         } catch (error) {
             console.error("API 连接失败:", error); // Keep detailed error for developers
 
@@ -3740,6 +3755,12 @@ window.TimerManager = {
             } else {
                 apiStatusSpan.textContent = "✗ 未知错误";
                 apiStatusSpan.style.color = "red";
+            }
+            
+            // 更新图标状态为失败 (红色)
+            if (apiStatusIconContainer) {
+                apiStatusIconContainer.className = "w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-[#FF3B30]/10 text-[#FF3B30]";
+                apiStatusIconContainer.classList.remove('animate-pulse');
             }
 
             modelSelect.innerHTML = '<option value="" disabled selected>连接失败</option>';
@@ -4871,8 +4892,7 @@ window.TimerManager = {
     });
 
 
-    // --- 功能 E: 将单个联系人数据显示在列表中 ---
-    // --- 功能 E: 将单个联系人数据显示在列表中 (已更新，带复选框) ---
+
     // --- 功能 E: 将单个联系人数据显示在列表中 (已更新，带复选框) ---
     function appendContactToList(contact) {
         const li = document.createElement('li');
@@ -5658,6 +5678,7 @@ const voiceCallSystemPrompt = `
     // ===================================
     // NEW callAI FUNCTION (Plain Text + Regex Version)
     // ===================================
+    window.callAI = callAI;
     async function callAI(triggerPayload, contact, contextData = {}) {
         if (!contact || !contact.ai || !contact.user) {
             console.error("callAI 收到了一个无效或不完整的contact对象:", contact);
@@ -5865,6 +5886,21 @@ try {
     }
 } catch (e) { console.error('Wowo prompt injection failed:', e); }
 // -----------------------------
+
+// --- Boomboom 心跳信号彩蛋注入 ---
+try {
+    const contactId = contact.id;
+    if (contactId) {
+        const storageKey = `boomboom_pending_prompt_${contactId}`;
+        const boomboomInjection = localStorage.getItem(storageKey);
+        if (boomboomInjection) {
+            currentSystemPrompt += `\n\n${boomboomInjection}\n`;
+            console.log(`[Boomboom] 🎉 彩蛋触发(For ${contactId})! Injected prompt:`, boomboomInjection);
+            localStorage.removeItem(storageKey); // 仅注入一次
+        }
+    }
+} catch (e) { console.error('Boomboom prompt injection failed:', e); }
+// ---------------------------------
 
 // ============ 双语翻译注入 ============
 if (currentOpenContact && currentOpenContact.enableBilingualBubble) {
@@ -6215,6 +6251,8 @@ How are you today?[Split]你今天好吗？\\\\
             const filePattern = /^发送文件：\[(.*?)\]\((.*?)\)/;
             const aiFilePattern = /^发送文件：([A-Za-z0-9]+)\s+内容：([\s\S]+)/;
             const statusRegex = /\[转账状态[:：]\s*(接收|退回)\]/;
+            // [Offline Life] 新增：状态元数据正则
+            const offlineMetaRegex = /<meta\s+type="status_change"\s+status="([^"]+)"\s+(?:reason="([^"]+)"\s+)?(?:duration="([^"]+)"\s*)?\/?>/i;
 
             const voiceMatch = currentCommandText.match(voicePattern);
             const stickerMatch = currentCommandText.match(stickerPattern);
@@ -6229,6 +6267,7 @@ How are you today?[Split]你今天好吗？\\\\
             const fileMatch = currentCommandText.match(filePattern);
             const aiFileMatch = currentCommandText.match(aiFilePattern);
             const transferStatusUpdateMatch = currentCommandText.match(statusRegex);
+            const offlineMetaMatch = currentCommandText.match(offlineMetaRegex);
             if (transferMatch) {
     // 1. AI 发起转账
     const amount = parseFloat(transferMatch[1]).toFixed(2);
@@ -6297,6 +6336,79 @@ else if (transferStatusUpdateMatch) {
     
     // 移除指令文本，不显示在气泡里
     currentCommandText = currentCommandText.replace(statusRegex, '').trim();
+    if (!currentCommandText) continue;
+}
+// [Offline Life] 状态拦截逻辑
+else if (offlineMetaMatch) {
+    const status = offlineMetaMatch[1]; // busy
+    const reason = offlineMetaMatch[2] || 'busy';
+    const duration = parseInt(offlineMetaMatch[3] || '60');
+    
+    console.log(`[OfflineLife] Detected status change: ${status}, reason: ${reason}, duration: ${duration}m`);
+
+    // 1. 更新本地存储的状态
+    const offlineConfig = JSON.parse(localStorage.getItem('offlineLifeConfig') || '{}');
+    if (offlineConfig.enabled) {
+        offlineConfig.currentStatus = status;
+        offlineConfig.statusEndTime = Date.now() + (duration * 60 * 1000);
+        offlineConfig.lastReason = reason;
+        localStorage.setItem('offlineLifeConfig', JSON.stringify(offlineConfig));
+
+        // 2. 发送状态给服务器 (走 Vercel 代理，自动隐藏 IP)
+        // 只要开启了功能，默认就尝试发送，不需要用户填 URL
+        if (offlineConfig.enabled && status === 'busy') {
+            const PROXY_API_URL = '/api/offline-life'; // 使用 vercel.json 配置的代理路径
+            
+            console.log(`[OfflineLife] Sending status update to Proxy: ${PROXY_API_URL}`);
+            fetch(`${PROXY_API_URL}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contactId: contact.id,
+                    status: status,
+                    reason: reason,
+                    duration: duration
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('[OfflineLife] Server response:', data);
+            })
+            .catch(err => {
+                // 静默失败，不要弹窗打扰用户，可能是本地开发没开代理
+                console.warn('[OfflineLife] Failed to sync status (Proxy might be unavailable):', err);
+            });
+        }
+        
+        // 3. (保留 Mock 用于演示/从不打扰用户的体验)
+        if (status === 'busy') {
+            // 模拟服务器延迟 5秒 后发送推送
+            setTimeout(() => {
+                // 使用浏览器 Notification API (如果允许)
+                if (Notification.permission === 'granted') {
+                    new Notification(contact.ai.name || 'AI', {
+                        body: `[Mock推送] 我现在有点事(${reason})，晚点回你消息哈~`,
+                        icon: contact.ai.avatar
+                    });
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(contact.ai.name || 'AI', {
+                                body: `[Mock推送] 我现在有点事(${reason})，晚点回你消息哈~`,
+                                icon: contact.ai.avatar
+                            });
+                        }
+                    });
+                } else {
+                    // Fallback: 简单的 Alert 或者 Toast
+                    alert(`[Mock推送 - ${contact.ai.name}]\n我现在有点事(${reason})，晚点回你消息哈~`);
+                }
+            }, 5000); // 5秒延迟
+        }
+    }
+
+    // 3. 从显示文本中移除该标签
+    currentCommandText = currentCommandText.replace(offlineMetaRegex, '').trim();
     if (!currentCommandText) continue;
 }
 
@@ -6712,11 +6824,9 @@ else if (transferStatusUpdateMatch) {
         let messageObject;
         if (typeof messageData === 'string') {
             const text = messageData.trim();
-            if (isHtmlString(text)) {
-                messageObject = { type: 'html', content: { html: text } };
-            } else {
-                messageObject = { type: 'text', text: text };
-            }
+            // [Modified] 强制用户消息为纯文本，不再支持 HTML 渲染
+            // 原逻辑：if (isHtmlString(text)) { ... }
+            messageObject = { type: 'text', text: text };
         } else {
             messageObject = messageData;
         }
@@ -6894,6 +7004,7 @@ else if (transferStatusUpdateMatch) {
     // === openChatView  ===
     // ==========================================================
 
+    window.openChatView = openChatView;
     async function openChatView(contactId, options = {}) {
         if (chatCloseTimer) {
             clearTimeout(chatCloseTimer);
@@ -10607,14 +10718,16 @@ function cleanMessageForPreview(text) {
     function applyCustomFont(fontDataUrl) {
         if (fontDataUrl) {
             // 如果有自定义字体数据，则创建 @font-face 规则并应用
+            // 使用时间戳作为唯一标识，强制浏览器重新加载字体，解决浏览器缓存导致第二次无法更换的问题
+            const uniqueFontName = `CustomGlobalFont_${Date.now()}`;
             const fontFaceRule = `
             @font-face {
-                font-family: 'CustomGlobalFont';
+                font-family: '${uniqueFontName}';
                 src: url(${fontDataUrl});
             }
         `;
             customFontStyle.innerHTML = fontFaceRule;
-            phoneFrame.style.fontFamily = "'CustomGlobalFont', " + defaultFontFamily;
+            phoneFrame.style.fontFamily = `'${uniqueFontName}', ` + defaultFontFamily;
         } else {
             // 如果没有数据，则清空规则并恢复默认字体
             customFontStyle.innerHTML = '';
@@ -14409,13 +14522,16 @@ if (summonAiModalCloseBtn) {
                     if (msg) {
                         // 4. 更新内容
                         if (msg.type === 'voice_text') msg.transcript = newText;
-                        else if (isHtmlString(newText)) {
+                        // [Modified] 仅当发送者不是 user 时才允许识别 HTML
+                        else if (msg.sender !== 'user' && isHtmlString(newText)) {
                             msg.type = 'html';
                             msg.content = { html: newText };
                             delete msg.text;
                         } else {
+                            //如果是User或者非HTML内容，强制回退到 text 类型
                             msg.type = 'text';
                             msg.text = newText;
+                            if(msg.content) delete msg.content; // 清理可能残留的 content
                         }
 
                         // 5. 保存回数据库
@@ -14440,13 +14556,15 @@ if (summonAiModalCloseBtn) {
                     const msg = allContacts[contactIndex].history.find(m => m.uuid === uuid);
                     if (msg) {
                         if (msg.type === 'voice_text') msg.transcript = newText;
-                        else if (isHtmlString(newText)) {
+                        // [Modified] 仅当发送者不是 user 时才允许识别 HTML
+                        else if (msg.sender !== 'user' && isHtmlString(newText)) {
                             msg.type = 'html';
                             msg.content = { html: newText };
                             delete msg.text;
                         } else {
                             msg.type = 'text';
                             msg.text = newText;
+                             if(msg.content) delete msg.content;
                         }
 
                         await dbHelper.saveData('messageContacts', 'allContacts', allContacts);
@@ -14709,6 +14827,7 @@ if (summonAiModalCloseBtn) {
 
                 // 4. 设置文本内容 (兼容 formatActionText 函数)
                 const textContent = updatedMessage.text || '';
+                // [Bug Fix] 移除 HTML 渲染逻辑
                 bubbleElement.innerHTML = typeof formatActionText === 'function' ? formatActionText(textContent) : textContent.replace(/\n/g, '<br>');
             }
 
@@ -32954,4 +33073,65 @@ window.applySkin = function(skinUrl) {
         skinLayer.style.display = 'block';
     }
 };
+
+/* =========================================
+   Offline Life & Messaging System
+   ========================================= */
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Settings UI Handling
+    const offlineToggle = document.getElementById('offline-msg-toggle');
+    const offlineServerContainer = document.getElementById('offline-server-container');
+    const offlineDndContainer = document.getElementById('offline-dnd-container');
+    const offlineUrlInput = document.getElementById('offline-service-url');
+    const offlineStartInput = document.getElementById('offline-quiet-start');
+    const offlineEndInput = document.getElementById('offline-quiet-end');
+
+    if (offlineToggle) {
+        // Load saved state
+        const savedConfig = JSON.parse(localStorage.getItem('offlineLifeConfig') || '{}');
+        offlineToggle.checked = savedConfig.enabled || false;
+        offlineUrlInput.value = savedConfig.serverUrl || '';
+        offlineStartInput.value = savedConfig.quietStart || '23:00';
+        offlineEndInput.value = savedConfig.quietEnd || '08:00';
+
+        // Initial Visibility
+        updateOfflineSettingsVisibility(offlineToggle.checked);
+
+        // Toggle Event
+        offlineToggle.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            updateOfflineSettingsVisibility(isEnabled);
+            saveOfflineConfig();
+        });
+
+        // Input Events
+        [offlineUrlInput, offlineStartInput, offlineEndInput].forEach(input => {
+            if(input) {
+                input.addEventListener('change', saveOfflineConfig);
+                input.addEventListener('blur', saveOfflineConfig);
+            }
+        });
+
+        function updateOfflineSettingsVisibility(isEnabled) {
+            if (isEnabled) {
+                if (offlineServerContainer) offlineServerContainer.style.display = 'block';
+                if (offlineDndContainer) offlineDndContainer.style.display = 'block';
+            } else {
+                if (offlineServerContainer) offlineServerContainer.style.display = 'none';
+                if (offlineDndContainer) offlineDndContainer.style.display = 'none';
+            }
+        }
+
+        function saveOfflineConfig() {
+            const config = {
+                enabled: offlineToggle.checked,
+                serverUrl: offlineUrlInput.value.trim(),
+                quietStart: offlineStartInput.value,
+                quietEnd: offlineEndInput.value
+            };
+            localStorage.setItem('offlineLifeConfig', JSON.stringify(config));
+            console.log('[OfflineLife] Config saved:', config);
+        }
+    }
+});
 

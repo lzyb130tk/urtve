@@ -173,7 +173,7 @@ const MusicPlayer = (function() {
                 return;
             }
             
-            console.log('[MusicPlayer] 开始播放:', track.name, result.url);
+            // console.log('[MusicPlayer] 开始播放:', track.name, result.url);
             
             // 设置音频源并播放
             audio.src = result.url;
@@ -423,7 +423,7 @@ const MusicPlayer = (function() {
                             transparent 70%)`;
                     }
                     
-                    console.log('[MusicPlayer] 已提取封面主色调:', dominantColor);
+                    // console.log('[MusicPlayer] 已提取封面主色调:', dominantColor);
                 }
             } catch (e) {
                 console.warn('[MusicPlayer] 提取颜色失败，使用默认背景:', e);
@@ -685,7 +685,7 @@ const MusicPlayer = (function() {
                         
                         // 3. 保存回数据库
                         await window.dbHelper.saveData('messageContacts', 'allContacts', allContacts);
-                        console.log('[MusicPlayer] 歌单已同步保存到数据库', contactId);
+                        // console.log('[MusicPlayer] 歌单已同步保存到数据库', contactId);
                     } else {
                         console.warn('[MusicPlayer] 数据库中未找到当前联系人，无法保存歌单');
                     }
@@ -804,6 +804,8 @@ const MusicPlayer = (function() {
         if (index >= 0 && index < state.playlist.length) {
             state.currentIndex = index;
             play(state.playlist[index]);
+            // 立即更新歌单 UI，确保 .playing 状态立刻生效
+            renderPlaylist();
         }
     }
 
@@ -846,7 +848,7 @@ const MusicPlayer = (function() {
                     <div class="music-song-name">${song.name}</div>
                     <div class="music-song-meta">${song.artist} · ${NeteaseMusic.formatDuration(song.duration)}</div>
                 </div>
-                <button class="music-add-btn">
+                <button class="music-add-btn" onclick="MusicPlayer.addSongOnly(${JSON.stringify(song).replace(/"/g, '&quot;')}, event)">
                     <i data-lucide="plus"></i>
                 </button>
             </div>
@@ -865,6 +867,36 @@ const MusicPlayer = (function() {
         toggleSheet('search', false);
     }
 
+    /**
+     * 仅添加歌曲到播放列表（不立即播放）
+     */
+    function addSongOnly(track, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        addToPlaylist(track);
+        
+        // 视觉反馈
+        if (event && event.currentTarget) {
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check"></i>';
+            btn.style.color = 'var(--music-accent)';
+            btn.style.borderColor = 'var(--music-accent)';
+            
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                lucide.createIcons();
+            }, 1000);
+        }
+        
+        showToast('已添加到播放列表');
+    }
+
     // =============== 一起听功能 ===============
     
     /**
@@ -880,7 +912,7 @@ const MusicPlayer = (function() {
         if (window.currentOpenContact?.playlist && window.currentOpenContact.playlist.length > 0) {
             // 深度复制一份，避免引用问题
             state.playlist = JSON.parse(JSON.stringify(window.currentOpenContact.playlist));
-            console.log('[MusicPlayer] 已加载联系人歌单:', state.playlist.length, '首');
+            // console.log('[MusicPlayer] 已加载联系人歌单:', state.playlist.length, '首');
         } else {
             // ✅ 如果该联系人没有歌单，必须清空，否则会显示上一位联系人的歌单
             state.playlist = [];
@@ -899,7 +931,7 @@ const MusicPlayer = (function() {
         addChatMessage('system', '一起听会话已开始');
         
         // 开启沉默检测
-        startSilenceDetection();
+        // startSilenceDetection();
         
         // 如果当前有歌正在播放，立即触发一次AI反馈
         if (state.currentTrack) {
@@ -908,7 +940,7 @@ const MusicPlayer = (function() {
             }, 1000);
         }
         
-        console.log('[MusicPlayer] 一起听会话开始');
+        // console.log('[MusicPlayer] 一起听会话开始');
 
         // 添加退出按钮（如果不存在）
         const chatHeader = document.querySelector('.music-mini-chat-header');
@@ -986,10 +1018,40 @@ const MusicPlayer = (function() {
             </details>`;
         });
 
-        // 2. 处理点歌指令：高亮显示而不是删除
-        processedText = processedText.replace(/\[点歌:\s*(.*?)\]/g, (match, songName) => {
+        // 2. 处理点歌指令：高亮显示而不是删除（兼容中英文冒号）
+        processedText = processedText.replace(/\[点歌[：:]\s*(.*?)\]/g, (match, songName) => {
             return `<span class="ai-command-tag" style="display:inline-block; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-size:0.85em; color:#aaffaa; margin:0 4px;">点歌《${songName}》</span>`;
         });
+        
+        // 3. 处理切歌指令：高亮显示
+        processedText = processedText.replace(/\[切歌[：:]\s*(.*?)\]/g, (match, songName) => {
+            return `<span class="ai-command-tag" style="display:inline-block; background:rgba(255,200,100,0.15); padding:2px 6px; border-radius:4px; font-size:0.85em; color:#ffcc66; margin:0 4px;">切歌《${songName}》</span>`;
+        });
+        
+        // 4. 处理分享歌单指令：高亮显示（内容会在别处渲染成歌单卡片）
+        processedText = processedText.replace(/\[分享歌单[：:]\s*(.*?)\]/g, (match, songs) => {
+            const songList = songs.split(/[；;]/).map(s => s.trim()).filter(s => s);
+            return `<span class="ai-command-tag" style="display:inline-block; background:rgba(100,200,255,0.15); padding:2px 6px; border-radius:4px; font-size:0.85em; color:#66ccff; margin:0 4px;">分享歌单 (${songList.length}首)</span>`;
+        });
+        
+        // 5. 【关键】清理掉不应该出现在一起听模式的指令格式（防止指令污染）
+        // 移除表情包指令
+        processedText = processedText.replace(/表情包[：:]\s*[^\s\n]+/g, '');
+        // 移除语音指令
+        processedText = processedText.replace(/语音[：:]\s*[^\n]+/g, '');
+        // 移除状态/内心独白
+        processedText = processedText.replace(/状态[：:]\s*[^\n]+/g, '');
+        processedText = processedText.replace(/内心独白[：:]\s*[^\n]+/g, '');
+        // 移除动作描写 *xxx*
+        processedText = processedText.replace(/\*[^*]+\*/g, '');
+        // 移除 (动作) 格式
+        processedText = processedText.replace(/[（(][^）)]*[）)]/g, '');
+        // 移除反斜杠分割
+        processedText = processedText.replace(/\\/g, '');
+        // 移除 HTML/文图/朋友圈等指令
+        processedText = processedText.replace(/(发送HTML|文图|发朋友圈|评论朋友圈|发送文件|引用回复|发起通话|转账)[：:][^\n]*/g, '');
+        // 清理多余空白和换行
+        processedText = processedText.replace(/\n{3,}/g, '\n\n').trim();
 
         return processedText.trim();
     }
@@ -1044,21 +1106,31 @@ const MusicPlayer = (function() {
                  if (lyricContext.length > 3000) lyricContext = lyricContext.slice(0, 3000) + '...';
             }
             
-            const systemPrompt = `你正在"一起听"模式中与用户听歌聊天。
+            const systemPrompt = `你正在"一起听"模式中与用户听歌聊天。这是一个**简化聊天模式**，不是角色扮演。
 
 【你的角色设定】
 姓名：${currentContact.name || 'AI'}
-${currentContact.ai?.persona || '你是一个友好的AI助手'}
+性格：${(currentContact.ai?.persona || '友好的AI助手').slice(0, 200)}
+
+【🚫 绝对禁止 - 一起听模式专用规则】
+这是"一起听"音乐聊天模式，**不是主聊天**。以下格式在此模式下**完全禁用**：
+1. ❌ 表情包：xxx - 禁止
+2. ❌ 语音：xxx - 禁止  
+3. ❌ 发送HTML：xxx - 禁止
+4. ❌ 文图：xxx - 禁止
+5. ❌ 发朋友圈：xxx - 禁止
+6. ❌ 状态：/内心独白： - 禁止
+7. ❌ *动作描写* - 禁止
+8. ❌ 任何带冒号的特殊指令格式 - 禁止（除了点歌/切歌/分享歌单）
+9. ❌ 用反斜杠 \\ 分割句子 - 禁止
+
+你只需要用**纯文本**自然聊天，就像发微信消息一样简单直接。
 
 【重要规则】
-1. **绝对禁止**使用小说、剧本格式（如不要用引号包裹整个句子）。
-2. **绝对禁止**动作描写（如不要写 *低头看了看*、(笑了笑) 等内容）。
-3. 就像面对面正常聊天一样，口语化，自然一点。
-4. 不要复读用户的歌词，要有互动感。
-5. **严禁编造歌词**。下文提供了【当前歌曲歌词】，请基于此进行对话。如果歌词是"暂无歌词"，则诚实告知。
-
-【用户设定】
-${currentContact.user?.persona || '普通用户'}
+1. 就像面对面正常聊天，口语化，自然简短。
+2. 不要复读歌词，要有互动感。
+3. 如果歌词是"暂无歌词"，诚实告知。
+4. 回复控制在1-3句话内，不要长篇大论。
 
 【一起听会话】
 ${currentTrackInfo}
@@ -1070,16 +1142,17 @@ ${lyricContext}
 【对话历史】
 ${recentMessages}
 
-【核心指令】
-1. 如果你想点歌或用户让你点歌，**必须**使用格式：[点歌: 歌曲名]
-   错误示例：好的，我给你点首《晴天》
-   正确示例：没问题，听听这个 [点歌: 晴天]
-2. 当用户明确要求点歌时，你**必须**输出点歌指令。
+【✅ 唯一允许的3个指令】
+1. 点歌 → [点歌: 歌曲名] 
+2. 切歌 → [切歌: 歌曲名]
+3. 分享歌单 → [分享歌单: 歌曲1；歌曲2；歌曲3]
 
-【要求】
-1. 保持你的角色人设，但必须符合【重要规则】。
-2. 回复简短自然，不要长篇大论。
-3. 围绕音乐、歌曲、心情等话题`;
+示例：
+用户：给我推荐一首歌吧
+正确：好呀，听听这首 [点歌: 晴天]
+错误：*思考了一下* 语音：好呀！ 表情包：小狗：开心 状态：推荐歌曲
+
+记住：你只是在和用户边听歌边聊天，保持简单自然！`;
 
             const response = await fetch(completionsUrl, {
                 method: 'POST',
@@ -1107,28 +1180,53 @@ ${recentMessages}
             const result = await response.json();
             let aiMessage = result.choices?.[0]?.message?.content?.trim();
             
-            console.log('[MusicPlayer] AI 原始回复 (Length: ' + (aiMessage?.length || 0) + '):', aiMessage);
+
             
             if (aiMessage) {
-                // 1. 检查并提取点歌指令
-                const recommendMatch = aiMessage.match(/\[点歌:\s*(.*?)\]/);
+                // 1. 检查并提取点歌指令（兼容中英文冒号）
+                const recommendMatch = aiMessage.match(/\[点歌[：:]\s*(.*?)\]/);
                 let songToRecommend = null;
                 
                 if (recommendMatch) {
                     songToRecommend = recommendMatch[1];
                 }
                 
-                // 2. 格式化消息（处理思维链和指令显示）
+                // 2. 检查并提取切歌指令（立即播放）
+                const switchMatch = aiMessage.match(/\[切歌[：:]\s*(.*?)\]/);
+                let songToSwitch = null;
+                
+                if (switchMatch) {
+                    songToSwitch = switchMatch[1];
+                }
+                
+                // 3. 检查并提取分享歌单指令
+                const sharePlaylistMatch = aiMessage.match(/\[分享歌单[：:]\s*(.*?)\]/);
+                let sharedSongs = [];
+                
+                if (sharePlaylistMatch) {
+                    sharedSongs = sharePlaylistMatch[1].split(/[；;]/).map(s => s.trim()).filter(s => s);
+                }
+                
+                // 4. 格式化消息（处理思维链和指令显示）
                 const displayMessage = cleanAIResponse(aiMessage);
                 
-                // 3. 显示回复
+                // 5. 显示回复
                 if (displayMessage) {
                     addChatMessage('ai', displayMessage);
                 }
                 
-                // 4. 执行点歌逻辑
-                if (songToRecommend) {
+                // 6. 执行切歌逻辑（优先级最高，立即播放）
+                if (songToSwitch) {
+                    searchAndSwitchSong(songToSwitch);
+                }
+                // 7. 执行点歌逻辑（添加到歌单末尾）
+                else if (songToRecommend) {
                     searchAndAddSong(songToRecommend);
+                }
+                
+                // 8. 执行分享歌单逻辑（渲染歌单卡片）
+                if (sharedSongs.length > 0) {
+                    renderSharedPlaylist(sharedSongs);
                 }
             } else {
                 console.warn('[MusicPlayer] AI 返回内容为空');
@@ -1175,13 +1273,243 @@ ${recentMessages}
         }
     }
     
+    /**
+     * 搜索并切歌（立即播放，供AI切歌使用）
+     */
+    async function searchAndSwitchSong(keyword) {
+        if (!keyword) return;
+        
+        try {
+            const aiName = window.currentOpenContact?.name || window.currentOpenContact?.ai?.name || 'TA';
+            addChatMessage('system', `${aiName} 正在切歌到 "${keyword}"...`);
+            
+            const songs = await NeteaseMusic.searchSongs(keyword);
+            
+            if (songs && songs.length > 0) {
+                const song = songs[0];
+                
+                // 添加到歌单
+                addToPlaylist(song, 'ai');
+                
+                // 找到这首歌在歌单中的位置
+                const songIndex = state.playlist.findIndex(t => t.id === song.id);
+                
+                if (songIndex !== -1) {
+                    // 立即播放这首歌
+                    playAt(songIndex);
+                    addChatMessage('system', `已切换到 《${song.name}》`);
+                }
+            } else {
+                addChatMessage('system', `未找到关于 "${keyword}" 的歌曲`);
+            }
+        } catch (e) {
+            console.error('[MusicPlayer] AI切歌失败:', e);
+            addChatMessage('system', '切歌时出错了');
+        }
+    }
+    
+    /**
+     * 渲染分享的歌单卡片（可滚动，用户可点击添加）
+     */
+    function renderSharedPlaylist(songNameList) {
+        if (!songNameList || songNameList.length === 0) return;
+        
+        const chatList = document.querySelector('.music-mini-chat-list');
+        if (!chatList) return;
+        
+        const aiName = window.currentOpenContact?.name || window.currentOpenContact?.ai?.name || 'TA';
+        
+        // 创建歌单卡片容器
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'music-shared-playlist-card';
+        cardDiv.innerHTML = `
+            <div class="shared-playlist-header">
+                
+                <span class="shared-playlist-title">${aiName} 分享了一份歌单</span>
+                <span class="shared-playlist-count">${songNameList.length}首</span>
+            </div>
+            <div class="shared-playlist-scroll">
+                ${songNameList.map((songName, index) => `
+                    <div class="shared-playlist-item" data-song-name="${songName.replace(/"/g, '&quot;')}">
+                        <span class="shared-playlist-idx">${index + 1}</span>
+                        <span class="shared-playlist-name">${songName}</span>
+                        <button class="shared-playlist-add-btn" title="添加到播放列表">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="shared-playlist-add-all-btn">全部添加到播放列表</button>
+        `;
+        
+        // 添加样式（如果尚未添加）
+        if (!document.getElementById('shared-playlist-styles')) {
+            const style = document.createElement('style');
+            style.id = 'shared-playlist-styles';
+            style.textContent = `
+                .music-shared-playlist-card {
+                    background: rgba(255, 255, 255, 0.08);
+                    border-radius: 12px;
+                    padding: 12px;
+                    margin: 8px 0;
+                    max-width: 100%;
+                }
+                .shared-playlist-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 10px;
+                    font-size: 13px;
+                    color: rgba(255, 255, 255, 0.9);
+                }
+                .shared-playlist-icon {
+                    font-size: 16px;
+                }
+                .shared-playlist-title {
+                    flex: 1;
+                    font-weight: 500;
+                }
+                .shared-playlist-count {
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 12px;
+                }
+                .shared-playlist-scroll {
+                    max-height: 180px;
+                    overflow-y: auto;
+                    margin-bottom: 10px;
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255,255,255,0.2) transparent;
+                }
+                .shared-playlist-scroll::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .shared-playlist-scroll::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .shared-playlist-scroll::-webkit-scrollbar-thumb {
+                    background: rgba(255,255,255,0.2);
+                    border-radius: 2px;
+                }
+                .shared-playlist-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 6px;
+                    border-radius: 8px;
+                    transition: background 0.2s;
+                }
+                .shared-playlist-item:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                .shared-playlist-item.added {
+                    opacity: 0.5;
+                }
+                .shared-playlist-item.added .shared-playlist-add-btn {
+                    color: #4ade80;
+                }
+                .shared-playlist-idx {
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.4);
+                    width: 20px;
+                    text-align: center;
+                }
+                .shared-playlist-name {
+                    flex: 1;
+                    font-size: 13px;
+                    color: rgba(255, 255, 255, 0.85);
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .shared-playlist-add-btn {
+                    background: none;
+                    border: none;
+                    color: rgba(255, 255, 255, 0.5);
+                    cursor: pointer;
+                    padding: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: color 0.2s, transform 0.2s;
+                }
+                .shared-playlist-add-btn:hover {
+                    color: #66ccff;
+                    transform: scale(1.1);
+                }
+                .shared-playlist-add-all-btn {
+                    width: 100%;
+                    padding: 10px;
+                    background: rgba(102, 204, 255, 0.15);
+                    border: none;
+                    border-radius: 8px;
+                    color: #66ccff;
+                    font-size: 13px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                .shared-playlist-add-all-btn:hover {
+                    background: rgba(102, 204, 255, 0.25);
+                }
+                .shared-playlist-add-all-btn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 绑定单首添加事件
+        cardDiv.querySelectorAll('.shared-playlist-add-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const item = btn.closest('.shared-playlist-item');
+                if (item.classList.contains('added')) return;
+                
+                const songName = item.dataset.songName;
+                item.classList.add('added');
+                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                
+                // 搜索并添加歌曲
+                await searchAndAddSong(songName, 'ai');
+            });
+        });
+        
+        // 绑定全部添加事件
+        const addAllBtn = cardDiv.querySelector('.shared-playlist-add-all-btn');
+        addAllBtn.addEventListener('click', async () => {
+            addAllBtn.disabled = true;
+            addAllBtn.textContent = '正在添加...';
+            
+            const items = cardDiv.querySelectorAll('.shared-playlist-item:not(.added)');
+            for (const item of items) {
+                const songName = item.dataset.songName;
+                const btn = item.querySelector('.shared-playlist-add-btn');
+                item.classList.add('added');
+                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                
+                await searchAndAddSong(songName, 'ai');
+                // 添加小延迟避免请求过快
+                await new Promise(r => setTimeout(r, 500));
+            }
+            
+            addAllBtn.textContent = '✓ 已全部添加';
+        });
+        
+        chatList.appendChild(cardDiv);
+        chatList.scrollTop = chatList.scrollHeight;
+    }
+    
     function endListenTogether() {
         if (!state.listenTogetherActive) return;
         
         state.listenTogetherActive = false;
         
         // 停止沉默检测
-        stopSilenceDetection();
+        // stopSilenceDetection();
         
         // 生成会话总结
         const summary = generateSessionSummary();
@@ -1570,6 +1898,7 @@ ${eventDescription}
         addToPlaylist,
         removeFromPlaylist,
         addAndPlay,
+        addSongOnly,
         
         // 界面控制
         togglePlayerScreen,

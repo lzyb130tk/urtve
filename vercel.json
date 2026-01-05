@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/offline-life/:match*",
+      "destination": "http://121.4.83.241:3000/api/:match*"
+    },
+    {
+        "source": "/api/music/:match*",
+        "destination": "http://121.4.83.241:3001/:match*"
+    }
+  ]
+}
