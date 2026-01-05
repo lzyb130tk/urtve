@@ -399,6 +399,11 @@
     border-bottom: none;
 }
 
+/* 强制隐藏云服务地址输入框 (安全与体验) */
+#offline-service-url-container {
+    display: none !important;
+}
+
 /* 适配 Switch 开关 - 现代化设计 */
 .switch {
     width: 52px;

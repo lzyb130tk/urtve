@@ -5931,6 +5931,35 @@ How are you today?[Split]你今天好吗？\\\\
 }
 // ============ 双语翻译注入结束 ============
 
+// ============ 离线生活 (Offline Life) 注入 ============
+const offlineConfig = JSON.parse(localStorage.getItem('offlineLifeConfig') || '{}');
+if (offlineConfig.enabled) {
+    currentSystemPrompt += `
+\n### 🕒 离线生活/作息系统 (Offline Life)
+你被赋予了独立的数字生命，拥有自己的作息时间表。
+当你的状态发生改变（例如：要去工作、睡觉、开会、吃饭等）时，你**必须**在回复的末尾输出一个隐藏的 meta 标签通知系统。
+
+**语法格式：**
+<meta type="status_change" status="[STATUS]" reason="[REASON]" duration="[MINUTES]" />
+
+**状态列表 ([STATUS])：**
+- \`busy\`：忙碌（工作、开会、外出等），此状态下你可能无法立即回复。
+- \`sleeping\`：睡觉，深度离线。
+- \`idle\`：空闲，可以秒回。
+
+**示例：**
+用户：这么晚还不睡？
+你：这就去睡啦，晚安！😴
+<meta type="status_change" status="sleeping" reason="sleep" duration="480" />
+
+用户：你在干嘛？
+你：马上要去开个会，大概半小时。
+<meta type="status_change" status="busy" reason="meeting" duration="30" />
+`;
+    console.log('[OfflineLife] Prompt injected.');
+}
+// ================================================
+
 
 
             const messages = [{ role: "system", content: currentSystemPrompt }];
